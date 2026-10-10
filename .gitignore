@@ -1,0 +1,31 @@
+# Local configuration and secrets
+/app/config/database.php
+/app/config/app.php
+.env
+.env.*
+!.env.example
+
+# Runtime files
+/public/uploads/places/*
+!/public/uploads/places/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/cache/geocoding/*
+!/storage/cache/geocoding/.gitkeep
+
+# Backups must stay outside the repository
+*.sql.bak
+*.sql.gz
+*.dump
+*.bak
+
+# Local tools/editor dependencies
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+*.log
+/vendor/
+/node_modules/

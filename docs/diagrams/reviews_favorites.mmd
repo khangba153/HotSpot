@@ -1,0 +1,16 @@
+flowchart TD
+    A([Member ở chi tiết APPROVED]) --> B{Chọn hành động}
+    B -- Viết đánh giá --> C[Nhập rating 1 đến 5 + bình luận]
+    C --> D{Hợp lệ?}
+    D -- Không --> C
+    D -- Có --> E[SAVE_OR_UPDATE_REVIEW]
+    E --> F{Review cũ HIDDEN?}
+    F -- Có --> G[Cập nhật nội dung nhưng giữ HIDDEN]
+    F -- Không --> H[Tạo hoặc cập nhật VISIBLE]
+    B -- Yêu thích --> I[AJAX gửi trạng thái mong muốn]
+    I --> J[SET_FAVORITE idempotent]
+    J --> K[Giữ một quan hệ user/place hoặc xóa quan hệ]
+    B -- Xem hoạt động --> L[Danh sách yêu thích hoặc nơi đã bình luận]
+    L --> M[Lọc user từ Session; chi tiết chỉ công khai nếu APPROVED]
+    G --> N[Admin có thể khôi phục VISIBLE]
+    H --> O[Admin có thể ẩn HIDDEN]
