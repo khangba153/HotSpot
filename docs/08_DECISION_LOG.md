@@ -44,4 +44,4 @@ Giữ nguyên 13 bảng, 12 routine (3/người), mọi PK/FK/UNIQUE/CHECK, nghi
 
 Hoàn thành đồ án sinh viên năm 3 trong 21 ngày; chức năng hoạt động trước, PHP OOP/MVC đơn giản, không thêm Service/Middleware/Repository hoặc mở rộng test/CI/logging/tuning khi chưa có nhu cầu. Giữ PDO, password hashing, Session, quyền và CSRF cơ bản cùng nghiệp vụ/13 bảng/12 routine/phân công.
 
-Core MVC/Auth đã chạy với XAMPP PHP 8.0.30; các module nghiệp vụ chưa triển khai. Bản bàn giao giữ mã hoạt động và SQL tái tạo database, bỏ test chuyên sâu/CI/audit/stub không sử dụng. Cleanup không thay đổi nghiệp vụ hoặc tạo kế hoạch/phân công mới.
+Nhóm trưởng điều chỉnh bản bàn giao thành bộ khung: giữ tài liệu thiết kế, SQL và cấu trúc file; bỏ code xử lý đã triển khai. Các file MVC/Auth hiện rỗng, chưa có chức năng website. Giữ Bootstrap và config mẫu, không thay đổi database trên XAMPP hoặc nghiệp vụ/phân công đã chốt.

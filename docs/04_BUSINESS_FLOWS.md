@@ -1,6 +1,6 @@
 # 04 — Business Flow
 
-> Thiết kế đã chốt để nhóm tham khảo. Core MVC/Auth đã có; các module nghiệp vụ trong tài liệu này chưa được triển khai đầy đủ.
+> Thiết kế đã chốt để nhóm tham khảo. Source hiện là bộ khung với các file xử lý rỗng; chưa triển khai MVC/Auth hoặc module nghiệp vụ.
 
 > Luồng sử dụng đã chốt. Mọi kiểm tra truy cập phải xảy ra trên server, kể cả khi người dùng tự gọi URL hoặc AJAX endpoint.
 

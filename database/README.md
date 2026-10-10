@@ -11,9 +11,9 @@ Trong phpMyAdmin, chọn một database phát triển/demo **mới và rỗng**,
 3. `seed_admin_full.sql`: 34 tỉnh/thành và 3.321 xã/phường.
 4. `routines.sql`: bản gộp 12 stored procedure.
 
-Có thể dùng bốn file `routines_member*.sql` thay cho bước 4; **không import cả bản gộp lẫn bản chia người**. Giữ cả hai dạng để import chung và tham khảo phần mỗi thành viên. Không tắt FK/CHECK. Trỏ `app/config/database.php` vào database đã import. Backup trước mọi thay đổi trên database dùng chung.
+Có thể dùng bốn file `routines_member*.sql` thay cho bước 4; **không import cả bản gộp lẫn bản chia người**. Giữ cả hai dạng để import chung và tham khảo phần mỗi thành viên. Không tắt FK/CHECK. Khi viết lớp PDO, dùng cấu hình `app/config/database.php` trỏ vào database đã import. Backup trước mọi thay đổi trên database dùng chung.
 
-Seed ban đầu có 3.488 dòng: 34 tỉnh, 3.321 xã/phường, 3 tài khoản, 24 địa điểm, 24 ảnh, 24 liên kết tag, 18 review, 18 favorite và dữ liệu lookup. Đăng ký trên website sẽ thêm tài khoản. Địa điểm là demo giả lập; path ảnh demo chưa có file ảnh tương ứng.
+Seed ban đầu có 3.488 dòng: 34 tỉnh, 3.321 xã/phường, 3 tài khoản, 24 địa điểm, 24 ảnh, 24 liên kết tag, 18 review, 18 favorite và dữ liệu lookup. Chức năng đăng ký chưa được triển khai trong bộ khung. Địa điểm là demo giả lập; path ảnh demo chưa có file ảnh tương ứng.
 
 ## 12 routine đã chốt
 
@@ -34,4 +34,4 @@ Actor ID lấy từ Session, không lấy từ request. PHP vẫn chịu trách 
 
 ## Nguồn seed hành chính
 
-Snapshot offline và thông tin commit/SHA256 nằm trong `sources/`. Đây là dữ liệu nguồn để tái tạo seed, không phải kết quả test. Khi cần sinh lại, dùng `php tools/generate_admin_seed.php` với `intl` và `mbstring`; cài website bình thường chỉ cần import SQL đã có. Generator giữ mã chuỗi, normalize NFC và loại đơn vị, bao gồm đặc khu Hoàng Sa. Chi tiết nguồn và giới hạn đối chiếu nằm trong `sources/manifest.json`.
+Snapshot offline và thông tin commit/SHA256 nằm trong `sources/`. Đây là dữ liệu nguồn để tái tạo seed, không phải kết quả test. Import bằng SQL đã có; file `tools/generate_admin_seed.php` hiện chỉ là khung rỗng, không sinh lại seed. Seed hiện có giữ mã chuỗi, normalize NFC và loại đơn vị, bao gồm đặc khu Hoàng Sa. Chi tiết nguồn và giới hạn đối chiếu nằm trong `sources/manifest.json`.

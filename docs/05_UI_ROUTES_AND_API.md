@@ -1,6 +1,6 @@
 # 05 — Màn hình, Route/Controller/Model và API
 
-> Thiết kế đã chốt để nhóm tham khảo. Core MVC/Auth đã có; các module nghiệp vụ trong tài liệu này chưa được triển khai đầy đủ.
+> Thiết kế đã chốt để nhóm tham khảo. Source hiện là bộ khung với các file xử lý rỗng; chưa triển khai MVC/Auth hoặc module nghiệp vụ.
 
 > Quy ước URL được xác nhận: **một front controller** `public/index.php?route=...`. Các tên route bên dưới là quy ước tài liệu chuẩn để nhóm lập trình, không phải endpoint hiện đã chạy.
 

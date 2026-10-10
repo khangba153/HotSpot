@@ -1,6 +1,6 @@
 # 09 — Sơ đồ phân rã chức năng Hot Spot
 
-> Thiết kế đã chốt để nhóm tham khảo. Core MVC/Auth đã có; các module nghiệp vụ trong tài liệu này chưa được triển khai đầy đủ.
+> Thiết kế đã chốt để nhóm tham khảo. Source hiện là bộ khung với các file xử lý rỗng; chưa triển khai MVC/Auth hoặc module nghiệp vụ.
 
 Sơ đồ chia Hot Spot thành **5 nhóm chức năng chính**. Đường nối chỉ là quan hệ **cha–con**, không biểu thị thứ tự xử lý. Các flow theo trình tự nằm tại [Business Flow](04_BUSINESS_FLOWS.md).
 
