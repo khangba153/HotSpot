@@ -34,4 +34,4 @@ Actor ID lấy từ Session, không lấy từ request. PHP vẫn chịu trách 
 
 ## Nguồn seed hành chính
 
-Snapshot offline và thông tin commit/SHA256 nằm trong `sources/`. Đây là dữ liệu nguồn để tái tạo seed, không phải kết quả test. Import bằng SQL đã có; file `tools/generate_admin_seed.php` hiện chỉ là khung rỗng, không sinh lại seed. Seed hiện có giữ mã chuỗi, normalize NFC và loại đơn vị, bao gồm đặc khu Hoàng Sa. Chi tiết nguồn và giới hạn đối chiếu nằm trong `sources/manifest.json`.
+Snapshot offline và thông tin commit/SHA256 nằm trong `sources/`. Đây là dữ liệu nguồn để tái tạo seed, không phải kết quả test. Import bằng SQL đã có. Seed hiện có giữ mã chuỗi, normalize NFC và loại đơn vị, bao gồm đặc khu Hoàng Sa. Chi tiết nguồn và giới hạn đối chiếu nằm trong `sources/manifest.json`.
