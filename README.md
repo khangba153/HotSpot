@@ -5,7 +5,6 @@ Repository bàn giao để nhóm bắt đầu triển khai, **chưa có chức n
 ## Những gì được giữ
 
 - Cấu trúc thư mục/file MVC để các thành viên viết code.
-- `database/`: schema 13 bảng, seed và 12 stored procedure đã chốt, cùng nguồn dữ liệu hành chính. Xem [hướng dẫn import](database/README.md).
 - Bootstrap có sẵn trong `public/assets/vendor/`, cấu hình database mẫu và `.gitignore`. Không commit config cá nhân, mật khẩu, dump database hoặc dữ liệu upload.
 
 Công nghệ đã chốt: PHP thuần OOP + MVC, PDO `pdo_mysql`, MariaDB 10.4.32 đi kèm XAMPP, Bootstrap, JavaScript/AJAX, Nominatim + Leaflet/OpenStreetMap. Giữ schema 13 bảng và 12 routine hiện có.
@@ -14,10 +13,10 @@ Công nghệ đã chốt: PHP thuần OOP + MVC, PDO `pdo_mysql`, MariaDB 10.4.3
 
 1. Bật Apache và MySQL (MariaDB) trong XAMPP; PHP cần extension `pdo_mysql`.
 2. Trỏ web root vào `public/`. Hiện `public/index.php` rỗng nên mở website sẽ chỉ có trang trắng; các thành viên tự triển khai Router/MVC.
-3. Import SQL vào một database phát triển/demo mới và rỗng nếu cài máy mới. Không import lại vào database có dữ liệu hoặc `db_hospot` cũ.
+3. Sử dụng MariaDB dùng chung của nhóm; lấy thông tin kết nối từ nhóm trưởng qua kênh riêng. Không tự import lại SQL, sửa cấu trúc hoặc xóa dữ liệu dùng chung.
 4. Copy `app/config/database.example.php` thành `database.php` và cấu hình riêng trên máy. Mẫu cấu hình có sẵn nhưng lớp PDO chưa được viết.
 
-Máy đang thao tác: `D:\UEH\Dự án\HotSpot\HotSpot`. Database local `hotspot_demo_20261010_125857_78cf50` được giữ nguyên; lần chuyển sang bộ khung không sửa hoặc xóa database.
+SQL/schema/seed/routine được lưu riêng ngoài repository. Việc bỏ thư mục SQL khỏi repository không thay đổi database trên server.
 
 ## Git
 
