@@ -1,0 +1,1249 @@
+{
+  "captured_at": "2026-10-10T18:47:26.671089+07:00",
+  "database": "db_hospot",
+  "access": "SELECT metadata and counts only",
+  "queries": {
+    "server": "SELECT JSON_OBJECT('version',VERSION(),'sql_mode',@@sql_mode,'time_zone',@@time_zone)",
+    "tables": "SELECT JSON_OBJECT('table',TABLE_NAME,'engine',ENGINE,'collation',TABLE_COLLATION) FROM information_schema.TABLES WHERE TABLE_SCHEMA='db_hospot' ORDER BY TABLE_NAME",
+    "columns": "SELECT JSON_OBJECT('table',TABLE_NAME,'column',COLUMN_NAME,'type',COLUMN_TYPE,'nullable',IS_NULLABLE,'default',COLUMN_DEFAULT,'extra',EXTRA) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='db_hospot' ORDER BY TABLE_NAME,ORDINAL_POSITION",
+    "constraints": "SELECT JSON_OBJECT('table',TABLE_NAME,'name',CONSTRAINT_NAME,'type',CONSTRAINT_TYPE) FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA='db_hospot' ORDER BY TABLE_NAME,CONSTRAINT_NAME",
+    "indexes": "SELECT JSON_OBJECT('table',TABLE_NAME,'name',INDEX_NAME,'non_unique',NON_UNIQUE,'sequence',SEQ_IN_INDEX,'column',COLUMN_NAME) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA='db_hospot' ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX",
+    "foreign_keys": "SELECT JSON_OBJECT('table',k.TABLE_NAME,'name',k.CONSTRAINT_NAME,'column',k.COLUMN_NAME,'parent_table',k.REFERENCED_TABLE_NAME,'parent_column',k.REFERENCED_COLUMN_NAME,'update_rule',r.UPDATE_RULE,'delete_rule',r.DELETE_RULE) FROM information_schema.KEY_COLUMN_USAGE k JOIN information_schema.REFERENTIAL_CONSTRAINTS r ON r.CONSTRAINT_SCHEMA=k.CONSTRAINT_SCHEMA AND r.CONSTRAINT_NAME=k.CONSTRAINT_NAME AND r.TABLE_NAME=k.TABLE_NAME WHERE k.TABLE_SCHEMA='db_hospot' AND k.REFERENCED_TABLE_NAME IS NOT NULL ORDER BY k.TABLE_NAME,k.CONSTRAINT_NAME,k.ORDINAL_POSITION",
+    "routines": "SELECT JSON_OBJECT('name',ROUTINE_NAME,'type',ROUTINE_TYPE,'body',ROUTINE_DEFINITION,'sql_mode',SQL_MODE,'security_type',SECURITY_TYPE) FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA='db_hospot' ORDER BY ROUTINE_NAME",
+    "parameters": "SELECT JSON_OBJECT('routine',SPECIFIC_NAME,'position',ORDINAL_POSITION,'name',PARAMETER_NAME,'mode',PARAMETER_MODE,'type',DTD_IDENTIFIER) FROM information_schema.PARAMETERS WHERE SPECIFIC_SCHEMA='db_hospot' ORDER BY SPECIFIC_NAME,ORDINAL_POSITION"
+  },
+  "server": [
+    {
+      "version": "10.4.32-MariaDB",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "time_zone": "SYSTEM"
+    }
+  ],
+  "tables": [
+    {
+      "table": "categories",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    },
+    {
+      "table": "districts",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    },
+    {
+      "table": "favorites",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    },
+    {
+      "table": "places",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    },
+    {
+      "table": "place_images",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    },
+    {
+      "table": "place_statuses",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    },
+    {
+      "table": "reviews",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    },
+    {
+      "table": "review_statuses",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    },
+    {
+      "table": "roles",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    },
+    {
+      "table": "users",
+      "engine": "InnoDB",
+      "collation": "utf8mb4_general_ci"
+    }
+  ],
+  "columns": [
+    {
+      "table": "categories",
+      "column": "category_id",
+      "type": "int(11)",
+      "nullable": "NO",
+      "default": null,
+      "extra": "auto_increment"
+    },
+    {
+      "table": "categories",
+      "column": "name",
+      "type": "varchar(100)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "categories",
+      "column": "is_active",
+      "type": "tinyint(1)",
+      "nullable": "NO",
+      "default": "1",
+      "extra": ""
+    },
+    {
+      "table": "categories",
+      "column": "created_at",
+      "type": "datetime",
+      "nullable": "NO",
+      "default": "current_timestamp()",
+      "extra": ""
+    },
+    {
+      "table": "categories",
+      "column": "updated_at",
+      "type": "datetime",
+      "nullable": "NO",
+      "default": "current_timestamp()",
+      "extra": "on update current_timestamp()"
+    },
+    {
+      "table": "districts",
+      "column": "district_id",
+      "type": "smallint(6)",
+      "nullable": "NO",
+      "default": null,
+      "extra": "auto_increment"
+    },
+    {
+      "table": "districts",
+      "column": "district_name",
+      "type": "varchar(100)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "districts",
+      "column": "city_name",
+      "type": "varchar(100)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "districts",
+      "column": "is_active",
+      "type": "tinyint(1)",
+      "nullable": "NO",
+      "default": "1",
+      "extra": ""
+    },
+    {
+      "table": "favorites",
+      "column": "user_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "favorites",
+      "column": "place_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "favorites",
+      "column": "created_at",
+      "type": "datetime",
+      "nullable": "NO",
+      "default": "current_timestamp()",
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "place_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": "auto_increment"
+    },
+    {
+      "table": "places",
+      "column": "owner_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "category_id",
+      "type": "int(11)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "district_id",
+      "type": "smallint(6)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "status_code",
+      "type": "varchar(50)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "title",
+      "type": "varchar(255)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "description",
+      "type": "text",
+      "nullable": "YES",
+      "default": "NULL",
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "address",
+      "type": "varchar(255)",
+      "nullable": "YES",
+      "default": "NULL",
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "latitude",
+      "type": "decimal(10,7)",
+      "nullable": "YES",
+      "default": "NULL",
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "longitude",
+      "type": "decimal(10,7)",
+      "nullable": "YES",
+      "default": "NULL",
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "created_at",
+      "type": "datetime",
+      "nullable": "NO",
+      "default": "current_timestamp()",
+      "extra": ""
+    },
+    {
+      "table": "places",
+      "column": "updated_at",
+      "type": "datetime",
+      "nullable": "NO",
+      "default": "current_timestamp()",
+      "extra": "on update current_timestamp()"
+    },
+    {
+      "table": "place_images",
+      "column": "image_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": "auto_increment"
+    },
+    {
+      "table": "place_images",
+      "column": "place_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "place_images",
+      "column": "image_path",
+      "type": "varchar(255)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "place_images",
+      "column": "sort_order",
+      "type": "tinyint(4)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "place_images",
+      "column": "created_at",
+      "type": "datetime",
+      "nullable": "NO",
+      "default": "current_timestamp()",
+      "extra": ""
+    },
+    {
+      "table": "place_statuses",
+      "column": "status_code",
+      "type": "varchar(50)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "place_statuses",
+      "column": "display_name",
+      "type": "varchar(100)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "place_statuses",
+      "column": "is_public",
+      "type": "tinyint(1)",
+      "nullable": "NO",
+      "default": "1",
+      "extra": ""
+    },
+    {
+      "table": "place_statuses",
+      "column": "sort_order",
+      "type": "tinyint(4)",
+      "nullable": "NO",
+      "default": "0",
+      "extra": ""
+    },
+    {
+      "table": "reviews",
+      "column": "review_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": "auto_increment"
+    },
+    {
+      "table": "reviews",
+      "column": "user_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "reviews",
+      "column": "place_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "reviews",
+      "column": "status_code",
+      "type": "varchar(50)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "reviews",
+      "column": "rating",
+      "type": "tinyint(4)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "reviews",
+      "column": "content",
+      "type": "text",
+      "nullable": "YES",
+      "default": "NULL",
+      "extra": ""
+    },
+    {
+      "table": "reviews",
+      "column": "created_at",
+      "type": "datetime",
+      "nullable": "YES",
+      "default": "current_timestamp()",
+      "extra": ""
+    },
+    {
+      "table": "reviews",
+      "column": "updated_at",
+      "type": "datetime",
+      "nullable": "YES",
+      "default": "current_timestamp()",
+      "extra": "on update current_timestamp()"
+    },
+    {
+      "table": "review_statuses",
+      "column": "status_code",
+      "type": "varchar(50)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "review_statuses",
+      "column": "display_name",
+      "type": "varchar(100)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "review_statuses",
+      "column": "is_public",
+      "type": "tinyint(1)",
+      "nullable": "YES",
+      "default": "1",
+      "extra": ""
+    },
+    {
+      "table": "roles",
+      "column": "role_code",
+      "type": "varchar(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "roles",
+      "column": "role_name",
+      "type": "varchar(100)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "users",
+      "column": "user_id",
+      "type": "bigint(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": "auto_increment"
+    },
+    {
+      "table": "users",
+      "column": "role_code",
+      "type": "varchar(20)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "users",
+      "column": "full_name",
+      "type": "varchar(100)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "users",
+      "column": "email",
+      "type": "varchar(150)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "users",
+      "column": "password_hash",
+      "type": "varchar(255)",
+      "nullable": "NO",
+      "default": null,
+      "extra": ""
+    },
+    {
+      "table": "users",
+      "column": "created_at",
+      "type": "datetime",
+      "nullable": "YES",
+      "default": "NULL",
+      "extra": ""
+    },
+    {
+      "table": "users",
+      "column": "updated_at",
+      "type": "datetime",
+      "nullable": "YES",
+      "default": "NULL",
+      "extra": ""
+    }
+  ],
+  "constraints": [
+    {
+      "table": "categories",
+      "name": "name",
+      "type": "UNIQUE"
+    },
+    {
+      "table": "categories",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "districts",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "favorites",
+      "name": "fk_favorites_place",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "favorites",
+      "name": "fk_favorites_user",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "favorites",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_category",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_district",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_owner",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_status",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "places",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "place_images",
+      "name": "fk_place_images_place",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "place_images",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "place_statuses",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "reviews",
+      "name": "fk_reviews_places",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "reviews",
+      "name": "fk_reviews_statuses",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "reviews",
+      "name": "fk_reviews_users",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "reviews",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "review_statuses",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "roles",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "users",
+      "name": "email",
+      "type": "UNIQUE"
+    },
+    {
+      "table": "users",
+      "name": "fk_users_roles",
+      "type": "FOREIGN KEY"
+    },
+    {
+      "table": "users",
+      "name": "PRIMARY",
+      "type": "PRIMARY KEY"
+    }
+  ],
+  "indexes": [
+    {
+      "table": "categories",
+      "name": "name",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "name"
+    },
+    {
+      "table": "categories",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "category_id"
+    },
+    {
+      "table": "districts",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "district_id"
+    },
+    {
+      "table": "favorites",
+      "name": "fk_favorites_place",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "place_id"
+    },
+    {
+      "table": "favorites",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "user_id"
+    },
+    {
+      "table": "favorites",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 2,
+      "column": "place_id"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_category",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "category_id"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_district",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "district_id"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_owner",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "owner_id"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_status",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "status_code"
+    },
+    {
+      "table": "places",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "place_id"
+    },
+    {
+      "table": "place_images",
+      "name": "fk_place_images_place",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "place_id"
+    },
+    {
+      "table": "place_images",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "image_id"
+    },
+    {
+      "table": "place_statuses",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "status_code"
+    },
+    {
+      "table": "reviews",
+      "name": "fk_reviews_places",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "place_id"
+    },
+    {
+      "table": "reviews",
+      "name": "fk_reviews_statuses",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "status_code"
+    },
+    {
+      "table": "reviews",
+      "name": "fk_reviews_users",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "user_id"
+    },
+    {
+      "table": "reviews",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "review_id"
+    },
+    {
+      "table": "review_statuses",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "status_code"
+    },
+    {
+      "table": "roles",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "role_code"
+    },
+    {
+      "table": "users",
+      "name": "email",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "email"
+    },
+    {
+      "table": "users",
+      "name": "fk_users_roles",
+      "non_unique": 1,
+      "sequence": 1,
+      "column": "role_code"
+    },
+    {
+      "table": "users",
+      "name": "PRIMARY",
+      "non_unique": 0,
+      "sequence": 1,
+      "column": "user_id"
+    }
+  ],
+  "foreign_keys": [
+    {
+      "table": "favorites",
+      "name": "fk_favorites_place",
+      "column": "place_id",
+      "parent_table": "places",
+      "parent_column": "place_id",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "favorites",
+      "name": "fk_favorites_user",
+      "column": "user_id",
+      "parent_table": "users",
+      "parent_column": "user_id",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_category",
+      "column": "category_id",
+      "parent_table": "categories",
+      "parent_column": "category_id",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_district",
+      "column": "district_id",
+      "parent_table": "districts",
+      "parent_column": "district_id",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_owner",
+      "column": "owner_id",
+      "parent_table": "users",
+      "parent_column": "user_id",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "places",
+      "name": "fk_places_status",
+      "column": "status_code",
+      "parent_table": "place_statuses",
+      "parent_column": "status_code",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "place_images",
+      "name": "fk_place_images_place",
+      "column": "place_id",
+      "parent_table": "places",
+      "parent_column": "place_id",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "reviews",
+      "name": "fk_reviews_places",
+      "column": "place_id",
+      "parent_table": "places",
+      "parent_column": "place_id",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "reviews",
+      "name": "fk_reviews_statuses",
+      "column": "status_code",
+      "parent_table": "review_statuses",
+      "parent_column": "status_code",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "reviews",
+      "name": "fk_reviews_users",
+      "column": "user_id",
+      "parent_table": "users",
+      "parent_column": "user_id",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    },
+    {
+      "table": "users",
+      "name": "fk_users_roles",
+      "column": "role_code",
+      "parent_table": "roles",
+      "parent_column": "role_code",
+      "update_rule": "RESTRICT",
+      "delete_rule": "RESTRICT"
+    }
+  ],
+  "routines": [
+    {
+      "name": "BTCK_CREATE_USER",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n  IF p_full_name IS NULL OR TRIM(p_full_name) = '' THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Full name is required';\r\n  END IF;\r\n\r\n  IF p_email IS NULL OR TRIM(p_email) = '' THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email is required';\r\n  END IF;\r\n\r\n  IF p_password_hash IS NULL OR TRIM(p_password_hash) = '' THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Password hash is required';\r\n  END IF;\r\n\r\n  INSERT INTO users (full_name, email, password_hash)\r\n  VALUES (TRIM(p_full_name), TRIM(p_email), p_password_hash);\r\n\r\n  SELECT LAST_INSERT_ID() AS user_id;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "BTCK_GET_USER_BY_EMAIL",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n  SELECT user_id, role_code, full_name, email, password_hash\r\n  FROM users\r\n  WHERE email = p_email\r\n  LIMIT 1;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "BTCK_UPDATE_USER_PROFILE",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n  IF p_full_name IS NULL OR TRIM(p_full_name) = '' THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Full name is required';\r\n  END IF;\r\n\r\n  IF p_email IS NULL OR TRIM(p_email) = '' THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email is required';\r\n  END IF;\r\n\r\n  UPDATE users\r\n  SET full_name = TRIM(p_full_name),\r\n      email = TRIM(p_email)\r\n  WHERE user_id = p_user_id;\r\n\r\n  SELECT ROW_COUNT() AS affected_rows;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "CT_LIST_ACTIVE_CATEGORIES",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n    SELECT \r\n        category_id, \r\n        name\r\n    FROM categories\r\n    WHERE is_active = TRUE\r\n    ORDER BY name ASC;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "CT_SEARCH_APPROVED_PLACES",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n    SELECT\r\n        p.place_id,\r\n        p.title,\r\n        p.description,\r\n        p.address,\r\n        p.latitude,\r\n        p.longitude,\r\n        p.category_id,\r\n        c.name AS category_name,\r\n        p.district_id,\r\n        d.district_name,\r\n        d.city_name,\r\n        p.status_code,\r\n        p.created_at\r\n    FROM places AS p\r\n    INNER JOIN categories AS c ON c.category_id = p.category_id\r\n    LEFT JOIN districts AS d ON d.district_id = p.district_id\r\n    INNER JOIN place_statuses AS ps ON ps.status_code = p.status_code\r\n    WHERE ps.is_public = TRUE            -- Đảm bảo trạng thái thuộc diện được hiển thị công khai\r\n      AND c.is_active = TRUE             -- Ẩn địa điểm nếu danh mục cha bị vô hiệu hóa\r\n      AND (\r\n          p_keyword IS NULL \r\n          OR TRIM(p_keyword) = ''\r\n          OR p.title LIKE CONCAT('%', TRIM(p_keyword), '%')\r\n          OR p.description LIKE CONCAT('%', TRIM(p_keyword), '%')\r\n          OR p.address LIKE CONCAT('%', TRIM(p_keyword), '%')\r\n      )\r\n      AND (p_category_id IS NULL OR p.category_id = p_category_id)\r\n      AND (p_district_id IS NULL OR p.district_id = p_district_id)\r\n    ORDER BY p.created_at DESC;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "CT_UPDATE_PLACE_STATUS",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n    -- 1. Kiểm tra quyền Admin của tài khoản thực hiện\r\n    IF NOT EXISTS (\r\n        SELECT 1 \r\n        FROM users \r\n        WHERE user_id = p_admin_user_id \r\n          AND role_code = 'ADMIN'\r\n    ) THEN\r\n        SIGNAL SQLSTATE '45000' \r\n            SET MESSAGE_TEXT = 'Lỗi: Yêu cầu quyền quản trị viên (Admin permission required)';\r\n    END IF;\r\n\r\n    -- 2. Kiểm tra địa điểm cần cập nhật có tồn tại không\r\n    IF NOT EXISTS (\r\n        SELECT 1 \r\n        FROM places \r\n        WHERE place_id = p_place_id\r\n    ) THEN\r\n        SIGNAL SQLSTATE '45000' \r\n            SET MESSAGE_TEXT = 'Lỗi: Không tìm thấy địa điểm (Place not found)';\r\n    END IF;\r\n\r\n    -- 3. Kiểm tra mã trạng thái hợp lệ dựa trên dữ liệu bảng place_statuses\r\n    IF NOT EXISTS (\r\n        SELECT 1 \r\n        FROM place_statuses \r\n        WHERE status_code = p_status_code\r\n    ) THEN\r\n        SIGNAL SQLSTATE '45000' \r\n            SET MESSAGE_TEXT = 'Lỗi: Mã trạng thái không hợp lệ (Invalid place status)';\r\n    END IF;\r\n\r\n    -- 4. Cập nhật trạng thái và làm mới thời gian chỉnh sửa\r\n    UPDATE places\r\n    SET \r\n        status_code = p_status_code,\r\n        updated_at = NOW()\r\n    WHERE place_id = p_place_id;\r\n\r\n    -- 5. Trả về kết quả thực thi\r\n    SELECT ROW_COUNT() AS affected_rows;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "NDHT_HIDE_REVIEW",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n  IF NOT EXISTS (\r\n    SELECT 1\r\n    FROM users\r\n    WHERE user_id = p_admin_user_id\r\n      AND role_code = 'ADMIN'\r\n  ) THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Admin permission required';\r\n  END IF;\r\n\r\n  UPDATE reviews\r\n  SET status_code = 'HIDDEN'\r\n  WHERE review_id = p_review_id;\r\n\r\n  SELECT ROW_COUNT() AS affected_rows;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "NDHT_LIST_MY_REVIEWED_PLACES",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n  SELECT\r\n    p.place_id,\r\n    p.title,\r\n    p.address,\r\n    r.rating,\r\n    r.content,\r\n    r.status_code AS review_status,\r\n    r.created_at AS reviewed_at\r\n  FROM reviews AS r\r\n  INNER JOIN places AS p ON p.place_id = r.place_id\r\n  WHERE r.user_id = p_user_id\r\n  ORDER BY r.created_at DESC;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "NDHT_SAVE_OR_UPDATE_REVIEW",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n  IF p_rating IS NULL OR p_rating NOT BETWEEN 1 AND 5 THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Rating must be between 1 and 5';\r\n  END IF;\r\n\r\n  IF NOT EXISTS (\r\n    SELECT 1\r\n    FROM places\r\n    WHERE place_id = p_place_id\r\n      AND status_code = 'APPROVED'\r\n  ) THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Only approved places can be reviewed';\r\n  END IF;\r\n\r\n  IF EXISTS (\r\n    SELECT 1\r\n    FROM reviews\r\n    WHERE user_id = p_user_id\r\n      AND place_id = p_place_id\r\n  ) THEN\r\n    UPDATE reviews\r\n    SET rating = p_rating,\r\n        content = p_content\r\n    WHERE user_id = p_user_id\r\n      AND place_id = p_place_id;\r\n  ELSE\r\n    INSERT INTO reviews (user_id, place_id, status_code, rating, content)\r\n    VALUES (p_user_id, p_place_id, 'VISIBLE', p_rating, p_content);\r\n  END IF;\r\n\r\n  SELECT 'OK' AS result;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "NPT_ADD_PLACE_IMAGE",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n  IF p_sort_order IS NULL OR p_sort_order NOT BETWEEN 1 AND 3 THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Image order must be between 1 and 3';\r\n  END IF;\r\n\r\n  IF EXISTS (\r\n    SELECT 1\r\n    FROM place_images\r\n    WHERE place_id = p_place_id\r\n      AND sort_order = p_sort_order\r\n  ) THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Image slot is already used';\r\n  END IF;\r\n\r\n  INSERT INTO place_images (place_id, image_path, sort_order)\r\n  VALUES (p_place_id, p_image_path, p_sort_order);\r\n\r\n  SELECT LAST_INSERT_ID() AS image_id;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "NPT_SET_FAVORITE",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n  IF p_action = 'ADD' THEN\r\n    IF NOT EXISTS (\r\n      SELECT 1\r\n      FROM places\r\n      WHERE place_id = p_place_id\r\n        AND status_code = 'APPROVED'\r\n    ) THEN\r\n      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Only approved places can be favorited';\r\n    END IF;\r\n\r\n    IF NOT EXISTS (\r\n      SELECT 1\r\n      FROM favorites\r\n      WHERE user_id = p_user_id\r\n        AND place_id = p_place_id\r\n    ) THEN\r\n      INSERT INTO favorites (user_id, place_id)\r\n      VALUES (p_user_id, p_place_id);\r\n    END IF;\r\n  ELSEIF p_action = 'REMOVE' THEN\r\n    DELETE FROM favorites\r\n    WHERE user_id = p_user_id\r\n      AND place_id = p_place_id;\r\n  ELSE\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Action must be ADD or REMOVE';\r\n  END IF;\r\n\r\n  SELECT 'OK' AS result;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    },
+    {
+      "name": "NPT_SUBMIT_PLACE",
+      "type": "PROCEDURE",
+      "body": "BEGIN\r\n  IF p_title IS NULL OR TRIM(p_title) = '' THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Place title is required';\r\n  END IF;\r\n\r\n  IF p_address IS NULL OR TRIM(p_address) = '' THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Place address is required';\r\n  END IF;\r\n\r\n  IF p_description IS NULL THEN\r\n    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Place description is required';\r\n  END IF;\r\n\r\n  INSERT INTO places (\r\n    owner_id, category_id, district_id, status_code,\r\n    title, description, address, latitude, longitude\r\n  )\r\n  VALUES (\r\n    p_owner_id, p_category_id, p_district_id, 'PENDING',\r\n    TRIM(p_title), p_description, TRIM(p_address), p_latitude, p_longitude\r\n  );\r\n\r\n  SELECT LAST_INSERT_ID() AS place_id;\r\nEND",
+      "sql_mode": "NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION",
+      "security_type": "DEFINER"
+    }
+  ],
+  "parameters": [
+    {
+      "routine": "BTCK_CREATE_USER",
+      "position": 1,
+      "name": "p_full_name",
+      "mode": "IN",
+      "type": "varchar(100)"
+    },
+    {
+      "routine": "BTCK_CREATE_USER",
+      "position": 2,
+      "name": "p_email",
+      "mode": "IN",
+      "type": "varchar(255)"
+    },
+    {
+      "routine": "BTCK_CREATE_USER",
+      "position": 3,
+      "name": "p_password_hash",
+      "mode": "IN",
+      "type": "varchar(255)"
+    },
+    {
+      "routine": "BTCK_GET_USER_BY_EMAIL",
+      "position": 1,
+      "name": "p_email",
+      "mode": "IN",
+      "type": "varchar(255)"
+    },
+    {
+      "routine": "BTCK_UPDATE_USER_PROFILE",
+      "position": 1,
+      "name": "p_user_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "BTCK_UPDATE_USER_PROFILE",
+      "position": 2,
+      "name": "p_full_name",
+      "mode": "IN",
+      "type": "varchar(100)"
+    },
+    {
+      "routine": "BTCK_UPDATE_USER_PROFILE",
+      "position": 3,
+      "name": "p_email",
+      "mode": "IN",
+      "type": "varchar(255)"
+    },
+    {
+      "routine": "CT_SEARCH_APPROVED_PLACES",
+      "position": 1,
+      "name": "p_keyword",
+      "mode": "IN",
+      "type": "varchar(255)"
+    },
+    {
+      "routine": "CT_SEARCH_APPROVED_PLACES",
+      "position": 2,
+      "name": "p_category_id",
+      "mode": "IN",
+      "type": "int(11)"
+    },
+    {
+      "routine": "CT_SEARCH_APPROVED_PLACES",
+      "position": 3,
+      "name": "p_district_id",
+      "mode": "IN",
+      "type": "smallint(6)"
+    },
+    {
+      "routine": "CT_UPDATE_PLACE_STATUS",
+      "position": 1,
+      "name": "p_admin_user_id",
+      "mode": "IN",
+      "type": "bigint(20)"
+    },
+    {
+      "routine": "CT_UPDATE_PLACE_STATUS",
+      "position": 2,
+      "name": "p_place_id",
+      "mode": "IN",
+      "type": "bigint(20)"
+    },
+    {
+      "routine": "CT_UPDATE_PLACE_STATUS",
+      "position": 3,
+      "name": "p_status_code",
+      "mode": "IN",
+      "type": "varchar(50)"
+    },
+    {
+      "routine": "NDHT_HIDE_REVIEW",
+      "position": 1,
+      "name": "p_admin_user_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "NDHT_HIDE_REVIEW",
+      "position": 2,
+      "name": "p_review_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "NDHT_LIST_MY_REVIEWED_PLACES",
+      "position": 1,
+      "name": "p_user_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "NDHT_SAVE_OR_UPDATE_REVIEW",
+      "position": 1,
+      "name": "p_user_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "NDHT_SAVE_OR_UPDATE_REVIEW",
+      "position": 2,
+      "name": "p_place_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "NDHT_SAVE_OR_UPDATE_REVIEW",
+      "position": 3,
+      "name": "p_rating",
+      "mode": "IN",
+      "type": "tinyint(3) unsigned"
+    },
+    {
+      "routine": "NDHT_SAVE_OR_UPDATE_REVIEW",
+      "position": 4,
+      "name": "p_content",
+      "mode": "IN",
+      "type": "text"
+    },
+    {
+      "routine": "NPT_ADD_PLACE_IMAGE",
+      "position": 1,
+      "name": "p_place_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "NPT_ADD_PLACE_IMAGE",
+      "position": 2,
+      "name": "p_image_path",
+      "mode": "IN",
+      "type": "varchar(500)"
+    },
+    {
+      "routine": "NPT_ADD_PLACE_IMAGE",
+      "position": 3,
+      "name": "p_sort_order",
+      "mode": "IN",
+      "type": "tinyint(3) unsigned"
+    },
+    {
+      "routine": "NPT_SET_FAVORITE",
+      "position": 1,
+      "name": "p_user_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "NPT_SET_FAVORITE",
+      "position": 2,
+      "name": "p_place_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "NPT_SET_FAVORITE",
+      "position": 3,
+      "name": "p_action",
+      "mode": "IN",
+      "type": "varchar(10)"
+    },
+    {
+      "routine": "NPT_SUBMIT_PLACE",
+      "position": 1,
+      "name": "p_owner_id",
+      "mode": "IN",
+      "type": "bigint(20) unsigned"
+    },
+    {
+      "routine": "NPT_SUBMIT_PLACE",
+      "position": 2,
+      "name": "p_category_id",
+      "mode": "IN",
+      "type": "int(10) unsigned"
+    },
+    {
+      "routine": "NPT_SUBMIT_PLACE",
+      "position": 3,
+      "name": "p_district_id",
+      "mode": "IN",
+      "type": "smallint(5) unsigned"
+    },
+    {
+      "routine": "NPT_SUBMIT_PLACE",
+      "position": 4,
+      "name": "p_title",
+      "mode": "IN",
+      "type": "varchar(150)"
+    },
+    {
+      "routine": "NPT_SUBMIT_PLACE",
+      "position": 5,
+      "name": "p_description",
+      "mode": "IN",
+      "type": "text"
+    },
+    {
+      "routine": "NPT_SUBMIT_PLACE",
+      "position": 6,
+      "name": "p_address",
+      "mode": "IN",
+      "type": "varchar(255)"
+    },
+    {
+      "routine": "NPT_SUBMIT_PLACE",
+      "position": 7,
+      "name": "p_latitude",
+      "mode": "IN",
+      "type": "decimal(10,7)"
+    },
+    {
+      "routine": "NPT_SUBMIT_PLACE",
+      "position": 8,
+      "name": "p_longitude",
+      "mode": "IN",
+      "type": "decimal(10,7)"
+    }
+  ],
+  "row_counts": [
+    {
+      "table": "categories",
+      "count": 0
+    },
+    {
+      "table": "districts",
+      "count": 0
+    },
+    {
+      "table": "favorites",
+      "count": 0
+    },
+    {
+      "table": "places",
+      "count": 0
+    },
+    {
+      "table": "place_images",
+      "count": 0
+    },
+    {
+      "table": "place_statuses",
+      "count": 0
+    },
+    {
+      "table": "reviews",
+      "count": 0
+    },
+    {
+      "table": "review_statuses",
+      "count": 0
+    },
+    {
+      "table": "roles",
+      "count": 0
+    },
+    {
+      "table": "users",
+      "count": 0
+    }
+  ]
+}

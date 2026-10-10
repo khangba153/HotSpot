@@ -1,0 +1,99 @@
+[
+  {
+    "check": "PHP lint",
+    "file": "app/config/database.php",
+    "status": "PASS",
+    "bytes": 0,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\config\\database.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/controllers/AdminController.php",
+    "status": "PASS",
+    "bytes": 241,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\controllers\\AdminController.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/controllers/AuthController.php",
+    "status": "PASS",
+    "bytes": 275,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\controllers\\AuthController.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/controllers/PlaceController.php",
+    "status": "PASS",
+    "bytes": 364,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\controllers\\PlaceController.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/controllers/ReviewController.php",
+    "status": "PASS",
+    "bytes": 241,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\controllers\\ReviewController.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/helpers/auth.php",
+    "status": "PASS",
+    "bytes": 132,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\helpers\\auth.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/models/Category.php",
+    "status": "PASS",
+    "bytes": 123,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\models\\Category.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/models/Place.php",
+    "status": "PASS",
+    "bytes": 276,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\models\\Place.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/models/Review.php",
+    "status": "PASS",
+    "bytes": 241,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\models\\Review.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/models/User.php",
+    "status": "PASS",
+    "bytes": 184,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\models\\User.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "app/views/layouts/main.php",
+    "status": "PASS",
+    "bytes": 0,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\app\\views\\layouts\\main.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "public/index.php",
+    "status": "PASS",
+    "bytes": 0,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\public\\index.php\n"
+  },
+  {
+    "check": "PHP lint",
+    "file": "services/ProductService.php",
+    "status": "PASS",
+    "bytes": 0,
+    "output": "No syntax errors detected in D:\\UEH\\Dự án\\HotSpot\\HotSpot\\services\\ProductService.php\n"
+  },
+  {
+    "check": "Current homepage renders application",
+    "status": "FAIL",
+    "http_status": 200,
+    "body_bytes": 0
+  }
+]
