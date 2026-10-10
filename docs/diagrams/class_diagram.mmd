@@ -1,0 +1,152 @@
+classDiagram
+    direction LR
+
+    class Router {
+        +dispatch(route,method)
+    }
+    class Database {
+        +pdo() PDO
+    }
+    class AuthController {
+        +register()
+        +login()
+        +logout()
+        +profile()
+        +updateProfile()
+    }
+    class PlaceController {
+        +index()
+        +show()
+        +mine()
+        +create()
+        +edit()
+        +submit()
+        +resubmit()
+        +searchAjax()
+    }
+    class FavoriteController {
+        +setFavorite()
+        +listMine()
+    }
+    class ReviewController {
+        +saveAjax()
+        +listMine()
+    }
+    class LocationController {
+        +listWardsAjax()
+        +geocodeAjax()
+    }
+    class AdminController {
+        +dashboard()
+        +places()
+        +setPlaceStatus()
+        +categories()
+        +saveCategory()
+        +reviews()
+        +setReviewStatus()
+    }
+    class NominatimClient {
+        +searchAddress(query)
+    }
+
+    class Role {
+        +roleCode
+        +roleName
+    }
+    class User {
+        +userId
+        +roleCode
+        +email
+        +passwordHash
+    }
+    class Category {
+        +categoryId
+        +name
+        +isActive
+    }
+    class Province {
+        +provinceCode
+        +provinceName
+    }
+    class Ward {
+        +wardCode
+        +provinceCode
+        +wardName
+    }
+    class PlaceStatus {
+        +statusCode
+        +isPublic
+    }
+    class Place {
+        +placeId
+        +ownerId
+        +categoryId
+        +provinceCode
+        +wardCode
+        +statusCode
+        +rejectionReason
+    }
+    class PlaceImage {
+        +imageId
+        +placeId
+        +imagePath
+        +sortOrder
+    }
+    class Tag {
+        +tagId
+        +name
+        +slug
+        +isActive
+    }
+    class PlaceTag {
+        +placeId
+        +tagId
+    }
+    class ReviewStatus {
+        +statusCode
+        +isPublic
+    }
+    class Review {
+        +reviewId
+        +userId
+        +placeId
+        +statusCode
+        +rating
+        +content
+    }
+    class Favorite {
+        +userId
+        +placeId
+    }
+
+    Router ..> AuthController
+    Router ..> PlaceController
+    Router ..> FavoriteController
+    Router ..> ReviewController
+    Router ..> LocationController
+    Router ..> AdminController
+    AuthController ..> User
+    PlaceController ..> Place
+    PlaceController ..> PlaceImage
+    PlaceController ..> PlaceTag
+    FavoriteController ..> Favorite
+    ReviewController ..> Review
+    LocationController ..> Ward
+    LocationController ..> NominatimClient
+    AdminController ..> Place
+    AdminController ..> Review
+    AdminController ..> Category
+    User --> Role
+    Place --> User : owner
+    Place --> Category
+    Place --> Province
+    Place --> Ward : optional
+    Place --> PlaceStatus
+    Place "1" *-- "1..3" PlaceImage : submitted_images
+    Place "1" -- "0..5" PlaceTag : selected_tags
+    Tag --> PlaceTag
+    Review --> User
+    Review --> Place
+    Review --> ReviewStatus
+    Favorite --> User
+    Favorite --> Place
