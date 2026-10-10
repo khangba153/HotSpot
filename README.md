@@ -2,17 +2,18 @@
 
 Dự án PHP thuần OOP + MVC, Bootstrap, JavaScript/AJAX; **MariaDB 10.4.32 đi kèm XAMPP** là engine chính thức theo quyết định khóa của nhóm ngày 10/10/2026. Giữ PHP PDO `pdo_mysql`, phpMyAdmin, Nominatim và Leaflet/OpenStreetMap. MySQL 8 không còn là điều kiện nghiệm thu.
 
-## Trạng thái thực tế
+## Chạy website hiện tại
 
-A01 đã bảo vệ config cá nhân khỏi Git. A02 đã import schema và kiểm thử trên MariaDB 10.4.32: **64/64 pass**, giữ 13 bảng, 13 PK, 15 FK, 7 UNIQUE, 15 CHECK. MVC hiện tại vẫn là skeleton; trang web chưa sẵn sàng sử dụng. **A03 local đạt 158/158 kiểm tra PDO/routine**, seed 34 tỉnh + 3.321 xã/phường + 24 địa điểm demo; 12 routine đúng 3/người. Generator 17/17 pass. Chưa xây core MVC/A04.
+Bật Apache + MySQL trong XAMPP, mở **http://localhost/hotspot/index.php?route=home**. Máy này đã cấu hình junction public và database demo mới; db_hospot giữ nguyên.
 
-- [Báo cáo A03](docs/reports/A03_MARIADB.md).
-- [Báo cáo A01/A02](docs/reports/A01_A02_MARIADB.md).
-- [Hướng dẫn môi trường và kiểm thử](docs/setup.md).
-- [Kiến trúc và trạng thái triển khai](docs/10_ARCHITECTURE_AND_IMPLEMENTATION.md).
-- [Nghiệp vụ đã khóa](docs/01_REQUIREMENTS_AND_RULES.md), [13 bảng và 12 routine](docs/02_DATABASE_ERD.md).
-- [Phân công 4 người, GitHub PR/review và 21 ngày](docs/06_TEAM_PLAN.md).
-- [Audit baseline, task và phụ thuộc](docs/audit/COMPARISON_AND_PLAN.md).
+**A04+A05 chạy được:** home, PDO MariaDB, layout Bootstrap local, đăng ký/login/logout, Session Member/Admin, CSRF form, chặn Member vào admin và thông báo lỗi cơ bản. Admin hiện chỉ là cổng kiểm quyền, chưa có chức năng quản trị. Module địa điểm/search/upload/map/review/favorites/profile chưa triển khai.
+
+[Hướng dẫn chạy và bàn giao 4 thành viên](docs/11_MVC_AUTH_HANDOFF.md). PHP website hỗ trợ XAMPP 8.0.30; config local ngoài Git. Ưu tiên chức năng đồ án trong 21 ngày, không mở rộng kiến trúc/test/CI khi chưa có nhu cầu.
+
+Database A02/A03 đã kiểm chứng MariaDB 10.4.32: 13 bảng, 12 routine, 34 tỉnh/3.321 xã/phường/24 Place demo. [Báo cáo A03](docs/reports/A03_MARIADB.md), [A01/A02](docs/reports/A01_A02_MARIADB.md) giữ làm bằng chứng lịch sử.
+
+- [Nghiệp vụ đã khóa](docs/01_REQUIREMENTS_AND_RULES.md), [Database](database/README.md).
+- [Phân công và 21 ngày](docs/06_TEAM_PLAN.md).
 
 ## Cấu trúc
 
@@ -34,4 +35,4 @@ Mỗi lượt tạo database `hotspot_test_a02_<UTC timestamp>_<random>` mới, 
 
 13 bảng, 12 stored procedure (3/người), phân công và nghiệp vụ giữ nguyên. Khang: Auth/Profile/Favorites/core; TV2: lookup/search; TV3: Place/upload/map; TV4: toàn bộ Admin/Review. Cả nhóm tiếp tục phát triển trên shared MariaDB; kiểm thử ghi dữ liệu dùng database mới cô lập. Shared database chưa xác nhận tài khoản/kết nối của cả nhóm. Mọi thay đổi cấu trúc shared DB cần backup và xác nhận nhóm trưởng.
 
-Issue → feature branch từ main → commit → PR → người khác review → CI/checklist → merge. Không push thẳng main, không commit config cá nhân. A01/A02 đã được nhóm trưởng chấp thuận local; A03 đã kiểm thử local trên branch riêng. GitHub xác thực đã kiểm chứng/dry-run pass; chưa push thật/PR/Actions. Dừng sau A03 để nhóm trưởng đánh giá trước A04.
+Issue → feature branch từ main → commit → PR → người khác review → CI/checklist → merge. Không push thẳng main, không commit config cá nhân. A01/A02 đã được nhóm trưởng chấp thuận local; A03 đã kiểm thử local trên branch riêng. GitHub xác thực đã kiểm chứng/dry-run pass; chưa push thật/PR/Actions. A03 đã được nhóm trưởng chấp thuận; A04+A05 hiện có commit local, chưa push thật/PR/merge.

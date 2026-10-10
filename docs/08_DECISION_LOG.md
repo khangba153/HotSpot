@@ -47,3 +47,7 @@ Giữ nguyên 13 bảng, 12 routine (3/người), mọi PK/FK/UNIQUE/CHECK, nghi
 - A03 đã kiểm chứng local: 34 tỉnh/3.321 cấp xã/24 Place demo, 12 routine, 158/158 PDO runtime checks + 17/17 generator checks. Chưa push/PR/Actions; dừng trước A04.
 - Source MVC ở repository này vẫn là skeleton. Các tài liệu route/class/flow là hợp đồng triển khai, chưa chứng minh chức năng chạy được.
 - Chưa xác nhận shared database/tài khoản của 4 người, hosting, prefix tên thật TV2–TV4, deployment hoặc E2E.
+
+## Quyết định ưu tiên sau A03
+
+Nhóm trưởng chấp thuận A03 local và chuyển sang hoàn thành đồ án sinh viên năm 3 trong 21 ngày. Từ A04: chức năng chạy trước, OOP/MVC đơn giản, không Service/Middleware/Repository, không tăng automated/concurrency/CI hoặc logging/tuning nếu chưa có nhu cầu cụ thể. Vẫn PDO/password hash/Session/quyền/CSRF và mọi nghiệp vụ/13 bảng/12 routine/phân công. A04+A05 Auth đã chạy trên XAMPP PHP 8.0.30; xem 11_MVC_AUTH_HANDOFF.md. Các ghi chú source skeleton phía trên là lịch sử trước A04; modules nghiệp vụ còn stub.

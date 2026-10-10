@@ -1,3 +1,5 @@
+> Website A04/A05 đã có hướng dẫn chạy XAMPP tại **11_MVC_AUTH_HANDOFF.md**, PHP 8.0.30 đã kiểm chứng. Nội dung kiểm thử database bên dưới giữ làm tài liệu A02/A03; không yêu cầu tăng tests/CI cho mọi task.
+
 # Thiết lập MariaDB/XAMPP và kiểm thử A02
 
 ## Môi trường chính thức

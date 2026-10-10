@@ -25,3 +25,7 @@ Giữ nguyên Controller/Model/View hiện có trong A01–A03. A03 đã bổ su
 - Ngày 18–21: freeze tính năng, sửa lỗi, regression/demo/báo cáo. Không giảm ràng buộc hoặc đổi owner để bù thời gian.
 
 Shared DB vẫn là MariaDB dùng chung; test ghi dùng database mới. MySQL 8 chỉ là lịch sử audit, không là gate nghiệm thu. Các ngày là lịch tương đối từ ngày nhóm bắt đầu, không tự suy diễn deadline lịch.
+
+## Cập nhật sau chấp thuận A03
+
+A04+A05 core/Auth đơn giản đã chạy trên XAMPP PHP 8.0.30; không triển khai Profile trong task Auth hiện tại. Nền tảng và checklist thủ công ở 11_MVC_AUTH_HANDOFF.md. Ưu tiên mới của nhóm trưởng thay các yêu cầu mở rộng tests/CI/tuning trong kế hoạch cũ: chỉ kiểm luồng quan trọng và lỗi thực tế; không xây thêm tầng kiến trúc. Module tiếp theo giao theo owner, 21 ngày giữ nguyên.
