@@ -1,6 +1,6 @@
 # 02 — ERD và thiết kế dữ liệu (13 bảng)
 
-> Đích chính thức: MariaDB 10.4.32 (XAMPP). A02 đã import và kiểm thử schema 13 bảng; 12 routine và seed thuộc A03, chưa đưa vào repository này. Xem `reports/A01_A02_MARIADB.md`.
+> Đích chính thức: MariaDB 10.4.32 (XAMPP). A02 đã import và kiểm thử schema 13 bảng; A03 đã import seed/12 routine và đạt 158/158 kiểm thử PDO local; xem `reports/A03_MARIADB.md`. Xem `reports/A01_A02_MARIADB.md`.
 
 ## A. ER Diagram
 
@@ -179,5 +179,5 @@ Tên dưới đây là **tên logic**. Khi triển khai, thêm tiền tố viế
 - A02: 13 bảng, 13 PK, 15 FK, 7 UNIQUE, 15 CHECK đã kiểm thử trên MariaDB 10.4.32; FK/CHECK luôn bật. Tên bảng/cột, quan hệ, số ràng buộc và phân công giữ nguyên.
 - CHECK chuỗi dùng `REGEXP '[^[:space:]]'` để không chấp nhận chỉ tab/xuống dòng. `TRIM()` đơn thuần không bảo vệ quy tắc này. CHECK lý do từ chối giữ điều kiện status REJECTED.
 - Giữ `ON UPDATE CASCADE`/`ON DELETE RESTRICT` và FK tỉnh/phường ghép. Không cần bỏ CHECK để import trên MariaDB.
-- A03: nhập seed đã kiểm chứng và 12 routine, kiểm thử CALL/rollback/quyền trên MariaDB 10.4.32. Chưa triển khai hay kiểm thử routine trong A02.
+- A03: seed/12 routine đã import và kiểm thử CALL/rollback/quyền trên MariaDB 10.4.32, 158/158 pass. 8 routine ghi yêu cầu caller transaction, 4 routine đọc không yêu cầu; chi tiết database/README.md. A02 lịch sử chưa thử routine.
 - Các invariant liên bảng (địa điểm công khai có ít nhất 1 ảnh, tối đa 5 tag, quyền owner/admin, chuyển trạng thái) vẫn phải được thực thi ở routine/Model; A02 không tuyên bố đã đáp ứng các invariant này.

@@ -30,8 +30,12 @@ Import thủ công chỉ được chọn một database kiểm thử **mới, r�
 
 ## CI
 
-Workflow `.github/workflows/mariadb.yml` dùng MariaDB 10.4.32 service và PDO. Runner tạo database mới như local; server CI không có db_hospot, kiểm tra draft được đánh dấu absent. Upload báo cáo JSON kể cả thất bại. CI kiểm thử schema A02, chưa kiểm thử routine hoặc MVC. A03 sẽ thêm 12 CALL, rollback/result-set và seed tests trên cùng phiên bản MariaDB.
+Workflow `.github/workflows/mariadb.yml` dùng MariaDB 10.4.32 service và PDO. Runner tạo database mới như local; server CI không có db_hospot, kiểm tra draft được đánh dấu absent. Upload báo cáo JSON kể cả thất bại. CI cấu hình schema A02 và A03 seed/12 CALL/rollback/result-set trên cùng MariaDB; chưa có kết quả Actions remote, không kiểm thử MVC.
 
 ## Shared database
 
 Giữ nguyên quy trình chung của 4 người; local/CI chỉ là môi trường kiểm thử cô lập. Trước thay đổi cấu trúc shared DB: xác định đích, backup, xin xác nhận nhóm trưởng, review SQL rồi một người điều phối áp dụng. A02 không thay đổi shared DB và không chứng minh kết nối từ máy thành viên khác.
+
+## A03 — seed/routine local
+
+Cần PHP intl/mbstring để sinh seed NFC. Chạy `python -X utf8 tests/admin_seed_generator.py` và `php tests/routines_mariadb.php`. Runner tự tạo database A03 mới; seed commit, mọi fixture test rollback; giữ database để đối chiếu. Xem `../database/README.md` cho hợp đồng caller transaction/2 rowsets/cursor và `reports/A03_MARIADB.md` cho 158/158 kết quả. CI hiện có cả A02/A03/generator nhưng chưa chạy remote.

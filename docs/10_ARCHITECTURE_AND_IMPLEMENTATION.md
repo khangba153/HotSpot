@@ -12,7 +12,7 @@ Browser → public/index.php → Router → Controller → Model → PDO (`pdo_m
 | A04 core | A01, A03 để nối DB | public/index.php, app/core, bootstrap/helpers/layout/routes/config | Router 404/405, PDO strict/UTC, Session/CSRF, exception/JSON; input array không warning |
 | A05 Auth | A03/A04 | User, AuthController, auth/profile views | Auth/role/session regeneration, CSRF, validation, duplicate, redirect an toàn |
 
-Giữ nguyên Controller/Model/View hiện có trong A01/A02; seed chưa bổ sung, 12 routine chưa bắt đầu. Các task A06–A15 và owner/điều kiện test xem `audit/COMPARISON_AND_PLAN.md`. CI A02 chưa thay thế CI/CALL A03 hoặc E2E.
+Giữ nguyên Controller/Model/View hiện có trong A01–A03. A03 đã bổ sung seed/12 routine và đạt 158/158 local, generator 17/17; xem báo cáo A03. Gate A04 chờ nhóm trưởng đánh giá. Các task A06–A15 và owner/điều kiện test xem `audit/COMPARISON_AND_PLAN.md`. CI A02 chưa thay thế CI/CALL A03 hoặc E2E.
 
 ## 21 ngày
 

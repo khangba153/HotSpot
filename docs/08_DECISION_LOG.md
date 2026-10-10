@@ -44,6 +44,6 @@ Giữ nguyên 13 bảng, 12 routine (3/người), mọi PK/FK/UNIQUE/CHECK, nghi
 
 - A01: config mẫu và ignore; config cá nhân bỏ khỏi Git, giữ file local.
 - A02: schema 13 bảng đã chạy thật trên MariaDB 10.4.32; 64/64 kiểm tra pass. Xem báo cáo A01/A02.
-- A03 chưa bắt đầu: seed, 12 routine và CALL tests từ foundation cần kiểm chứng trước khi đưa vào repository chính thức.
+- A03 đã kiểm chứng local: 34 tỉnh/3.321 cấp xã/24 Place demo, 12 routine, 158/158 PDO runtime checks + 17/17 generator checks. Chưa push/PR/Actions; dừng trước A04.
 - Source MVC ở repository này vẫn là skeleton. Các tài liệu route/class/flow là hợp đồng triển khai, chưa chứng minh chức năng chạy được.
 - Chưa xác nhận shared database/tài khoản của 4 người, hosting, prefix tên thật TV2–TV4, deployment hoặc E2E.

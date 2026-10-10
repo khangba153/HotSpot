@@ -1,0 +1,5 @@
+database/sources/*.json text eol=lf
+database/*.sql text eol=lf
+tools/*.php text eol=lf
+tests/*.php text eol=lf
+tests/support/*.php text eol=lf
