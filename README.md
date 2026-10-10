@@ -1,38 +1,49 @@
 # Hot Spot
 
-Dự án PHP thuần OOP + MVC, Bootstrap, JavaScript/AJAX; **MariaDB 10.4.32 đi kèm XAMPP** là engine chính thức theo quyết định khóa của nhóm ngày 10/10/2026. Giữ PHP PDO `pdo_mysql`, phpMyAdmin, Nominatim và Leaflet/OpenStreetMap. MySQL 8 không còn là điều kiện nghiệm thu.
+Đồ án PHP thuần OOP + MVC, PDO (`pdo_mysql`), Bootstrap và JavaScript/AJAX. Database chính thức: **MariaDB 10.4.32 đi kèm XAMPP**. Giữ thiết kế 13 bảng, 12 stored procedure và nghiệp vụ đã chốt; không yêu cầu MySQL 8.
 
-## Chạy website hiện tại
+## Cài đặt và chạy trên XAMPP
 
-Bật Apache + MySQL trong XAMPP, mở **http://localhost/hotspot/index.php?route=home**. Máy này đã cấu hình junction public và database demo mới; db_hospot giữ nguyên.
+1. Cài XAMPP, bật **Apache** và **MySQL** (dịch vụ MariaDB). Website đang chạy với PHP 8.0.30; bật extension `pdo_mysql`.
+2. Clone repository. Trỏ web root vào thư mục **`public/`**, không trỏ vào toàn bộ repository. Có thể đặt project trong `htdocs` và mở `/HotSpot/public/index.php?route=home`, hoặc tạo junction trên Windows:
 
-**A04+A05 chạy được:** home, PDO MariaDB, layout Bootstrap local, đăng ký/login/logout, Session Member/Admin, CSRF form, chặn Member vào admin và thông báo lỗi cơ bản. Admin hiện chỉ là cổng kiểm quyền, chưa có chức năng quản trị. Module địa điểm/search/upload/map/review/favorites/profile chưa triển khai.
+   ```powershell
+   New-Item -ItemType Junction -Path 'C:\xampp\htdocs\hotspot' -Target 'D:\UEH\Dự án\HotSpot\HotSpot\public'
+   ```
 
-[Hướng dẫn chạy và bàn giao 4 thành viên](docs/11_MVC_AUTH_HANDOFF.md). PHP website hỗ trợ XAMPP 8.0.30; config local ngoài Git. Ưu tiên chức năng đồ án trong 21 ngày, không mở rộng kiến trúc/test/CI khi chưa có nhu cầu.
+   Chỉ tạo junction khi `htdocs\hotspot` chưa tồn tại; không ghi đè website khác.
+3. Mở phpMyAdmin tại http://localhost/phpmyadmin/. Nếu cài trên máy mới, tạo **một database phát triển/demo rỗng** với `utf8mb4_unicode_ci`, rồi import theo [database/README.md](database/README.md). Không import lại vào database đang có dữ liệu; không dùng hoặc xóa `db_hospot` cũ.
+4. Copy `app/config/database.example.php` thành `app/config/database.php`; sửa `host`, `port`, `database`, `username`, `password` theo tài khoản MariaDB trên máy. File cấu hình cá nhân bị Git ignore; không commit mật khẩu hoặc dump database.
+5. Mở **http://localhost/hotspot/index.php?route=home** nếu dùng junction trên.
 
-Database A02/A03 đã kiểm chứng MariaDB 10.4.32: 13 bảng, 12 routine, 34 tỉnh/3.321 xã/phường/24 Place demo. [Báo cáo A03](docs/reports/A03_MARIADB.md), [A01/A02](docs/reports/A01_A02_MARIADB.md) giữ làm bằng chứng lịch sử.
+**Máy hiện tại:** repository `D:\UEH\Dự án\HotSpot\HotSpot`; database đang dùng `hotspot_demo_20261010_125857_78cf50`. Đây là database phát triển/demo được giữ lại, không cần tạo thêm database kiểm thử.
 
-- [Nghiệp vụ đã khóa](docs/01_REQUIREMENTS_AND_RULES.md), [Database](database/README.md).
-- [Phân công và 21 ngày](docs/06_TEAM_PLAN.md).
+## Chức năng hiện có và cấu trúc
 
-## Cấu trúc
+Trang chủ, kết nối MariaDB, đăng ký, đăng nhập/đăng xuất, Session Member/Admin, CSRF form và thông báo lỗi cơ bản đã hoạt động. Route `admin` hiện chỉ là trang kiểm quyền. Các module địa điểm, tìm kiếm, bản đồ, Profile, Favorites, Reviews và quản trị chưa triển khai.
 
-`app/` chứa Controller, Model, View và config; `public/` là document root dự kiến. `database/schema.sql` là schema chính thức A02; `tests/schema_mariadb.php` kiểm thử trực tiếp qua PDO. `docs/diagrams/*.mmd` là thiết kế đích từ foundation v3; PNG cũ giữ để đối chiếu. `.github/workflows/mariadb.yml` chạy lint và A02 với service MariaDB 10.4.32.
+- `public/index.php`: front controller `?route=...`; Bootstrap nằm trong `public/assets/vendor/`.
+- `app/routes.php`, `app/core/`: Router, PDO, Controller, Model, View dùng chung.
+- `app/controllers/`, `app/models/`, `app/views/`, `app/helpers/`: mã MVC/Auth đang sử dụng.
+- `database/`: schema, seed, 12 procedure và nguồn hành chính; `tools/generate_admin_seed.php` để sinh lại seed khi cần.
+- `docs/`: thiết kế cốt lõi đã chốt và sơ đồ Mermaid. Đây là tài liệu tham khảo thiết kế, không chứng minh mọi chức năng đã được lập trình.
 
-## Kiểm thử nhanh
+Kiểm tra nhanh khi sửa code: mở trang chủ, đăng ký/login/logout, thử Member vào Admin (403); dùng `C:\xampp\php\php.exe -l <file.php>` cho file PHP thay đổi. Không có bộ test chuyên sâu hoặc CI trong bản bàn giao.
 
-Yêu cầu PHP >=8.1 với `pdo_mysql` và MariaDB **10.4.32** đang chạy localhost:3306. Từ thư mục repository:
+## Sử dụng Git
+
+Sau khi PR bàn giao được review và merge, lấy phiên bản mới rồi tạo branch riêng:
 
 ```powershell
-php tests/schema_mariadb.php
-python -X utf8 tests/admin_seed_generator.py
-php tests/routines_mariadb.php
+git switch main
+git pull --ff-only origin main
+git switch -c feature/ten-chuc-nang
+# Sửa và kiểm tra các file liên quan trước khi commit.
+git add <file-da-kiem-tra>
+git commit -m "feat: mo ta thay doi"
+git push -u origin feature/ten-chuc-nang
 ```
 
-Mỗi lượt tạo database `hotspot_test_a02_<UTC timestamp>_<random>` mới, kiểm thử fixture trong transaction rồi rollback. Không DROP database, không sửa `db_hospot`; database kiểm thử được giữ lại. Báo cáo JSON nằm ở `tests/results/` và không commit. Cần tài khoản local có quyền CREATE database và đọc metadata; cấu hình bằng biến môi trường, không đưa mật khẩu vào Git.
+Tạo Pull Request vào `main`, ghi chức năng và kết quả kiểm tra, chờ người khác review. Không push trực tiếp/merge tự động vào `main`, không ghi đè thay đổi chưa đồng bộ. Khi `pull --ff-only` báo lỗi, giữ thay đổi local và giải quyết riêng; không reset cưỡng bức. Thay đổi cấu trúc shared MariaDB cần backup và xác nhận nhóm trưởng.
 
-## Quy tắc cộng tác
-
-13 bảng, 12 stored procedure (3/người), phân công và nghiệp vụ giữ nguyên. Khang: Auth/Profile/Favorites/core; TV2: lookup/search; TV3: Place/upload/map; TV4: toàn bộ Admin/Review. Cả nhóm tiếp tục phát triển trên shared MariaDB; kiểm thử ghi dữ liệu dùng database mới cô lập. Shared database chưa xác nhận tài khoản/kết nối của cả nhóm. Mọi thay đổi cấu trúc shared DB cần backup và xác nhận nhóm trưởng.
-
-Issue → feature branch từ main → commit → PR → người khác review → CI/checklist → merge. Không push thẳng main, không commit config cá nhân. A01/A02 đã được nhóm trưởng chấp thuận local; A03 đã kiểm thử local trên branch riêng. GitHub xác thực đã kiểm chứng/dry-run pass; chưa push thật/PR/Actions. A03 đã được nhóm trưởng chấp thuận; A04+A05 hiện có commit local, chưa push thật/PR/merge.
+Tham khảo [nghiệp vụ](docs/01_REQUIREMENTS_AND_RULES.md), [ERD](docs/02_DATABASE_ERD.md), [quyết định đã khóa](docs/08_DECISION_LOG.md) và [phân công/21 ngày đã chốt](docs/06_TEAM_PLAN.md).

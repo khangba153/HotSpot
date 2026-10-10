@@ -1,6 +1,6 @@
 # 03 — Class Diagram (PHP OOP + MVC)
 
-> Đặc tả triển khai từ foundation v3; source hiện tại chưa có đầy đủ các lớp/route/luồng này. A01/A02 chỉ config và schema; xem báo cáo A02.
+> Thiết kế đã chốt để nhóm tham khảo. Core MVC/Auth đã có; các module nghiệp vụ trong tài liệu này chưa được triển khai đầy đủ.
 
 > Mô tả các lớp dự kiến cho **13 bảng**, sáu Controller, Router/Database và Nominatim. **Chưa phải PHP code đã tồn tại.**
 

@@ -1,6 +1,6 @@
 # 09 — Sơ đồ phân rã chức năng Hot Spot
 
-> Đặc tả triển khai từ foundation v3; source hiện tại chưa có đầy đủ các lớp/route/luồng này. A01/A02 chỉ config và schema; xem báo cáo A02.
+> Thiết kế đã chốt để nhóm tham khảo. Core MVC/Auth đã có; các module nghiệp vụ trong tài liệu này chưa được triển khai đầy đủ.
 
 Sơ đồ chia Hot Spot thành **5 nhóm chức năng chính**. Đường nối chỉ là quan hệ **cha–con**, không biểu thị thứ tự xử lý. Các flow theo trình tự nằm tại [Business Flow](04_BUSINESS_FLOWS.md).
 

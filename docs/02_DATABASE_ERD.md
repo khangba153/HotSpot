@@ -1,6 +1,6 @@
 # 02 — ERD và thiết kế dữ liệu (13 bảng)
 
-> Đích chính thức: MariaDB 10.4.32 (XAMPP). A02 đã import và kiểm thử schema 13 bảng; A03 đã import seed/12 routine và đạt 158/158 kiểm thử PDO local; xem `reports/A03_MARIADB.md`. Xem `reports/A01_A02_MARIADB.md`.
+> Database chính thức: MariaDB 10.4.32 (XAMPP), 13 bảng và 12 routine. Schema/seed/procedure hiện có trong `database/`; xem hướng dẫn import ở `../database/README.md`.
 
 ## A. ER Diagram
 
@@ -174,10 +174,9 @@ Tên dưới đây là **tên logic**. Khi triển khai, thêm tiền tố viế
 
 **Transaction:** Controller/Model mở PDO transaction ở trường hợp nhiều thao tác; procedure **không tự COMMIT** để tránh phá transaction bên ngoài. Xử lý upload file ở ứng dụng và dọn file nếu rollback. Khi gọi nhiều CALL liên tiếp bằng PDO (`pdo_mysql`), giải phóng result set/cursor trước CALL tiếp theo.
 
-## E. Trạng thái thực hiện
+## E. SQL hiện có
 
-- A02: 13 bảng, 13 PK, 15 FK, 7 UNIQUE, 15 CHECK đã kiểm thử trên MariaDB 10.4.32; FK/CHECK luôn bật. Tên bảng/cột, quan hệ, số ràng buộc và phân công giữ nguyên.
-- CHECK chuỗi dùng `REGEXP '[^[:space:]]'` để không chấp nhận chỉ tab/xuống dòng. `TRIM()` đơn thuần không bảo vệ quy tắc này. CHECK lý do từ chối giữ điều kiện status REJECTED.
-- Giữ `ON UPDATE CASCADE`/`ON DELETE RESTRICT` và FK tỉnh/phường ghép. Không cần bỏ CHECK để import trên MariaDB.
-- A03: seed/12 routine đã import và kiểm thử CALL/rollback/quyền trên MariaDB 10.4.32, 158/158 pass. 8 routine ghi yêu cầu caller transaction, 4 routine đọc không yêu cầu; chi tiết database/README.md. A02 lịch sử chưa thử routine.
-- Các invariant liên bảng (địa điểm công khai có ít nhất 1 ảnh, tối đa 5 tag, quyền owner/admin, chuyển trạng thái) vẫn phải được thực thi ở routine/Model; A02 không tuyên bố đã đáp ứng các invariant này.
+- 13 PK, 15 FK, 7 UNIQUE, 15 CHECK; giữ `ON UPDATE CASCADE`/`ON DELETE RESTRICT` và FK tỉnh/phường ghép.
+- CHECK chuỗi dùng `REGEXP '[^[:space:]]'`; CHECK lý do từ chối giữ điều kiện trạng thái REJECTED. Không bỏ CHECK để import MariaDB.
+- Có đủ 12 routine; 8 routine ghi yêu cầu caller transaction, 4 routine đọc không yêu cầu. Chi tiết ở `../database/README.md`.
+- Quy tắc liên bảng và quyền HTTP phải được thực thi ở routine/Model/PHP theo tài liệu nghiệp vụ, không chỉ bằng FK/CHECK.

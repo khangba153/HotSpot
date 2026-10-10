@@ -1,6 +1,6 @@
 # 04 — Business Flow
 
-> Đặc tả triển khai từ foundation v3; source hiện tại chưa có đầy đủ các lớp/route/luồng này. A01/A02 chỉ config và schema; xem báo cáo A02.
+> Thiết kế đã chốt để nhóm tham khảo. Core MVC/Auth đã có; các module nghiệp vụ trong tài liệu này chưa được triển khai đầy đủ.
 
 > Luồng sử dụng đã chốt. Mọi kiểm tra truy cập phải xảy ra trên server, kể cả khi người dùng tự gọi URL hoặc AJAX endpoint.
 

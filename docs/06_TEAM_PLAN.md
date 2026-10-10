@@ -15,7 +15,7 @@
 
 ## B. Kế hoạch 3 tuần (ngày tính từ ngày bắt đầu nhóm xác nhận)
 
-Gate cập nhật: A01 → A02 schema trên MariaDB 10.4.32 → báo cáo/review → A03 seed/12 CALL → core/Auth và nghiệp vụ. Lịch task chi tiết mới tại `10_ARCHITECTURE_AND_IMPLEMENTATION.md` được ưu tiên khi bảng mốc bên dưới gộp nhiều task. A02 đã pass local; PR/CI remote chưa xác nhận.
+Bảng dưới là phân công và mốc 21 ngày đã chốt từ thiết kế ban đầu, được giữ làm tài liệu tham khảo; không phải phân công mới trong lần bàn giao.
 
 | Mốc | Khang | TV2 | TV3 | TV4 | Kết quả chung |
 |---|---|---|---|---|---|

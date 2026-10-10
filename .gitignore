@@ -12,8 +12,6 @@
 !/storage/logs/.gitkeep
 /storage/cache/geocoding/*
 !/storage/cache/geocoding/.gitkeep
-/tests/results/*
-!/tests/results/.gitkeep
 
 # Backups must stay outside the repository
 *.sql.bak

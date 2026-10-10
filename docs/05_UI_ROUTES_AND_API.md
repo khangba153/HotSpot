@@ -1,6 +1,6 @@
 # 05 — Màn hình, Route/Controller/Model và API
 
-> Đặc tả triển khai từ foundation v3; source hiện tại chưa có đầy đủ các lớp/route/luồng này. A01/A02 chỉ config và schema; xem báo cáo A02.
+> Thiết kế đã chốt để nhóm tham khảo. Core MVC/Auth đã có; các module nghiệp vụ trong tài liệu này chưa được triển khai đầy đủ.
 
 > Quy ước URL được xác nhận: **một front controller** `public/index.php?route=...`. Các tên route bên dưới là quy ước tài liệu chuẩn để nhóm lập trình, không phải endpoint hiện đã chạy.
 
