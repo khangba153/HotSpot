@@ -16,7 +16,7 @@ final class PlaceSearch extends Model
     public function findApprovedForHome(): array
     {
         $statement = self::getConnection()->prepare(
-            'CALL TV2_SEARCH_APPROVED_PLACES(?, ?, ?, ?, ?, ?, ?)'
+            'CALL PTH_SEARCH_APPROVED_PLACES(?, ?, ?, ?, ?, ?, ?)'
         );
 
         $statement->bindValue(1, null, PDO::PARAM_NULL);
@@ -50,7 +50,7 @@ final class PlaceSearch extends Model
     public function findActiveCategories(): array
     {
         $statement = self::getConnection()->prepare(
-            'CALL TV2_LIST_ACTIVE_CATEGORIES()'
+            'CALL PTH_LIST_ACTIVE_CATEGORIES()'
         );
 
         try {
