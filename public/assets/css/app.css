@@ -1,4 +1,33 @@
-body {
-    background-color: #f6f8fa;
-    color: #212529;
+/* Shared application styles. Keep layout and components Bootstrap-first. */
+.place-card {
+    overflow: hidden;
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.place-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.75rem 1.75rem rgb(33 37 41 / 10%) !important;
+}
+
+.place-card__image-link {
+    display: block;
+    overflow: hidden;
+    background: #eef2f5;
+}
+
+.place-card__image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 8 / 5;
+    object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .place-card {
+        transition: none;
+    }
+
+    .place-card:hover {
+        transform: none;
+    }
 }

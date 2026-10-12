@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
+  <title id="title">Ảnh địa điểm đang cập nhật</title>
+  <desc id="desc">Minh họa phong cảnh với mặt trời, đồi và ghim địa điểm.</desc>
+  <rect width="960" height="600" fill="#eef2f5"/>
+  <circle cx="730" cy="145" r="58" fill="#f2c879"/>
+  <path d="M0 390 205 210 390 390Z" fill="#cad8d5"/>
+  <path d="M240 410 495 155 750 410Z" fill="#aabfba"/>
+  <path d="M520 405 715 245 960 430V600H0V490Z" fill="#d5dfdc"/>
+  <path d="M0 490 230 390 430 475 655 365 960 490V600H0Z" fill="#bdcfca"/>
+  <g transform="translate(450 265)">
+    <path d="M0-62c-35 0-63 28-63 63 0 47 63 112 63 112S63 48 63 1C63-34 35-62 0-62Z" fill="#526d69"/>
+    <circle cy="0" r="21" fill="#eef2f5"/>
+  </g>
+  <text x="480" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#526d69">Ảnh địa điểm</text>
+</svg>
