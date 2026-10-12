@@ -1,0 +1,46 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="300"
+    height="72"
+    viewBox="0 0 300 72"
+>
+    <title>Hot Spot — Khám phá Việt Nam</title>
+
+    <!-- Biểu tượng ghim địa điểm. -->
+    <path
+        d="M 28 7
+           C 16 7 7 16 7 28
+           C 7 43 28 64 28 64
+           C 28 64 49 43 49 28
+           C 49 16 40 7 28 7 Z"
+        fill="#ff542e"
+    />
+
+    <circle
+        cx="28"
+        cy="27"
+        r="9"
+        fill="#ffffff"
+    />
+
+    <text
+        x="60"
+        y="36"
+        fill="#ff542e"
+        font-family="Arial, sans-serif"
+        font-size="32"
+        font-weight="700"
+    >
+        Hot Spot
+    </text>
+
+    <text
+        x="61"
+        y="55"
+        fill="#46566b"
+        font-family="Arial, sans-serif"
+        font-size="11"
+    >
+        Khám phá Việt Nam theo cách của bạn
+    </text>
+</svg>
