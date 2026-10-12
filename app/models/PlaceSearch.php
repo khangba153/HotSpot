@@ -11,10 +11,6 @@ final class PlaceSearch extends Model
     /**
      * Lấy tối đa 12 địa điểm công khai cho trang chủ.
      *
-     * TV2_SEARCH_APPROVED_PLACES trả về hai result set: danh sách địa điểm
-     * và tổng số kết quả. Cần tiêu thụ các result set còn lại trước khi
-     * sử dụng lại kết nối PDO dùng chung.
-     *
      * @return array<int, array<string, mixed>>
      */
     public function findApprovedForHome(): array
@@ -35,12 +31,37 @@ final class PlaceSearch extends Model
             $statement->execute();
             $places = $statement->fetchAll(PDO::FETCH_ASSOC);
 
+            // Procedure còn trả về total_count; tiêu thụ mọi result set.
             while ($statement->nextRowset()) {
-                // Đọc hết kết quả phụ (hiện tại là total_count) để giải phóng CALL.
                 $statement->fetchAll(PDO::FETCH_ASSOC);
             }
 
             return array_slice($places, 0, 12);
+        } finally {
+            $statement->closeCursor();
+        }
+    }
+
+    /**
+     * Đọc danh mục đang hoạt động qua stored procedure có sẵn.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function findActiveCategories(): array
+    {
+        $statement = self::getConnection()->prepare(
+            'CALL TV2_LIST_ACTIVE_CATEGORIES()'
+        );
+
+        try {
+            $statement->execute();
+            $categories = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            while ($statement->nextRowset()) {
+                $statement->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            return $categories;
         } finally {
             $statement->closeCursor();
         }

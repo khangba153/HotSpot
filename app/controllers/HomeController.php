@@ -11,11 +11,11 @@ final class HomeController extends Controller
     public function index(): void
     {
         $placeSearch = new PlaceSearch();
-        $places = $placeSearch->findApprovedForHome();
 
         $viewData = [
-            'title' => 'Khám phá địa điểm',
-            'places' => $places,
+            'title' => 'Khám phá Việt Nam',
+            'places' => $placeSearch->findApprovedForHome(),
+            'categories' => $placeSearch->findActiveCategories(),
         ];
 
         $this->render('home/index', $viewData);

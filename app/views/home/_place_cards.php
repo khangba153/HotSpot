@@ -1,76 +1,109 @@
 <?php
 /** @var array<int, array<string, mixed>> $places */
+$demoImageByCategory = [
+    1 => 'assets/images/home/food.webp',
+    2 => 'assets/images/home/coffee.webp',
+    3 => 'assets/images/home/travel.webp',
+    4 => 'assets/images/home/fun.webp',
+    5 => 'assets/images/home/nature.webp',
+    6 => 'assets/images/home/culture.webp',
+];
+
 if ($places === []) :
 ?>
-    <div class="border rounded-3 p-4 p-md-5 text-center" role="status">
-        <div class="fs-1 mb-2" aria-hidden="true">⌖</div>
-        <h3 class="h5">Chưa có địa điểm để hiển thị</h3>
-        <p class="text-secondary mb-0">Các địa điểm đã được duyệt sẽ xuất hiện tại đây.</p>
+    <div class="hs-empty-state" role="status">
+        <span class="hs-empty-state__icon" aria-hidden="true">⌖</span>
+        <h3>Chưa có địa điểm để hiển thị</h3>
+        <p>Các địa điểm đã được duyệt sẽ xuất hiện tại đây.</p>
     </div>
 <?php else : ?>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3 g-lg-4">
+    <div class="hs-place-grid">
         <?php foreach ($places as $place) :
             $placeId = (string) ($place['place_id'] ?? '');
             $title = trim((string) ($place['title'] ?? ''));
             if ($title === '') {
                 $title = 'Địa điểm chưa có tên';
             }
+
+            $categoryId = (int) ($place['category_id'] ?? 0);
             $categoryName = trim((string) ($place['category_name'] ?? ''));
             $provinceName = trim((string) ($place['province_name'] ?? ''));
             $address = trim((string) ($place['address'] ?? ''));
+            $description = trim((string) ($place['description'] ?? ''));
             $coverImage = trim((string) ($place['cover_image'] ?? ''));
-            $fallbackImage = 'assets/images/demo-placeholder.svg';
 
-            // Chỉ cho phép ảnh từ thư mục asset/upload của website hoặc URL HTTP(S).
+            $demoImage = $demoImageByCategory[$categoryId] ?? 'assets/images/home/travel.webp';
+            $isSeedPlaceholder = $coverImage === '' || $coverImage === 'assets/images/demo-placeholder.svg';
             $isLocalImage = preg_match('#^(assets|uploads)/[A-Za-z0-9._/-]+$#', $coverImage) === 1
                 && strpos($coverImage, '..') === false;
             $isRemoteImage = preg_match('#^https?://#i', $coverImage) === 1
                 && filter_var($coverImage, FILTER_VALIDATE_URL) !== false;
-            $imageUrl = ($isLocalImage || $isRemoteImage) ? $coverImage : $fallbackImage;
+            $imageUrl = $isSeedPlaceholder
+                ? $demoImage
+                : (($isLocalImage || $isRemoteImage) ? $coverImage : $demoImage);
+
+            $rating = $place['average_rating'] ?? null;
+            $reviewCount = (int) ($place['review_count'] ?? 0);
             $detailUrl = createRouteUrl('places/show') . '&id=' . rawurlencode($placeId);
+
+            if ($description !== '') {
+                if (function_exists('mb_strimwidth')) {
+                    $description = mb_strimwidth($description, 0, 88, '…', 'UTF-8');
+                } elseif (strlen($description) > 88) {
+                    $description = substr($description, 0, 85) . '...';
+                }
+            } else {
+                $description = 'Khám phá địa điểm thú vị được cộng đồng chia sẻ trên Hot Spot.';
+            }
         ?>
-            <div class="col">
-                <article class="card h-100 border-0 shadow-sm place-card">
-                    <a class="place-card__image-link" href="<?php echo escapeHtml($detailUrl); ?>" aria-label="Xem <?php echo escapeHtml($title); ?>">
-                        <img
-                            class="card-img-top place-card__image"
-                            src="<?php echo escapeHtml($imageUrl); ?>"
-                            alt="Ảnh <?php echo escapeHtml($title); ?>"
-                            loading="lazy"
-                            decoding="async"
-                            onerror="this.onerror=null;this.src='<?php echo escapeHtml($fallbackImage); ?>';"
-                        >
-                    </a>
-                    <div class="card-body d-flex flex-column p-3 p-lg-4">
-                        <div class="d-flex flex-wrap gap-2 mb-2">
-                            <?php if ($categoryName !== '') : ?>
-                                <span class="badge rounded-pill text-bg-light border fw-medium">
-                                    <?php echo escapeHtml($categoryName); ?>
-                                </span>
+            <article class="hs-place-card">
+                <a class="hs-place-card__image-link" href="<?php echo escapeHtml($detailUrl); ?>" aria-label="Xem <?php echo escapeHtml($title); ?>">
+                    <img
+                        class="hs-place-card__image"
+                        src="<?php echo escapeHtml($imageUrl); ?>"
+                        alt="Ảnh minh họa <?php echo escapeHtml($title); ?>"
+                        loading="lazy"
+                        decoding="async"
+                        onerror="this.onerror=null;this.src='<?php echo escapeHtml($demoImage); ?>';"
+                    >
+                    <span class="hs-place-card__favorite" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M20.8 8.8c0 5-8.8 11-8.8 11s-8.8-6-8.8-11A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7Z"></path></svg>
+                    </span>
+                </a>
+                <div class="hs-place-card__body">
+                    <h3 class="hs-place-card__title">
+                        <a href="<?php echo escapeHtml($detailUrl); ?>"><?php echo escapeHtml($title); ?></a>
+                    </h3>
+                    <div class="hs-place-card__meta">
+                        <span class="hs-rating">
+                            <span aria-hidden="true">★</span>
+                            <?php if ($rating !== null && $rating !== '') : ?>
+                                <?php echo escapeHtml(number_format((float) $rating, 1)); ?>
+                            <?php else : ?>
+                                Chưa có điểm
                             <?php endif; ?>
-                            <?php if ($provinceName !== '') : ?>
-                                <span class="small text-secondary align-self-center">
-                                    <?php echo escapeHtml($provinceName); ?>
-                                </span>
-                            <?php endif; ?>
-                        </div>
-                        <h3 class="h5 fw-bold card-title mb-2">
-                            <a class="text-decoration-none link-dark" href="<?php echo escapeHtml($detailUrl); ?>">
-                                <?php echo escapeHtml($title); ?>
-                            </a>
-                        </h3>
-                        <p class="small text-secondary mb-3">
-                            <span aria-hidden="true">⌖</span>
-                            <?php echo escapeHtml($address !== '' ? $address : 'Chưa có địa chỉ chi tiết'); ?>
-                        </p>
-                        <div class="mt-auto pt-1">
-                            <a class="btn btn-outline-dark btn-sm" href="<?php echo escapeHtml($detailUrl); ?>">
-                                Xem chi tiết <span aria-hidden="true">→</span>
-                            </a>
-                        </div>
+                        </span>
+                        <?php if ($reviewCount > 0) : ?>
+                            <span class="hs-review-count">(<?php echo escapeHtml(number_format($reviewCount)); ?>)</span>
+                        <?php endif; ?>
+                        <?php if ($categoryName !== '') : ?>
+                            <span class="hs-meta-divider" aria-hidden="true">·</span>
+                            <span class="hs-place-card__category"><?php echo escapeHtml($categoryName); ?></span>
+                        <?php endif; ?>
                     </div>
-                </article>
-            </div>
+                    <p class="hs-place-card__location">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10.2c0 5-7 10.3-7 10.3S5 15.2 5 10.2a7 7 0 1 1 14 0Z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>
+                        <?php echo escapeHtml($provinceName !== '' ? $provinceName : ($address !== '' ? $address : 'Việt Nam')); ?>
+                    </p>
+                    <p class="hs-place-card__description"><?php echo escapeHtml($description); ?></p>
+                    <div class="hs-place-card__bottom">
+                        <?php if ($categoryName !== '') : ?>
+                            <span class="hs-place-tag"><?php echo escapeHtml($categoryName); ?></span>
+                        <?php endif; ?>
+                        <a class="hs-place-card__more" href="<?php echo escapeHtml($detailUrl); ?>">Chi tiết <span aria-hidden="true">↗</span></a>
+                    </div>
+                </div>
+            </article>
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
