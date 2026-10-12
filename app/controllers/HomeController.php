@@ -4,17 +4,18 @@ declare(strict_types=1);
 namespace HotSpot\Controllers;
 
 use HotSpot\Core\Controller;
-use HotSpot\Core\Database;
+use HotSpot\Models\PlaceSearch;
 
 final class HomeController extends Controller
 {
     public function index(): void
     {
-        // Xác nhận PDO kết nối được; chưa truy vấn dữ liệu nghiệp vụ.
-        Database::getConnection();
+        $placeSearch = new PlaceSearch();
 
         $viewData = [
-            'title' => 'Trang chủ',
+            'title' => 'Khám phá Việt Nam',
+            'places' => $placeSearch->findApprovedForHome(),
+            'categories' => $placeSearch->findActiveCategories(),
         ];
 
         $this->render('home/index', $viewData);
