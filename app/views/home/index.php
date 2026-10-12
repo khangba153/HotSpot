@@ -23,7 +23,7 @@ $categoryVisuals = [
     6 => ['image' => 'assets/images/home/culture.webp', 'icon' => 'culture', 'subtitle' => 'Văn hóa và di sản'],
 ];
 
-$featuredPlaces = array_slice($places, 0, 5);
+$featuredPlaces = array_slice($places, 0, 12);
 ?>
 <section class="hs-hero" aria-labelledby="home-hero-title">
     <div class="hs-hero__shade" aria-hidden="true"></div>

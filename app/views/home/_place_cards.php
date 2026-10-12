@@ -1,4 +1,5 @@
 <?php
+
 /** @var array<int, array<string, mixed>> $places */
 $demoImageByCategory = [
     1 => 'assets/images/home/food.webp',
@@ -64,10 +65,11 @@ if ($places === []) :
                         alt="Ảnh minh họa <?php echo escapeHtml($title); ?>"
                         loading="lazy"
                         decoding="async"
-                        onerror="this.onerror=null;this.src='<?php echo escapeHtml($demoImage); ?>';"
-                    >
+                        onerror="this.onerror=null;this.src='<?php echo escapeHtml($demoImage); ?>';">
                     <span class="hs-place-card__favorite" aria-hidden="true">
-                        <svg viewBox="0 0 24 24"><path d="M20.8 8.8c0 5-8.8 11-8.8 11s-8.8-6-8.8-11A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7Z"></path></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20.8 8.8c0 5-8.8 11-8.8 11s-8.8-6-8.8-11A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7Z"></path>
+                        </svg>
                     </span>
                 </a>
                 <div class="hs-place-card__body">
@@ -92,8 +94,27 @@ if ($places === []) :
                         <?php endif; ?>
                     </div>
                     <p class="hs-place-card__location">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10.2c0 5-7 10.3-7 10.3S5 15.2 5 10.2a7 7 0 1 1 14 0Z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>
-                        <?php echo escapeHtml($provinceName !== '' ? $provinceName : ($address !== '' ? $address : 'Việt Nam')); ?>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M19 10.2c0 5-7 10.3-7 10.3S5 15.2 5 10.2a7 7 0 1 1 14 0Z"></path>
+                            <circle cx="12" cy="10" r="2.2"></circle>
+                        </svg>
+                        <?php
+                        $locationParts = [];
+
+                        if ($provinceName !== '') {
+                            $locationParts[] = $provinceName;
+                        }
+
+                        if ($address !== '') {
+                            $locationParts[] = $address;
+                        }
+
+                        echo escapeHtml(
+                            $locationParts !== []
+                                ? implode(' · ', $locationParts)
+                                : 'Việt Nam'
+                        );
+                        ?>
                     </p>
                     <p class="hs-place-card__description"><?php echo escapeHtml($description); ?></p>
                     <div class="hs-place-card__bottom">
