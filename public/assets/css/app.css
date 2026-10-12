@@ -2,3 +2,181 @@ body {
     background-color: #f6f8fa;
     color: #212529;
 }
+
+/* Header dùng chung cho các trang. */
+.site-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #edf0f4;
+    padding: 12px 0;
+}
+
+.site-logo {
+    display: block;
+    width: 230px;
+    max-width: 100%;
+    height: auto;
+}
+
+.site-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 28px;
+}
+
+.site-navigation a,
+.site-navigation span {
+    color: #17263c;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.site-navigation a:hover {
+    color: #ff542e;
+}
+
+.navigation-unavailable {
+    cursor: default;
+}
+
+.header-account {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.header-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: #17263c;
+    text-decoration: none;
+}
+
+.header-profile-link:hover {
+    color: #ff542e;
+}
+
+.header-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.header-user-name {
+    max-width: 140px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.button-brand {
+    background-color: #ff542e;
+    border: 1px solid #ff542e;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.button-brand:hover {
+    background-color: #e84723;
+    border-color: #e84723;
+    color: #ffffff;
+}
+
+/* Thu gọn header trên điện thoại. */
+@media (max-width: 575.98px) {
+    .site-logo {
+        width: 170px;
+    }
+
+    .site-navigation {
+        gap: 20px;
+    }
+
+    .site-navigation a,
+    .site-navigation span {
+        font-size: 13px;
+    }
+
+    .header-user-name {
+        max-width: 90px;
+    }
+}
+
+/* Footer dùng chung, bố trí thành các cột trên desktop. */
+.site-footer {
+    margin-top: 32px;
+    padding: 32px 0 18px;
+    border-top: 1px solid #e6edf3;
+    background: linear-gradient(to bottom, #f6fbff, #eaf3f8);
+    color: #738095;
+}
+
+.footer-logo {
+    display: block;
+    width: 180px;
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 12px;
+}
+
+.footer-heading {
+    margin-bottom: 14px;
+    color: #17263c;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.footer-description {
+    margin-bottom: 14px;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.footer-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+}
+
+.footer-list li {
+    margin-bottom: 8px;
+}
+
+.footer-list a {
+    color: #738095;
+    text-decoration: none;
+}
+
+.footer-list a:hover {
+    color: #ff542e;
+}
+
+.site-footer .form-control {
+    font-size: 12px;
+}
+
+.site-footer .button-brand {
+    font-size: 12px;
+}
+
+.footer-note {
+    display: block;
+    margin-top: 8px;
+    font-size: 11px;
+}
+
+.footer-copyright {
+    margin: 0;
+    padding-top: 16px;
+    border-top: 1px solid #dce7ee;
+    font-size: 12px;
+    text-align: center;
+}

@@ -1,0 +1,209 @@
+/* Banner riêng của trang Profile. */
+.profile-cover {
+    height: 240px;
+    background-image: url("../images/profile-banner.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+@media (max-width: 575.98px) {
+    .profile-cover {
+        height: 180px;
+    }
+}
+
+/* Sidebar nhô lên một phần banner trên desktop. */
+.profile-sidebar {
+    position: relative;
+    margin-top: -80px;
+    padding: 28px 20px;
+    background-color: #ffffff;
+    border: 1px solid #edf0f4;
+    border-radius: 16px;
+}
+
+.profile-avatar {
+    width: 160px;
+    height: 160px;
+    border: 5px solid #ffffff;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px #e6edf3;
+}
+
+.profile-name {
+    margin-top: 20px;
+    margin-bottom: 12px;
+    color: #17263c;
+    font-size: 22px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.profile-description {
+    color: #738095;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.profile-menu {
+    margin-top: 28px;
+}
+
+.profile-menu-item {
+    display: block;
+    margin-bottom: 8px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    color: #17263c;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.profile-menu-item.active {
+    background-color: #fff0e9;
+    color: #ff542e;
+}
+
+.profile-menu-item small {
+    display: block;
+    margin-top: 4px;
+    color: #738095;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.profile-information {
+    padding: 24px;
+    background-color: #ffffff;
+    border: 1px solid #edf0f4;
+    border-radius: 14px;
+}
+
+.profile-section-title {
+    margin-bottom: 14px;
+    padding-left: 14px;
+    border-left: 5px solid #ff542e;
+    color: #17263c;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.profile-information dt,
+.profile-information dd {
+    margin-bottom: 20px;
+    overflow-wrap: anywhere;
+}
+
+/* Điện thoại hiển thị sidebar trước, thông tin ở phía dưới. */
+@media (max-width: 991.98px) {
+    .profile-sidebar {
+        margin-top: 0;
+    }
+}
+
+/* Các ô thống kê hiện chỉ hiển thị giao diện. */
+.profile-statistic {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 100%;
+    padding: 18px 14px;
+    background-color: #ffffff;
+    border: 1px solid #edf0f4;
+    border-radius: 12px;
+}
+
+.statistic-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-size: 28px;
+}
+
+.statistic-favorite {
+    background-color: #fff0e9;
+    color: #ff542e;
+}
+
+.statistic-place {
+    background-color: #e5f6ff;
+    color: #09a9e8;
+}
+
+.statistic-review {
+    background-color: #fff5dd;
+    color: #ffb400;
+}
+
+.statistic-photo {
+    background-color: #e8f6e8;
+    color: #42a94e;
+}
+
+.statistic-number {
+    display: block;
+    color: #17263c;
+    font-size: 24px;
+    line-height: 1.2;
+}
+
+.statistic-label {
+    display: block;
+    margin-top: 5px;
+    color: #738095;
+    font-size: 12px;
+}
+
+.statistic-note {
+    margin-top: 10px;
+    margin-bottom: 0;
+    color: #738095;
+    font-size: 12px;
+}
+
+/* Các ô thông tin trên trang Profile. */
+.profile-information .form-label {
+    margin-bottom: 0;
+    color: #17263c;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.profile-information .form-control,
+.profile-information .form-select {
+    border-color: #e6edf3;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #17263c;
+    font-size: 14px;
+}
+
+.profile-information .form-control[readonly] {
+    background-color: #ffffff;
+}
+
+.profile-information .form-control:disabled,
+.profile-information .form-select:disabled {
+    background-color: #f6f8fa;
+    color: #738095;
+}
+
+.profile-account-detail {
+    margin: 8px 0 20px;
+    color: #738095;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+@media (max-width: 575.98px) {
+    .profile-information .form-label {
+        margin-bottom: 8px;
+    }
+}
+
