@@ -753,6 +753,7 @@ body.hs-body {
   line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 .hs-place-card__bottom {
   display: flex;
@@ -1246,4 +1247,112 @@ body.hs-body {
   .hs-category-card:hover .hs-category-card__image img {
     transform: none;
   }
+}
+
+/* Trạng thái xám cho các thành phần chưa triển khai */
+
+/* Các mục điều hướng chưa hoạt động */
+.hs-main-nav__link[aria-disabled="true"] {
+    color: #9aa2a8;
+}
+
+/* Biểu tượng tìm kiếm và thông báo chưa có chức năng đầy đủ */
+.hs-header-actions > .hs-header-icon {
+    color: #a0a8ae;
+    opacity: 0.65;
+}
+
+.hs-header-icon--bell i {
+    background: #aeb5ba;
+}
+
+/* Ô tìm kiếm tĩnh */
+.hs-search-shell {
+    border-color: #dfe3e6;
+    background: #f1f3f4;
+    box-shadow: none;
+}
+
+.hs-search-shell > svg {
+    stroke: #9ba4aa;
+}
+
+.hs-search-shell__placeholder {
+    color: #9ba2a8;
+}
+
+.hs-search-shell__button {
+    color: #fff;
+    background: #aeb5ba;
+}
+
+/* Bộ lọc chưa hoạt động */
+.hs-filter-pill {
+    color: #919ba1;
+    border-color: #dfe3e6;
+    background: #f1f3f4;
+    box-shadow: none;
+}
+
+.hs-filter-pill svg,
+.hs-filter-pill__chevron {
+    color: #919ba1;
+    stroke: currentColor;
+}
+
+/* Các nút xem tất cả hiện chỉ là chữ */
+.hs-section-link,
+.hs-section-link span {
+    color: #929ba1;
+}
+
+/* Danh mục chưa hỗ trợ nhấn để lọc */
+.hs-category-card {
+    filter: grayscale(0.7);
+    opacity: 0.8;
+    box-shadow: none;
+}
+
+.hs-category-card:hover .hs-category-card__image img {
+    transform: none;
+}
+
+/* Các lựa chọn sắp xếp chưa có xử lý */
+.hs-sort-pill,
+.hs-sort-pill--active {
+    color: #8e989e;
+    background: #edf0f2;
+}
+
+/* Biểu tượng yêu thích chưa có chức năng */
+.hs-place-card__favorite {
+    color: #a6afb4;
+    border-color: rgb(255 255 255 / 65%);
+    background: rgb(80 90 96 / 28%);
+}
+
+/* Phân trang chưa hoạt động */
+.hs-pagination__arrow,
+.hs-pagination__number,
+.hs-pagination__number--active {
+    color: #8f999f;
+    border-color: #dfe3e6;
+    background: #f0f2f3;
+}
+
+/* Mạng xã hội và đăng ký nhận tin chưa có xử lý */
+.hs-socials span {
+    color: #929ba1;
+    background: #dfe3e6;
+}
+
+.hs-newsletter-shell {
+    color: #9aa3a9;
+    border-color: #dfe3e6;
+    background: #f1f3f4;
+}
+
+.hs-newsletter-shell b {
+    color: #fff;
+    background: #aeb6bb;
 }
