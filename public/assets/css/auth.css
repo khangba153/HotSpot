@@ -1,0 +1,243 @@
+/* Giao diện đăng nhập và đăng ký. */
+
+/* Nền và khung đăng nhập hai cột. */
+.login-page {
+    padding: 48px 0;
+    background-image:
+        linear-gradient(
+            rgba(240, 247, 251, 0.82),
+            rgba(240, 247, 251, 0.92)
+        ),
+        url("../images/profile-banner.png");
+    background-size: cover;
+    background-position: center;
+}
+
+.auth-card {
+    overflow: hidden;
+    background-color: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 12px 40px rgba(23, 38, 60, 0.08);
+}
+
+/* Làm sáng vùng chữ, giữ ảnh rõ hơn ở phía dưới. */
+.auth-introduction {
+    height: 100%;
+    min-height: 620px;
+    padding: 48px;
+    background-image:
+        linear-gradient(
+            to bottom,
+            rgba(246, 251, 255, 0.98) 0%,
+            rgba(246, 251, 255, 0.94) 35%,
+            rgba(246, 251, 255, 0.65) 65%,
+            rgba(246, 251, 255, 0.08) 100%
+        ),
+        url("../images/profile-banner.png");
+    background-size: cover;
+    background-position: center;
+}
+
+.auth-slogan {
+    margin-bottom: 18px;
+    color: #e99014;
+    font-size: 28px;
+    font-style: italic;
+}
+
+.auth-introduction h2 {
+    max-width: 380px;
+    margin-bottom: 20px;
+    color: #17263c;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -1px;
+}
+
+.auth-introduction h2 span {
+    color: #ff542e;
+}
+
+.auth-introduction-text {
+    max-width: 360px;
+    margin-top: 0;
+    margin-bottom: 28px;
+    color: #46566b;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.auth-benefits {
+    max-width: 360px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.auth-benefits li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #17263c;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.auth-benefits li span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    color: #ff542e;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.auth-form-panel {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 48px 40px;
+}
+
+.auth-welcome {
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.auth-logo {
+    width: 230px;
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 24px;
+}
+
+.auth-welcome h1 {
+    color: #17263c;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.auth-welcome p {
+    margin-top: 12px;
+    color: #738095;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.auth-form-panel .form-label {
+    color: #17263c;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.auth-form-panel .form-control {
+    padding: 13px 16px;
+    border-color: #e6edf3;
+    border-radius: 9px;
+    font-size: 14px;
+}
+
+.auth-form-panel .form-control:focus {
+    border-color: #ff542e;
+    box-shadow: 0 0 0 3px rgba(255, 84, 46, 0.12);
+}
+
+.auth-options {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0 28px;
+    color: #738095;
+    font-size: 12px;
+}
+
+.auth-remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.auth-submit {
+    padding: 14px;
+    border-radius: 9px;
+    background: linear-gradient(90deg, #ff542e, #ff7624);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 26px 0;
+    color: #738095;
+    font-size: 13px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background-color: #edf0f4;
+}
+
+.auth-registration {
+    padding: 16px;
+    border-radius: 9px;
+    background-color: #f6f8fa;
+    color: #17263c;
+    font-size: 13px;
+    text-align: center;
+}
+
+.auth-registration span {
+    color: #ff542e;
+    font-weight: 600;
+}
+
+.auth-registration small {
+    display: block;
+    margin-top: 6px;
+    color: #738095;
+    font-size: 11px;
+}
+
+/* Hai cột xếp dọc trên màn hình nhỏ. */
+@media (max-width: 991.98px) {
+    .auth-introduction {
+        min-height: 320px;
+        padding: 32px;
+    }
+
+    .auth-form-panel {
+        padding: 32px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .login-page {
+        padding: 24px 0;
+    }
+
+    .auth-introduction,
+    .auth-form-panel {
+        padding: 24px;
+    }
+
+    .auth-introduction h2 {
+        font-size: 30px;
+    }
+
+    .auth-welcome h1 {
+        font-size: 23px;
+    }
+}

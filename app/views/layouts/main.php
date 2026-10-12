@@ -1,4 +1,5 @@
 <?php
+
 /** @var array<string, mixed> $viewData */
 /** @var string $pageContent */
 $pageTitle = 'Hot Spot';
@@ -8,23 +9,51 @@ if (isset($viewData['title']) && is_string($viewData['title'])) {
 }
 
 $homePageUrl = createRouteUrl('home');
+$loginPageUrl = createRouteUrl('login');
+$profilePageUrl = createRouteUrl('profile');
+
+$userIsLoggedIn = isset($_SESSION['user_id']);
+$currentUserName = 'Tài khoản';
+
+if (
+    isset($viewData['userInformation']['full_name'])
+    && is_string($viewData['userInformation']['full_name'])
+) {
+    $currentUserName = $viewData['userInformation']['full_name'];
+}
+
+$isLoginPage = ($viewData['isLoginPage'] ?? false) === true;
+$isProfilePage = ($viewData['isProfilePage'] ?? false) === true;
+
+$mainClass = 'hs-site-main flex-grow-1';
+
+if ($isLoginPage) {
+    $mainClass .= ' login-page';
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#fffaf7">
     <title><?php echo escapeHtml($pageTitle); ?> | Hot Spot</title>
     <link rel="stylesheet" href="assets/vendor/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="assets/css/app.css?v=4">
+    <link rel="stylesheet" href="assets/css/profile.css?v=1">
+    <link rel="stylesheet" href="assets/css/auth.css?v=1">
 </head>
-<body class="hs-body">
+
+<body class="hs-body d-flex flex-column min-vh-100">
     <header class="hs-site-header">
         <div class="hs-header__inner">
             <a class="hs-brand" href="<?php echo escapeHtml($homePageUrl); ?>" aria-label="Hot Spot — Trang chủ">
                 <span class="hs-brand__mark" aria-hidden="true">
-                    <svg viewBox="0 0 28 34"><path d="M14 1.5C6.9 1.5 1.2 7.2 1.2 14.3c0 9.4 12.8 18.2 12.8 18.2s12.8-8.8 12.8-18.2C26.8 7.2 21.1 1.5 14 1.5Z"></path><circle cx="14" cy="14" r="4.5"></circle></svg>
+                    <svg viewBox="0 0 28 34">
+                        <path d="M14 1.5C6.9 1.5 1.2 7.2 1.2 14.3c0 9.4 12.8 18.2 12.8 18.2s12.8-8.8 12.8-18.2C26.8 7.2 21.1 1.5 14 1.5Z"></path>
+                        <circle cx="14" cy="14" r="4.5"></circle>
+                    </svg>
                 </span>
                 <span class="hs-brand__copy">
                     <strong>Hot Spot</strong>
@@ -40,31 +69,61 @@ $homePageUrl = createRouteUrl('home');
 
             <div class="hs-header-actions">
                 <a class="hs-header-icon" href="#home-search" aria-label="Tìm kiếm">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.4 4.4"></path></svg>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="10.8" cy="10.8" r="6.8"></circle>
+                        <path d="m16 16 4.4 4.4"></path>
+                    </svg>
                 </a>
                 <span class="hs-header-icon hs-header-icon--bell" aria-hidden="true">
-                    <svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>
+                    <svg viewBox="0 0 24 24">
+                        <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                        <path d="M10 21h4"></path>
+                    </svg>
                     <i></i>
                 </span>
-                <span class="hs-guest-label">Khách</span>
-                <span class="hs-login-button" aria-disabled="true">Đăng nhập</span>
+                <?php if ($userIsLoggedIn) { ?>
+                    <a
+                        class="hs-profile-link"
+                        href="<?php echo escapeHtml($profilePageUrl); ?>">
+                        <img
+                            class="hs-profile-avatar"
+                            src="assets/images/default-avatar.svg"
+                            alt=""
+                            width="28"
+                            height="28">
+                        <span class="hs-profile-name">
+                            <?php echo escapeHtml($currentUserName); ?>
+                        </span>
+                    </a>
+                <?php } else { ?>
+                    <a
+                        class="hs-login-button"
+                        href="<?php echo escapeHtml($loginPageUrl); ?>">
+                        Đăng nhập
+                    </a>
+                <?php } ?>
             </div>
         </div>
     </header>
 
-    <main class="hs-site-main">
+    <main class="<?php echo escapeHtml($mainClass); ?>">
         <?php echo $pageContent; ?>
     </main>
 
     <footer class="hs-site-footer">
         <div class="hs-footer-hills" aria-hidden="true">
-            <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0 88 72 50l68 38 76-60 81 60 90-34 85 34 86-53 69 53 82-23 66 23 93-54 74 54 81-31 61 31 91-51 81 51 74-27 66 27v32H0Z"></path></svg>
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0 88 72 50l68 38 76-60 81 60 90-34 85 34 86-53 69 53 82-23 66 23 93-54 74 54 81-31 61 31 91-51 81 51 74-27 66 27v32H0Z"></path>
+            </svg>
         </div>
         <div class="hs-container hs-footer__grid">
             <div class="hs-footer-brand">
                 <a class="hs-brand hs-brand--footer" href="<?php echo escapeHtml($homePageUrl); ?>">
                     <span class="hs-brand__mark" aria-hidden="true">
-                        <svg viewBox="0 0 28 34"><path d="M14 1.5C6.9 1.5 1.2 7.2 1.2 14.3c0 9.4 12.8 18.2 12.8 18.2s12.8-8.8 12.8-18.2C26.8 7.2 21.1 1.5 14 1.5Z"></path><circle cx="14" cy="14" r="4.5"></circle></svg>
+                        <svg viewBox="0 0 28 34">
+                            <path d="M14 1.5C6.9 1.5 1.2 7.2 1.2 14.3c0 9.4 12.8 18.2 12.8 18.2s12.8-8.8 12.8-18.2C26.8 7.2 21.1 1.5 14 1.5Z"></path>
+                            <circle cx="14" cy="14" r="4.5"></circle>
+                        </svg>
                     </span>
                     <span class="hs-brand__copy"><strong>Hot Spot</strong><small>Khám phá Việt Nam theo cách của bạn</small></span>
                 </a>
@@ -108,4 +167,5 @@ $homePageUrl = createRouteUrl('home');
     </footer>
     <script src="assets/vendor/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
