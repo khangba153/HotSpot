@@ -1,0 +1,197 @@
+/* Hot Spot — Module địa điểm (Thành / TV3). Chỉ chứa style trang chi tiết, form, địa điểm của tôi. */
+
+/* ===== Trang chi tiết địa điểm ===== */
+.hs-place-detail {
+  padding: 20px 0 56px;
+  background: #fffaf7;
+}
+
+.hs-place-breadcrumb {
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.hs-place-breadcrumb a {
+  color: var(--hs-muted);
+  text-decoration: none;
+}
+
+.hs-place-breadcrumb a:hover {
+  color: var(--hs-orange);
+}
+
+.hs-place-breadcrumb .breadcrumb-item.active {
+  color: var(--hs-orange);
+  font-weight: 600;
+}
+
+.hs-place-status-alert {
+  border-radius: 12px;
+}
+
+/* Ảnh chính và ảnh phụ */
+.hs-place-media__main {
+  display: block;
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: var(--hs-line);
+}
+
+.hs-place-media__side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 380px;
+}
+
+.hs-place-media__thumb {
+  display: block;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  object-fit: cover;
+  border-radius: 14px;
+  background: var(--hs-line);
+}
+
+/* Tiêu đề, danh mục, nhãn */
+.hs-place-heading {
+  margin: 20px 0 16px;
+}
+
+.hs-place-heading__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--hs-ink);
+}
+
+.hs-place-heading__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  color: var(--hs-muted);
+}
+
+.hs-place-heading__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hs-place-heading__location svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--hs-orange);
+  stroke-width: 2;
+}
+
+.hs-place-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgb(243 77 43 / 10%);
+  color: var(--hs-orange-dark);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hs-place-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hs-place-tags__item {
+  padding: 4px 12px;
+  border: 1px solid var(--hs-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--hs-ink);
+  font-size: 12px;
+}
+
+/* Khối nội dung dạng thẻ */
+.hs-place-card-block {
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 1px solid var(--hs-line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.hs-place-card-block__title {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--hs-ink);
+}
+
+.hs-place-description {
+  margin: 0;
+  color: #3d4a56;
+  line-height: 1.7;
+}
+
+/* Thông tin bên phải */
+.hs-place-info__list {
+  margin: 0;
+}
+
+.hs-place-info__row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hs-line);
+}
+
+.hs-place-info__row:last-child {
+  border-bottom: 0;
+}
+
+.hs-place-info__row dt {
+  flex: 0 0 96px;
+  color: var(--hs-muted);
+  font-weight: 500;
+}
+
+.hs-place-info__row dd {
+  flex: 1 1 auto;
+  margin: 0;
+  color: var(--hs-ink);
+  word-break: break-word;
+}
+
+.hs-place-location__coords {
+  margin-bottom: 10px;
+  font-family: Consolas, "Courier New", monospace;
+  color: var(--hs-ink);
+}
+
+@media (max-width: 767.98px) {
+  .hs-place-media__main {
+    height: 240px;
+  }
+
+  .hs-place-media__side {
+    flex-direction: row;
+    height: 96px;
+  }
+
+  .hs-place-heading__title {
+    font-size: 22px;
+  }
+
+  .hs-place-info__row dt {
+    flex-basis: 84px;
+  }
+}
