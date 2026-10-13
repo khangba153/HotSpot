@@ -25,4 +25,7 @@ $router->add('POST', 'login', $authController, 'login');
 // Xử lý đăng xuất.
 $router->add('POST', 'logout', $authController, 'logout');
 
+// Nhận form cập nhật hồ sơ.
+$router->add('POST', 'profile/update', $profileController, 'update');
+
 return $router;

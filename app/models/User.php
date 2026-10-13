@@ -62,4 +62,40 @@ final class User extends Model
 
         return $userInformation;
     }
+
+    // Cập nhật họ tên và email của tài khoản đã xác định từ session.
+    public function updateProfile(
+        int $userId,
+        string $fullName,
+        string $email
+    ): void {
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'UPDATE users
+                     SET full_name = :full_name,
+                         email = :email
+                     WHERE user_id = :user_id';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':full_name',
+            $fullName,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->bindValue(
+            ':email',
+            $email,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->bindValue(
+            ':user_id',
+            $userId,
+            PDO::PARAM_INT
+        );
+
+        $preparedStatement->execute();
+    }
 }
