@@ -5,15 +5,18 @@ use HotSpot\Controllers\AuthController;
 use HotSpot\Controllers\HomeController;
 use HotSpot\Controllers\ProfileController;
 use HotSpot\Core\Router;
+use HotSpot\Controllers\PlaceSearchController;
 
 $router = new Router();
 
 $homeController = new HomeController();
 $profileController = new ProfileController();
+$placeSearchController = new PlaceSearchController();
 $authController = new AuthController();
 
 // Các trang hiển thị.
 $router->add('GET', 'home', $homeController, 'index');
+$router->add('GET', 'api/places/search', $placeSearchController, 'search');
 $router->add('GET', 'profile', $profileController, 'index');
 $router->add('GET', 'login', $authController, 'showLogin');
 
