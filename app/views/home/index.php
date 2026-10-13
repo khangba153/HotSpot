@@ -2,12 +2,22 @@
 /** @var array<string, mixed> $viewData */
 $places = $viewData['places'] ?? [];
 $categories = $viewData['categories'] ?? [];
+$keyword = $viewData['keyword'] ?? '';
+$totalCount = $viewData['totalCount'] ?? null;
 
 if (!is_array($places)) {
     $places = [];
 }
 if (!is_array($categories)) {
     $categories = [];
+}
+if (!is_string($keyword)) {
+    $keyword = '';
+}
+if (!is_numeric($totalCount) || (int) $totalCount < 0) {
+    $totalCount = count($places);
+} else {
+    $totalCount = (int) $totalCount;
 }
 
 /*
@@ -39,14 +49,23 @@ $featuredPlaces = array_slice($places, 0, 12);
                 và trải nghiệm đáng nhớ trên khắp Việt Nam.
             </p>
 
-            <div class="hs-search-shell" id="home-search" role="group" aria-label="Khu vực tìm kiếm địa điểm">
+            <form class="hs-search-shell" id="home-search" action="index.php" method="get" role="search" aria-label="Tìm kiếm địa điểm">
+                <input type="hidden" name="route" value="home">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="10.8" cy="10.8" r="6.8"></circle>
                     <path d="m16 16 4.4 4.4"></path>
                 </svg>
-                <span class="hs-search-shell__placeholder">Tìm địa điểm, món ăn, quán cà phê, trải nghiệm...</span>
-                <span class="hs-search-shell__button">Tìm kiếm</span>
-            </div>
+                <input
+                    class="hs-search-shell__input"
+                    type="search"
+                    name="keyword"
+                    value="<?php echo escapeHtml($keyword); ?>"
+                    placeholder="Tìm địa điểm, món ăn, quán cà phê, trải nghiệm..."
+                    maxlength="100"
+                    aria-label="Từ khóa tìm kiếm"
+                >
+                <button class="hs-search-shell__button" type="submit">Tìm kiếm</button>
+            </form>
 
             <div class="hs-hero__filters" aria-label="Bộ lọc tìm kiếm">
                 <span class="hs-filter-pill">
@@ -135,29 +154,53 @@ $featuredPlaces = array_slice($places, 0, 12);
         <div class="hs-section-heading hs-section-heading--featured">
             <div class="hs-section-heading__title">
                 <span class="hs-section-heading__marker" aria-hidden="true"></span>
-                <h2 id="featured-places-heading">Địa điểm nổi bật</h2>
+                <h2 id="featured-places-heading"><?php echo $keyword !== '' ? 'Kết quả tìm kiếm' : 'Địa điểm nổi bật'; ?></h2>
             </div>
-            <div class="hs-featured-tools" aria-label="Các cách xem địa điểm">
-                <span class="hs-sort-pill hs-sort-pill--active">Được yêu thích</span>
-                <span class="hs-sort-pill">Mới cập nhật</span>
-                <span class="hs-sort-pill">Đánh giá cao</span>
-            </div>
-            <span class="hs-section-link">Xem tất cả địa điểm <span aria-hidden="true">→</span></span>
+            <?php if ($keyword === '') : ?>
+                <div class="hs-featured-tools" aria-label="Các cách xem địa điểm">
+                    <span class="hs-sort-pill hs-sort-pill--active">Được yêu thích</span>
+                    <span class="hs-sort-pill">Mới cập nhật</span>
+                    <span class="hs-sort-pill">Đánh giá cao</span>
+                </div>
+                <span class="hs-section-link">Xem tất cả địa điểm <span aria-hidden="true">→</span></span>
+            <?php endif; ?>
         </div>
 
-        <?php
-        $places = $featuredPlaces;
-        require __DIR__ . '/_place_cards.php';
-        ?>
+        <?php if ($keyword !== '') : ?>
+            <p class="hs-search-feedback" role="status">
+                Tìm thấy <strong><?php echo escapeHtml(number_format($totalCount)); ?></strong>
+                địa điểm phù hợp với từ khóa
+                <strong>“<?php echo escapeHtml($keyword); ?>”</strong>.
+                <?php if (count($featuredPlaces) < $totalCount) : ?>
+                    Đang hiển thị <?php echo escapeHtml((string) count($featuredPlaces)); ?> kết quả đầu tiên.
+                <?php endif; ?>
+                <a href="<?php echo escapeHtml(createRouteUrl('home')); ?>">Xóa tìm kiếm</a>
+            </p>
+        <?php endif; ?>
 
-        <nav class="hs-pagination" aria-label="Phân trang địa điểm">
-            <span class="hs-pagination__arrow" aria-hidden="true">‹</span>
-            <span class="hs-pagination__number hs-pagination__number--active" aria-current="page">1</span>
-            <span class="hs-pagination__number">2</span>
-            <span class="hs-pagination__number">3</span>
-            <span class="hs-pagination__number">4</span>
-            <span class="hs-pagination__number">5</span>
-            <span class="hs-pagination__arrow" aria-hidden="true">›</span>
-        </nav>
+        <?php if ($keyword !== '' && $featuredPlaces === []) : ?>
+            <div class="hs-empty-state" role="status">
+                <span class="hs-empty-state__icon" aria-hidden="true">⌖</span>
+                <h3>Không tìm thấy địa điểm phù hợp</h3>
+                <p>Thử một từ khóa khác hoặc rút gọn từ khóa hiện tại.</p>
+            </div>
+        <?php else : ?>
+            <?php
+            $places = $featuredPlaces;
+            require __DIR__ . '/_place_cards.php';
+            ?>
+        <?php endif; ?>
+
+        <?php if ($keyword === '') : ?>
+            <nav class="hs-pagination" aria-label="Phân trang địa điểm">
+                <span class="hs-pagination__arrow" aria-hidden="true">‹</span>
+                <span class="hs-pagination__number hs-pagination__number--active" aria-current="page">1</span>
+                <span class="hs-pagination__number">2</span>
+                <span class="hs-pagination__number">3</span>
+                <span class="hs-pagination__number">4</span>
+                <span class="hs-pagination__number">5</span>
+                <span class="hs-pagination__arrow" aria-hidden="true">›</span>
+            </nav>
+        <?php endif; ?>
     </section>
 </div>

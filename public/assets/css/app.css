@@ -1356,3 +1356,77 @@ body.hs-body {
     color: #fff;
     background: #aeb6bb;
 }
+
+/* TV2-02 home keyword search overrides */
+.hs-search-shell {
+    border-color: rgb(255 255 255 / 75%);
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(2 21 29 / 13%);
+}
+
+.hs-search-shell > svg {
+    stroke: var(--hs-orange);
+}
+
+.hs-search-shell__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    align-self: stretch;
+    border: 0;
+    outline: none;
+    color: var(--hs-ink);
+    background: transparent;
+    font: inherit;
+    font-size: 11px;
+}
+
+.hs-search-shell__input::placeholder {
+    color: #8b969e;
+    opacity: 1;
+}
+
+.hs-search-shell:focus-within {
+    border-color: var(--hs-orange);
+    box-shadow: 0 0 0 3px rgb(243 77 43 / 17%), 0 8px 24px rgb(2 21 29 / 13%);
+}
+
+.hs-search-shell__button {
+    border: 0;
+    cursor: pointer;
+    color: #fff;
+    background: var(--hs-orange);
+    transition: background-color 150ms ease;
+}
+
+.hs-search-shell__button:hover {
+    background: var(--hs-orange-dark);
+}
+
+.hs-search-feedback {
+    margin: 12px 0 14px;
+    color: #667782;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.hs-search-feedback strong {
+    color: #24333d;
+    font-weight: 800;
+}
+
+.hs-search-feedback a {
+    margin-left: 8px;
+    color: var(--hs-orange-dark);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.hs-search-feedback a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 760px) {
+    .hs-search-shell__input {
+        font-size: 10px;
+    }
+}
