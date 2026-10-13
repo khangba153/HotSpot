@@ -6,6 +6,10 @@
 $userInformation = $viewData['userInformation'];
 $csrfToken = $viewData['csrfToken'];
 $logoutUrl = createRouteUrl('logout');
+
+$updateProfileUrl = createRouteUrl('profile/update');
+$profileMessage = $viewData['profileMessage'];
+$profileMessageType = $viewData['profileMessageType'];
 ?>
 
 <div
@@ -34,7 +38,6 @@ $logoutUrl = createRouteUrl('logout');
                         Chưa có thông tin giới thiệu.
                     </p>
                 </div>
-
                 <nav class="profile-menu" aria-label="Menu hồ sơ">
                     <span class="profile-menu-item active" aria-current="page">
                         Hồ sơ
@@ -145,115 +148,135 @@ $logoutUrl = createRouteUrl('logout');
                 </h1>
 
                 <p class="text-secondary mb-4">
-                    Thông tin tài khoản của bạn. Chức năng chỉnh sửa sẽ được bổ sung sau.
+                    Bạn có thể cập nhật họ tên và email của tài khoản.
                 </p>
 
-                <div class="row align-items-center mb-3">
-                    <div class="col-12 col-sm-3">
-                        <label for="profile-full-name" class="form-label">
-                            Họ và tên
-                        </label>
+                <?php if ($profileMessage !== '') { ?>
+                    <div
+                        class="alert alert-<?php echo escapeHtml($profileMessageType); ?>"
+                        role="alert">
+                        <?php echo escapeHtml($profileMessage); ?>
                     </div>
+                <?php } ?>
 
-                    <div class="col-12 col-sm-9">
-                        <input
-                            type="text"
-                            id="profile-full-name"
-                            class="form-control"
-                            value="<?php echo escapeHtml($userInformation['full_name']); ?>"
-                            readonly>
-                    </div>
-                </div>
+                <form
+                    method="post"
+                    action="<?php echo escapeHtml($updateProfileUrl); ?>">
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="<?php echo escapeHtml($csrfToken); ?>">
 
-                <div class="row align-items-center mb-3">
-                    <div class="col-12 col-sm-3">
-                        <label for="profile-email" class="form-label">
-                            Email
-                        </label>
-                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-12 col-sm-3">
+                            <label for="profile-full-name" class="form-label">
+                                Họ và tên
+                            </label>
+                        </div>
 
-                    <div class="col-12 col-sm-9">
-                        <input
-                            type="email"
-                            id="profile-email"
-                            class="form-control"
-                            value="<?php echo escapeHtml($userInformation['email']); ?>"
-                            readonly>
-                    </div>
-                </div>
-
-                <!-- Các trường này chưa có trong bảng users, chỉ dựng giao diện. -->
-                <div class="row align-items-center mb-3">
-                    <div class="col-12 col-sm-3">
-                        <label for="profile-phone" class="form-label">
-                            Số điện thoại
-                        </label>
-                    </div>
-
-                    <div class="col-12 col-sm-9">
-                        <input
-                            type="text"
-                            id="profile-phone"
-                            class="form-control"
-                            placeholder="Chưa hỗ trợ"
-                            disabled>
-                    </div>
-                </div>
-
-                <div class="row align-items-center mb-3">
-                    <div class="col-12 col-sm-3">
-                        <label for="profile-province" class="form-label">
-                            Tỉnh/Thành
-                        </label>
-                    </div>
-
-                    <div class="col-12 col-sm-9">
-                        <select
-                            id="profile-province"
-                            class="form-select"
-                            disabled>
-                            <option>Chưa hỗ trợ</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-12 col-sm-3">
-                        <label for="profile-introduction" class="form-label">
-                            Giới thiệu bản thân
-                        </label>
-                    </div>
-
-                    <div class="col-12 col-sm-9">
-                        <textarea
-                            id="profile-introduction"
-                            class="form-control"
-                            rows="3"
-                            placeholder="Chưa hỗ trợ"
-                            disabled></textarea>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-12 col-sm-9 offset-sm-3">
-                        <p class="profile-account-detail">
-                            Vai trò:
-                            <?php echo escapeHtml($userInformation['role_code']); ?>
-                            <br>
-                            Ngày tạo tài khoản:
-                            <?php echo escapeHtml($userInformation['created_at']); ?>
-                        </p>
-
-                        <div class="text-end">
-                            <button
-                                type="button"
-                                class="btn button-brand"
-                                disabled>
-                                Lưu thay đổi
-                            </button>
+                        <div class="col-12 col-sm-9">
+                            <input
+                                type="text"
+                                id="profile-full-name"
+                                name="full_name"
+                                class="form-control"
+                                value="<?php echo escapeHtml($userInformation['full_name']); ?>"
+                                maxlength="120"
+                                required>
                         </div>
                     </div>
-                </div>
+
+                    <div class="row align-items-center mb-3">
+                        <div class="col-12 col-sm-3">
+                            <label for="profile-email" class="form-label">
+                                Email
+                            </label>
+                        </div>
+
+                        <div class="col-12 col-sm-9">
+                            <input
+                                type="email"
+                                id="profile-email"
+                                name="email"
+                                class="form-control"
+                                value="<?php echo escapeHtml($userInformation['email']); ?>"
+                                maxlength="254"
+                                required>
+                        </div>
+                    </div>
+
+                    <!-- Các trường này chưa có trong bảng users, chỉ dựng giao diện. -->
+                    <div class="row align-items-center mb-3">
+                        <div class="col-12 col-sm-3">
+                            <label for="profile-phone" class="form-label">
+                                Số điện thoại
+                            </label>
+                        </div>
+
+                        <div class="col-12 col-sm-9">
+                            <input
+                                type="text"
+                                id="profile-phone"
+                                class="form-control"
+                                placeholder="Chưa hỗ trợ"
+                                disabled>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center mb-3">
+                        <div class="col-12 col-sm-3">
+                            <label for="profile-province" class="form-label">
+                                Tỉnh/Thành
+                            </label>
+                        </div>
+
+                        <div class="col-12 col-sm-9">
+                            <select
+                                id="profile-province"
+                                class="form-select"
+                                disabled>
+                                <option>Chưa hỗ trợ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12 col-sm-3">
+                            <label for="profile-introduction" class="form-label">
+                                Giới thiệu bản thân
+                            </label>
+                        </div>
+
+                        <div class="col-12 col-sm-9">
+                            <textarea
+                                id="profile-introduction"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Chưa hỗ trợ"
+                                disabled></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 col-sm-9 offset-sm-3">
+                            <p class="profile-account-detail">
+                                Vai trò:
+                                <?php echo escapeHtml($userInformation['role_code']); ?>
+                                <br>
+                                Ngày tạo tài khoản:
+                                <?php echo escapeHtml($userInformation['created_at']); ?>
+                            </p>
+
+                            <div class="text-end">
+                                <button
+                                    type="submit"
+                                    class="btn button-brand">
+                                    Lưu thay đổi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </section>
 
         </div>
