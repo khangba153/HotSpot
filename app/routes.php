@@ -25,6 +25,7 @@ $router->add('GET', 'api/places/search', $placeSearchController, 'search');
 $router->add('GET', 'places/show', $placeController, 'show');
 $router->add('GET', 'profile', $profileController, 'index');
 $router->add('GET', 'admin/places', $adminController, 'places');
+$router->add('GET', 'admin/places/review', $adminController, 'review');
 $router->add('GET', 'login', $authController, 'showLogin');
 
 // Nhận và xử lý form đăng nhập.

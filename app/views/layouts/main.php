@@ -24,6 +24,7 @@ if (
 
 $isLoginPage = ($viewData['isLoginPage'] ?? false) === true;
 $isProfilePage = ($viewData['isProfilePage'] ?? false) === true;
+$isAdminPage = ($viewData['isAdminPage'] ?? false) === true;
 
 $mainClass = 'hs-site-main flex-grow-1';
 
@@ -44,6 +45,7 @@ if ($isLoginPage) {
     <link rel="stylesheet" href="assets/css/profile.css?v=1">
     <link rel="stylesheet" href="assets/css/auth.css?v=1">
     <link rel="stylesheet" href="assets/css/places.css?v=1">
+    <link rel="stylesheet" href="assets/css/admin.css?v=1">
 </head>
 
 <body class="hs-body d-flex flex-column min-vh-100">
@@ -62,11 +64,15 @@ if ($isLoginPage) {
                 </span>
             </a>
 
+            <?php if ($isAdminPage) { ?>
+                <div class="admin-top-title">TRANG QUẢN TRỊ</div>
+            <?php } else { ?>
             <nav class="hs-main-nav" aria-label="Điều hướng chính">
                 <a class="hs-main-nav__link hs-main-nav__link--active" href="<?php echo escapeHtml($homePageUrl); ?>">Khám phá</a>
                 <span class="hs-main-nav__link" aria-disabled="true">Đăng địa điểm</span>
                 <span class="hs-main-nav__link hs-main-nav__link--heart" aria-disabled="true"><span aria-hidden="true">♡</span> Yêu thích</span>
             </nav>
+            <?php } ?>
 
             <div class="hs-header-actions">
                 <a class="hs-header-icon" href="#home-search" aria-label="Tìm kiếm">
@@ -111,7 +117,7 @@ if ($isLoginPage) {
         <?php echo $pageContent; ?>
     </main>
 
-    <footer class="hs-site-footer">
+    <?php if (!$isAdminPage) { ?><footer class="hs-site-footer">
         <div class="hs-footer-hills" aria-hidden="true">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
                 <path d="M0 88 72 50l68 38 76-60 81 60 90-34 85 34 86-53 69 53 82-23 66 23 93-54 74 54 81-31 61 31 91-51 81 51 74-27 66 27v32H0Z"></path>
@@ -165,7 +171,7 @@ if ($isLoginPage) {
             <span>© 2026 Hot Spot. Bản demo đồ án Phát triển Web.</span>
             <span>Khám phá Việt Nam, một địa điểm mỗi lần.</span>
         </div>
-    </footer>
+    </footer><?php } ?>
     <script src="assets/vendor/bootstrap.bundle.min.js"></script>
 </body>
 
