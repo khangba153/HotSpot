@@ -8,6 +8,77 @@ use PDO;
 
 final class PlaceModeration extends Model
 {
+    public function setPendingPlaceStatus(
+        int $adminId,
+        int $placeId,
+        string $newStatus,
+        ?string $rejectionReason
+    ): void {
+        $connection = self::getConnection();
+        $connection->beginTransaction();
+
+        try {
+            $placeStatement = $connection->prepare(
+                'SELECT status_code FROM places WHERE place_id = :place_id FOR UPDATE'
+            );
+            $placeStatement->bindValue(':place_id', $placeId, PDO::PARAM_INT);
+            $placeStatement->execute();
+            $place = $placeStatement->fetch(PDO::FETCH_ASSOC);
+            $placeStatement->closeCursor();
+
+            if ($place === false || $place['status_code'] !== 'PENDING') {
+                throw new \RuntimeException('Địa điểm không còn ở trạng thái chờ duyệt.');
+            }
+
+            if ($newStatus === 'APPROVED') {
+                $imageStatement = $connection->prepare(
+                    'SELECT image_path FROM place_images WHERE place_id = :place_id ORDER BY sort_order, image_id'
+                );
+                $imageStatement->bindValue(':place_id', $placeId, PDO::PARAM_INT);
+                $imageStatement->execute();
+                $images = $imageStatement->fetchAll(PDO::FETCH_ASSOC);
+                $imageStatement->closeCursor();
+
+                if (count($images) < 1 || count($images) > 3) {
+                    throw new \RuntimeException('Bài đăng cần có từ 1 đến 3 ảnh hợp lệ trước khi duyệt.');
+                }
+                foreach ($images as $image) {
+                    $imagePath = trim((string) $image['image_path']);
+                    $isLocalImage = preg_match('#^(assets|uploads)/[A-Za-z0-9._/-]+$#', $imagePath) === 1
+                        && strpos($imagePath, '..') === false
+                        && is_file(dirname(__DIR__, 2) . '/public/' . $imagePath);
+                    $isRemoteImage = preg_match('#^https?://#i', $imagePath) === 1
+                        && filter_var($imagePath, FILTER_VALIDATE_URL) !== false;
+                    if (!$isLocalImage && !$isRemoteImage) {
+                        throw new \RuntimeException('Bài đăng có đường dẫn ảnh không hợp lệ.');
+                    }
+                }
+            }
+
+            $procedure = $connection->prepare(
+                'CALL HTH_SET_PLACE_STATUS(:admin_id, :place_id, :new_status, :rejection_reason)'
+            );
+            $procedure->bindValue(':admin_id', $adminId, PDO::PARAM_INT);
+            $procedure->bindValue(':place_id', $placeId, PDO::PARAM_INT);
+            $procedure->bindValue(':new_status', $newStatus, PDO::PARAM_STR);
+            if ($rejectionReason === null) {
+                $procedure->bindValue(':rejection_reason', null, PDO::PARAM_NULL);
+            } else {
+                $procedure->bindValue(':rejection_reason', $rejectionReason, PDO::PARAM_STR);
+            }
+            $procedure->execute();
+            while ($procedure->nextRowset()) {
+            }
+            $procedure->closeCursor();
+            $connection->commit();
+        } catch (\Throwable $exception) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
+            throw $exception;
+        }
+    }
+
     /** @return array<int, array<string, mixed>> */
     public function findPendingPlaces(): array
     {
