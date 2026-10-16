@@ -7,6 +7,7 @@ use HotSpot\Controllers\PlaceController;
 use HotSpot\Controllers\ProfileController;
 use HotSpot\Core\Router;
 use HotSpot\Controllers\PlaceSearchController;
+use HotSpot\Controllers\AdminController;
 
 $router = new Router();
 
@@ -15,6 +16,7 @@ $profileController = new ProfileController();
 $placeSearchController = new PlaceSearchController();
 $placeController = new PlaceController();
 $authController = new AuthController();
+$adminController = new AdminController();
 
 // Các trang hiển thị.
 $router->add('GET', 'home', $homeController, 'index');
@@ -22,6 +24,8 @@ $router->add('GET', 'api/places/search', $placeSearchController, 'search');
 // Trang chi tiết địa điểm (C01: card Home link tới places/show&id=...).
 $router->add('GET', 'places/show', $placeController, 'show');
 $router->add('GET', 'profile', $profileController, 'index');
+$router->add('GET', 'admin/places', $adminController, 'places');
+$router->add('GET', 'admin/places/review', $adminController, 'review');
 $router->add('GET', 'login', $authController, 'showLogin');
 
 // Nhận và xử lý form đăng nhập.
