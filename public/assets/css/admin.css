@@ -3,3 +3,5 @@
 .admin-sidebar a:first-of-type{background:transparent;color:#c5cfdb}.admin-sidebar a.active{background:#ff5a46;color:#fff}
 .admin-actions form{display:flex;flex:1}.admin-actions .admin-reject-shortcut{background:#fff0ef;color:#ff5a52;border:1px solid #ffd9d5}.admin-actions button:disabled,.admin-reject button:disabled{opacity:.65;cursor:not-allowed}
 .admin-flash{border-radius:8px;padding:10px 13px;margin:0 0 12px;font-size:11px}.admin-flash--success{background:#e9f8ef;color:#218754}.admin-flash--danger{background:#fff0ef;color:#c94c42}
+.hs-main-nav__link--admin{color:#ff5a46;font-weight:700}.hs-main-nav__link--admin:hover{color:#e54432}
+.admin-layout .hs-header__inner{justify-content:flex-start;gap:0}.admin-layout .hs-brand{min-width:190px;width:190px}.admin-layout .admin-top-title{margin-left:24px;margin-right:0;flex:1}.admin-layout .hs-header-actions{margin-left:auto}.hs-main-nav__link--admin{display:inline-flex;align-items:center;gap:6px}.hs-main-nav__link--admin span{font-size:15px;line-height:1}

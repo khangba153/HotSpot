@@ -13,6 +13,8 @@ $loginPageUrl = createRouteUrl('login');
 $profilePageUrl = createRouteUrl('profile');
 
 $userIsLoggedIn = isset($_SESSION['user_id']);
+$userIsAdmin = isset($viewData['userInformation']['role_code'])
+    && $viewData['userInformation']['role_code'] === 'ADMIN';
 $currentUserName = 'Tài khoản';
 
 if (
@@ -48,7 +50,7 @@ if ($isLoginPage) {
     <link rel="stylesheet" href="assets/css/admin.css?v=1">
 </head>
 
-<body class="hs-body d-flex flex-column min-vh-100">
+<body class="hs-body d-flex flex-column min-vh-100<?php echo $isAdminPage ? ' admin-layout' : ''; ?>">
     <header class="hs-site-header">
         <div class="hs-header__inner">
             <a class="hs-brand" href="<?php echo escapeHtml($homePageUrl); ?>" aria-label="Hot Spot — Trang chủ">
@@ -71,6 +73,9 @@ if ($isLoginPage) {
                 <a class="hs-main-nav__link hs-main-nav__link--active" href="<?php echo escapeHtml($homePageUrl); ?>">Khám phá</a>
                 <span class="hs-main-nav__link" aria-disabled="true">Đăng địa điểm</span>
                 <span class="hs-main-nav__link hs-main-nav__link--heart" aria-disabled="true"><span aria-hidden="true">♡</span> Yêu thích</span>
+                <?php if ($userIsAdmin) { ?>
+                    <a class="hs-main-nav__link hs-main-nav__link--admin" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>"><span aria-hidden="true">⚙</span> Quản trị</a>
+                <?php } ?>
             </nav>
             <?php } ?>
 
