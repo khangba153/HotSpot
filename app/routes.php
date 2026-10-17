@@ -8,6 +8,7 @@ use HotSpot\Controllers\ProfileController;
 use HotSpot\Core\Router;
 use HotSpot\Controllers\PlaceSearchController;
 use HotSpot\Controllers\AdminController;
+use HotSpot\Controllers\FavoriteController;
 
 $router = new Router();
 
@@ -17,6 +18,7 @@ $placeSearchController = new PlaceSearchController();
 $placeController = new PlaceController();
 $authController = new AuthController();
 $adminController = new AdminController();
+$favoriteController = new FavoriteController();
 
 // Các trang hiển thị.
 $router->add('GET', 'home', $homeController, 'index');
@@ -35,5 +37,8 @@ $router->add('POST', 'logout', $authController, 'logout');
 
 // Nhận form cập nhật hồ sơ.
 $router->add('POST', 'profile/update', $profileController, 'update');
+
+// Nhận yêu cầu thêm hoặc bỏ yêu thích.
+$router->add('POST', 'favorites/set', $favoriteController, 'set');
 
 return $router;

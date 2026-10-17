@@ -8,6 +8,7 @@ use HotSpot\Core\HttpException;
 use HotSpot\Models\Place;
 use HotSpot\Models\PlaceImage;
 use HotSpot\Models\User;
+use HotSpot\Models\Favorite;
 
 final class PlaceController extends Controller
 {
@@ -83,6 +84,29 @@ final class PlaceController extends Controller
             $hasLocation = true;
         }
 
+        // Chuẩn bị dữ liệu cho widget yêu thích của Khang.
+        $favoriteWidget = [
+            'place_id' => $placeId,
+            'is_favorited' => false,
+            'is_logged_in' => $userInformation !== null,
+            'csrf_token' => '',
+        ];
+
+        if ($isApproved && $userInformation !== null) {
+            if (isset($_SESSION['csrf_token']) === false) {
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            }
+
+            $favoriteModel = new Favorite();
+
+            $favoriteWidget['is_favorited'] = $favoriteModel->isFavorited(
+                (int) $userInformation['user_id'],
+                $placeId
+            );
+
+            $favoriteWidget['csrf_token'] = $_SESSION['csrf_token'];
+        }
+
         $viewData = [
             'title' => $placeInformation['title'],
             'place' => $placeInformation,
@@ -94,6 +118,7 @@ final class PlaceController extends Controller
             'isOwner' => $isOwner,
             'isAdmin' => $isAdmin,
             'userInformation' => $userInformation,
+            'favoriteWidget' => $favoriteWidget,
         ];
 
         $this->render('places/show', $viewData);
