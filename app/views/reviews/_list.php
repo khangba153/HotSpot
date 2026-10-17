@@ -1,5 +1,5 @@
 <?php
-/** @var array<int, array<string, mixed>> $reviewList Visible reviews, each with full_name, rating, review_text, created_at. */
+/** @var array<int, array<string, mixed>> $reviewList Visible reviews, each with full_name, rating, content, created_at. */
 $reviewList = is_array($viewData['reviewList'] ?? null) ? $viewData['reviewList'] : [];
 $reviewCount = count($reviewList);
 ?>
@@ -24,18 +24,27 @@ $reviewCount = count($reviewList);
                 $rating = max(1, min(5, (int) ($review['rating'] ?? 0)));
                 $reviewName = (string) ($review['full_name'] ?? 'Thành viên Hot Spot');
                 $reviewDate = (string) ($review['created_at'] ?? '');
+                $reviewInitial = '?';
+                if (function_exists('mb_substr') && function_exists('mb_strtoupper')) {
+                    $reviewInitial = mb_strtoupper(mb_substr($reviewName, 0, 1, 'UTF-8'), 'UTF-8');
+                } elseif ($reviewName !== '') {
+                    $reviewInitial = strtoupper(substr($reviewName, 0, 1));
+                }
+                $reviewText = (string) ($review['content'] ?? $review['review_text'] ?? '');
+                $reviewTimestamp = strtotime($reviewDate);
+                $reviewDateLabel = $reviewTimestamp !== false ? date('d/m/Y', $reviewTimestamp) : $reviewDate;
             ?>
                 <article class="hs-review">
-                    <div class="hs-review__avatar" aria-hidden="true"><?php echo escapeHtml(mb_strtoupper(mb_substr($reviewName, 0, 1, 'UTF-8'), 'UTF-8')); ?></div>
+                    <div class="hs-review__avatar" aria-hidden="true"><?php echo escapeHtml($reviewInitial); ?></div>
                     <div class="hs-review__body">
                         <div class="hs-review__topline">
                             <strong><?php echo escapeHtml($reviewName); ?></strong>
-                            <?php if ($reviewDate !== '') { ?><time><?php echo escapeHtml($reviewDate); ?></time><?php } ?>
+                            <?php if ($reviewDate !== '') { ?><time<?php echo $reviewTimestamp !== false ? ' datetime="' . escapeHtml(date(DATE_ATOM, $reviewTimestamp)) . '"' : ''; ?>><?php echo escapeHtml($reviewDateLabel); ?></time><?php } ?>
                         </div>
                         <div class="hs-review__stars" aria-label="<?php echo escapeHtml((string) $rating); ?> trên 5 sao">
                             <?php for ($star = 1; $star <= 5; $star++) { ?><span class="<?php echo $star <= $rating ? 'is-active' : ''; ?>" aria-hidden="true">★</span><?php } ?>
                         </div>
-                        <p><?php echo nl2br(escapeHtml((string) ($review['review_text'] ?? ''))); ?></p>
+                        <p><?php echo nl2br(escapeHtml($reviewText)); ?></p>
                     </div>
                 </article>
             <?php } ?>

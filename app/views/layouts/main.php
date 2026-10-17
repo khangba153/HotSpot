@@ -46,7 +46,8 @@ if ($isLoginPage) {
     <link rel="stylesheet" href="assets/css/app.css?v=4">
     <link rel="stylesheet" href="assets/css/profile.css?v=1">
     <link rel="stylesheet" href="assets/css/auth.css?v=1">
-    <link rel="stylesheet" href="assets/css/places.css?v=1">
+    <link rel="stylesheet" href="assets/css/places.css?v=2">
+    <link rel="stylesheet" href="assets/css/reviews.css?v=1">
     <link rel="stylesheet" href="assets/css/admin.css?v=1">
 </head>
 
