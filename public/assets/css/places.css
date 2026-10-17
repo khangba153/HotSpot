@@ -177,6 +177,35 @@
   color: var(--hs-ink);
 }
 
+/* Điều chỉnh nhẹ phần Detail; style review nằm trong reviews.css của module TV4. */
+.hs-place-detail {
+  background: #fff;
+}
+
+.hs-place-detail > .container {
+  max-width: 1320px;
+}
+
+.hs-place-media__main,
+.hs-place-media__thumb {
+  border-radius: 10px;
+}
+
+.hs-place-heading {
+  margin-top: 14px;
+}
+
+.hs-place-card-block {
+  border-color: #edf0f2;
+  border-radius: 12px;
+  box-shadow: 0 3px 14px rgb(24 37 50 / 3%);
+}
+
+.hs-place-reviews-slot {
+  display: grid;
+  gap: 18px;
+}
+
 @media (max-width: 767.98px) {
   .hs-place-media__main {
     height: 240px;
@@ -194,4 +223,5 @@
   .hs-place-info__row dt {
     flex-basis: 84px;
   }
+
 }

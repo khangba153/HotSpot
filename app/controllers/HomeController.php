@@ -5,6 +5,7 @@ namespace HotSpot\Controllers;
 
 use HotSpot\Core\Controller;
 use HotSpot\Models\PlaceSearch;
+use HotSpot\Models\User;
 
 final class HomeController extends Controller
 {
@@ -37,12 +38,18 @@ final class HomeController extends Controller
             $keyword !== '' ? $keyword : null
         );
 
+        $userInformation = null;
+        if (isset($_SESSION['user_id'])) {
+            $userInformation = (new User())->findById((int) $_SESSION['user_id']);
+        }
+
         $viewData = [
             'title' => 'Khám phá Việt Nam',
             'places' => $searchResult['places'],
             'totalCount' => $searchResult['total_count'],
             'keyword' => $keyword,
             'categories' => $placeSearch->findActiveCategories(),
+            'userInformation' => $userInformation,
         ];
 
         $this->render('home/index', $viewData);
