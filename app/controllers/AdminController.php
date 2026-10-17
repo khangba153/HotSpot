@@ -24,10 +24,15 @@ final class AdminController extends Controller
             throw new HttpException(403, 'Bạn không có quyền truy cập trang quản trị.');
         }
 
+        $adminMessage = $_SESSION['admin_message'] ?? '';
+        $adminMessageType = $_SESSION['admin_message_type'] ?? 'success';
+        unset($_SESSION['admin_message'], $_SESSION['admin_message_type']);
         $this->render('admin/places', [
             'title' => 'Địa điểm chờ duyệt',
             'userInformation' => $user,
             'pendingPlaces' => (new PlaceModeration())->findPendingPlaces(),
+            'adminMessage' => $adminMessage,
+            'adminMessageType' => $adminMessageType,
             'isAdminPage' => true,
         ]);
     }
@@ -65,8 +70,71 @@ final class AdminController extends Controller
         }
         $this->render('admin/place-review', [
             'title' => 'Xem xet dia diem', 'userInformation' => $user,
-            'place' => $place, 'imageUrls' => $images, 'isAdminPage' => true,
+            'place' => $place, 'imageUrls' => $images,
+            'csrfToken' => $_SESSION['csrf_token'] ?? '',
+            'adminMessage' => $_SESSION['admin_message'] ?? '',
+            'isAdminPage' => true,
         ]);
+        unset($_SESSION['admin_message'], $_SESSION['admin_message_type']);
+    }
+
+    public function updatePlaceStatus(): void
+    {
+        $admin = $this->requireAdmin();
+        $allowedFields = ['csrf_token', 'place_id', 'target_status', 'rejection_reason'];
+        foreach ($_POST as $field => $value) {
+            if (!in_array($field, $allowedFields, true)) {
+                throw new HttpException(400, 'Form không hợp lệ.');
+            }
+        }
+
+        $submittedToken = $_POST['csrf_token'] ?? '';
+        if (!is_string($submittedToken) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $submittedToken)) {
+            throw new HttpException(400, 'Phiên làm việc hết hạn. Hãy tải lại trang và thử lại.');
+        }
+
+        $rawPlaceId = $_POST['place_id'] ?? '';
+        $targetStatus = $_POST['target_status'] ?? '';
+        if (!is_string($rawPlaceId) || strlen($rawPlaceId) > 18 || !ctype_digit($rawPlaceId) || (int) $rawPlaceId <= 0) {
+            throw new HttpException(400, 'Địa điểm không hợp lệ.');
+        }
+        if (!is_string($targetStatus) || !in_array($targetStatus, ['APPROVED', 'REJECTED'], true)) {
+            throw new HttpException(400, 'Trạng thái duyệt không hợp lệ.');
+        }
+
+        $reason = $_POST['rejection_reason'] ?? '';
+        if (!is_string($reason)) {
+            throw new HttpException(400, 'Lý do từ chối không hợp lệ.');
+        }
+        $reason = trim($reason);
+        if ($targetStatus === 'REJECTED' && $reason === '') {
+            $this->redirectWithAdminMessage((int) $rawPlaceId, 'Vui lòng nhập lý do từ chối.', 'danger');
+        }
+        if ($targetStatus === 'APPROVED') {
+            $reason = '';
+        }
+
+        try {
+            (new PlaceModeration())->setPendingPlaceStatus(
+                (int) $admin['user_id'],
+                (int) $rawPlaceId,
+                $targetStatus,
+                $reason === '' ? null : $reason
+            );
+        } catch (\PDOException $exception) {
+            $this->redirectWithAdminMessage((int) $rawPlaceId, 'Không thể lưu quyết định. Hãy kiểm tra cấu hình cơ sở dữ liệu và routine.', 'danger');
+        } catch (\RuntimeException $exception) {
+            $this->redirectWithAdminMessage((int) $rawPlaceId, $exception->getMessage(), 'danger');
+        } catch (\Throwable $exception) {
+            $this->redirectWithAdminMessage((int) $rawPlaceId, 'Chưa thể lưu quyết định. Vui lòng thử lại.', 'danger');
+        }
+
+        $_SESSION['admin_message'] = $targetStatus === 'APPROVED'
+            ? 'Đã duyệt địa điểm.'
+            : 'Đã từ chối địa điểm và lưu lý do.';
+        $_SESSION['admin_message_type'] = 'success';
+        header('Location: ' . createRouteUrl('admin/places'));
+        exit;
     }
 
     private function requireAdmin(): array
@@ -82,5 +150,13 @@ final class AdminController extends Controller
             throw new HttpException(403, 'Ban khong co quyen quan tri.');
         }
         return $user;
+    }
+
+    private function redirectWithAdminMessage(int $placeId, string $message, string $type): void
+    {
+        $_SESSION['admin_message'] = $message;
+        $_SESSION['admin_message_type'] = $type;
+        header('Location: ' . createRouteUrl('admin/places/review') . '&id=' . $placeId);
+        exit;
     }
 }
