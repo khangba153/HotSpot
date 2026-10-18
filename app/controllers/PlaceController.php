@@ -7,6 +7,7 @@ use HotSpot\Core\Controller;
 use HotSpot\Core\HttpException;
 use HotSpot\Models\Place;
 use HotSpot\Models\PlaceImage;
+use HotSpot\Models\Review;
 use HotSpot\Models\User;
 
 final class PlaceController extends Controller
@@ -62,6 +63,19 @@ final class PlaceController extends Controller
             }
         }
 
+        $reviewList = [];
+        $currentReview = null;
+        $isLoggedIn = $userInformation !== null;
+        $canReview = $isApproved && $userInformation !== null
+            && ($userInformation['role_code'] ?? '') === 'MEMBER';
+        if ($isApproved) {
+            $reviewModel = new Review();
+            $reviewList = $reviewModel->findVisibleByPlaceId($placeId);
+            if ($canReview) {
+                $currentReview = $reviewModel->findForUserAndPlace((int) $userInformation['user_id'], $placeId);
+            }
+        }
+
         // Bài chưa công khai: chỉ chủ bài hoặc Admin được xem.
         if ($isApproved === false) {
             if ($isOwner === false && $isAdmin === false) {
@@ -94,6 +108,12 @@ final class PlaceController extends Controller
             'isOwner' => $isOwner,
             'isAdmin' => $isAdmin,
             'userInformation' => $userInformation,
+            'reviewList' => $reviewList,
+            'currentReview' => $currentReview,
+            'isLoggedIn' => $isLoggedIn,
+            'canReview' => $canReview,
+            'csrfToken' => (string) ($_SESSION['csrf_token'] ?? ''),
+            'placeId' => $placeId,
         ];
 
         $this->render('places/show', $viewData);

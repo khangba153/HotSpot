@@ -16,6 +16,14 @@ $address = (string) $place['address'];
 $description = (string) $place['description'];
 $statusCode = (string) $place['status_code'];
 $statusName = (string) $place['status_name'];
+$reviewPartialData = [
+    'reviewList' => $viewData['reviewList'] ?? [],
+    'currentReview' => $viewData['currentReview'] ?? null,
+    'canReview' => $viewData['canReview'] ?? false,
+    'isLoggedIn' => $viewData['isLoggedIn'] ?? false,
+    'placeId' => $viewData['placeId'] ?? 0,
+    'csrfToken' => $viewData['csrfToken'] ?? '',
+];
 
 $wardName = '';
 
@@ -174,9 +182,12 @@ $fallbackImageScript = "this.onerror=null;this.src='" . $fallbackImageUrl . "';"
                 <?php if ($isApproved) { ?>
                     <section class="hs-place-card-block" aria-labelledby="place-reviews-heading">
                         <h2 id="place-reviews-heading" class="hs-place-card-block__title">Đánh giá</h2>
-                        <!-- C05: vị trí nhúng reviews/_list.php và reviews/_form.php do TV4 cung cấp. -->
                         <div id="place-reviews-slot" class="hs-place-reviews-slot">
-                            <p class="text-muted mb-0">Chưa có đánh giá để hiển thị.</p>
+                            <?php
+                            $viewData = $reviewPartialData;
+                            require dirname(__DIR__) . '/reviews/_list.php';
+                            require dirname(__DIR__) . '/reviews/_form.php';
+                            ?>
                         </div>
                     </section>
                 <?php } ?>

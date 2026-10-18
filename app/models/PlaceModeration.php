@@ -70,6 +70,16 @@ final class PlaceModeration extends Model
             while ($procedure->nextRowset()) {
             }
             $procedure->closeCursor();
+
+            // Ghi nhận lần duyệt đầu; restore về APPROVED không được thay ngày cũ.
+            if ($newStatus === 'APPROVED') {
+                $approvedAt = $connection->prepare(
+                    'UPDATE places SET approved_at = CURRENT_TIMESTAMP WHERE place_id = :place_id AND approved_at IS NULL'
+                );
+                $approvedAt->bindValue(':place_id', $placeId, PDO::PARAM_INT);
+                $approvedAt->execute();
+                $approvedAt->closeCursor();
+            }
             $connection->commit();
         } catch (\Throwable $exception) {
             if ($connection->inTransaction()) {
