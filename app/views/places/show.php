@@ -1,6 +1,7 @@
 <?php
 /** @var array<string, mixed> $viewData Dữ liệu từ Controller. */
 $place = $viewData['place'];
+$placeViewData = $viewData;
 $imageUrls = $viewData['imageUrls'];
 $fallbackImageUrl = $viewData['fallbackImageUrl'];
 $tags = $viewData['tags'];
@@ -187,6 +188,7 @@ $fallbackImageScript = "this.onerror=null;this.src='" . $fallbackImageUrl . "';"
                             $viewData = $reviewPartialData;
                             require dirname(__DIR__) . '/reviews/_list.php';
                             require dirname(__DIR__) . '/reviews/_form.php';
+                            $viewData = $placeViewData;
                             ?>
                         </div>
                     </section>
