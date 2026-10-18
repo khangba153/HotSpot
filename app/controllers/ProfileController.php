@@ -44,6 +44,8 @@ final class ProfileController extends Controller
             $_SESSION['profile_message'],
             $_SESSION['profile_message_type']
         );
+        
+        $profileStatistics = $userModel->getProfileStatistics($userId);
 
         $viewData = [
             'title' => 'Hồ sơ cá nhân',
@@ -52,6 +54,7 @@ final class ProfileController extends Controller
             'isProfilePage' => true,
             'profileMessage' => $profileMessage,
             'profileMessageType' => $profileMessageType,
+            'profileStatistics' => $profileStatistics,
         ];
 
         $this->render('profile/index', $viewData);
@@ -73,8 +76,14 @@ final class ProfileController extends Controller
             throw new HttpException(401, 'Tài khoản không tồn tại.');
         }
 
-        // Chỉ nhận ba trường của form, từ chối ID hoặc vai trò gửi thêm.
-        $allowedFields = ['full_name', 'email', 'csrf_token'];
+        // Chỉ nhận các trường hồ sơ được phép sửa và mã CSRF.
+        $allowedFields = [
+            'full_name',
+            'email',
+            'phone',
+            'bio',
+            'csrf_token',
+        ];
 
         foreach ($_POST as $fieldName => $fieldValue) {
             if (in_array($fieldName, $allowedFields, true) === false) {
@@ -135,8 +144,67 @@ final class ProfileController extends Controller
             );
         }
 
+        $phone = null;
+        $biography = null;
+
+        // Trường tùy chọn để trống sẽ được lưu thành NULL.
+        if (isset($_POST['phone'])) {
+            if (is_string($_POST['phone']) === false) {
+                throw new HttpException(400, 'Số điện thoại không hợp lệ.');
+            }
+
+            $phone = trim($_POST['phone']);
+
+            if ($phone === '') {
+                $phone = null;
+            }
+        }
+
+        if (isset($_POST['bio'])) {
+            if (is_string($_POST['bio']) === false) {
+                throw new HttpException(400, 'Thông tin giới thiệu không hợp lệ.');
+            }
+
+            $biography = trim($_POST['bio']);
+
+            if ($biography === '') {
+                $biography = null;
+            }
+        }
+
+        if ($phone !== null) {
+            if (mb_strlen($phone, 'UTF-8') > 20) {
+                $this->redirectToProfile(
+                    'Số điện thoại không được vượt quá 20 ký tự.',
+                    'danger'
+                );
+            }
+
+            if (preg_match('/^\+?[0-9][0-9 ()-]*$/', $phone) !== 1) {
+                $this->redirectToProfile(
+                    'Số điện thoại chỉ nhận chữ số, dấu + ở đầu, khoảng trắng, dấu ngoặc và dấu gạch ngang.',
+                    'danger'
+                );
+            }
+        }
+
+        if ($biography !== null) {
+            if (mb_strlen($biography, 'UTF-8') > 300) {
+                $this->redirectToProfile(
+                    'Giới thiệu không được vượt quá 300 ký tự.',
+                    'danger'
+                );
+            }
+        }
+
         try {
-            $userModel->updateProfile($userId, $fullName, $email);
+            $userModel->updateProfile(
+                $userId,
+                $fullName,
+                $email,
+                $phone,
+                $biography
+            );
         } catch (PDOException $exception) {
             // MariaDB dùng mã 1062 khi email vi phạm ràng buộc không trùng.
             if (

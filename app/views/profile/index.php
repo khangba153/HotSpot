@@ -10,6 +10,19 @@ $logoutUrl = createRouteUrl('logout');
 $updateProfileUrl = createRouteUrl('profile/update');
 $profileMessage = $viewData['profileMessage'];
 $profileMessageType = $viewData['profileMessageType'];
+
+$phone = '';
+$biography = '';
+
+if ($userInformation['phone'] !== null) {
+    $phone = $userInformation['phone'];
+}
+
+if ($userInformation['bio'] !== null) {
+    $biography = $userInformation['bio'];
+}
+
+$profileStatistics = $viewData['profileStatistics'];
 ?>
 
 <div
@@ -35,7 +48,11 @@ $profileMessageType = $viewData['profileMessageType'];
                     </h2>
 
                     <p class="profile-description">
-                        Chưa có thông tin giới thiệu.
+                        <?php if ($biography === '') { ?>
+                            Chưa có thông tin giới thiệu.
+                        <?php } else { ?>
+                            <?php echo escapeHtml($biography); ?>
+                        <?php } ?>
                     </p>
                 </div>
                 <nav class="profile-menu" aria-label="Menu hồ sơ">
@@ -91,7 +108,9 @@ $profileMessageType = $viewData['profileMessageType'];
                             </span>
 
                             <div>
-                                <strong class="statistic-number">—</strong>
+                                <strong class="statistic-number">
+                                    <?php echo $profileStatistics['favorite_count']; ?>
+                                </strong>
                                 <span class="statistic-label">Địa điểm yêu thích</span>
                             </div>
                         </div>
@@ -104,7 +123,9 @@ $profileMessageType = $viewData['profileMessageType'];
                             </span>
 
                             <div>
-                                <strong class="statistic-number">—</strong>
+                                <strong class="statistic-number">
+                                    <?php echo $profileStatistics['place_count']; ?>
+                                </strong>
                                 <span class="statistic-label">Địa điểm đã đăng</span>
                             </div>
                         </div>
@@ -117,7 +138,9 @@ $profileMessageType = $viewData['profileMessageType'];
                             </span>
 
                             <div>
-                                <strong class="statistic-number">—</strong>
+                                <strong class="statistic-number">
+                                    <?php echo $profileStatistics['review_count']; ?>
+                                </strong>
                                 <span class="statistic-label">Bài đánh giá</span>
                             </div>
                         </div>
@@ -130,7 +153,9 @@ $profileMessageType = $viewData['profileMessageType'];
                             </span>
 
                             <div>
-                                <strong class="statistic-number">—</strong>
+                                <strong class="statistic-number">
+                                    <?php echo $profileStatistics['image_count']; ?>
+                                </strong>
                                 <span class="statistic-label">Ảnh đã chia sẻ</span>
                             </div>
                         </div>
@@ -138,7 +163,8 @@ $profileMessageType = $viewData['profileMessageType'];
                 </div>
 
                 <p class="statistic-note">
-                    Thống kê chưa được kết nối dữ liệu.
+                    Thống kê toàn bộ hoạt động của bạn, gồm địa điểm chưa duyệt
+                    và đánh giá đã ẩn. Ảnh đã chia sẻ chỉ tính ảnh địa điểm.
                 </p>
             </section>
 
@@ -148,7 +174,7 @@ $profileMessageType = $viewData['profileMessageType'];
                 </h1>
 
                 <p class="text-secondary mb-4">
-                    Bạn có thể cập nhật họ tên và email của tài khoản.
+                    Bạn có thể cập nhật họ tên, email, số điện thoại và giới thiệu bản thân.
                 </p>
 
                 <?php if ($profileMessage !== '') { ?>
@@ -205,7 +231,6 @@ $profileMessageType = $viewData['profileMessageType'];
                         </div>
                     </div>
 
-                    <!-- Các trường này chưa có trong bảng users, chỉ dựng giao diện. -->
                     <div class="row align-items-center mb-3">
                         <div class="col-12 col-sm-3">
                             <label for="profile-phone" class="form-label">
@@ -215,11 +240,13 @@ $profileMessageType = $viewData['profileMessageType'];
 
                         <div class="col-12 col-sm-9">
                             <input
-                                type="text"
+                                type="tel"
                                 id="profile-phone"
+                                name="phone"
                                 class="form-control"
-                                placeholder="Chưa hỗ trợ"
-                                disabled>
+                                value="<?php echo escapeHtml($phone); ?>"
+                                maxlength="20"
+                                placeholder="Nhập số điện thoại">
                         </div>
                     </div>
 
@@ -250,10 +277,11 @@ $profileMessageType = $viewData['profileMessageType'];
                         <div class="col-12 col-sm-9">
                             <textarea
                                 id="profile-introduction"
+                                name="bio"
                                 class="form-control"
                                 rows="3"
-                                placeholder="Chưa hỗ trợ"
-                                disabled></textarea>
+                                maxlength="300"
+                                placeholder="Giới thiệu ngắn về bản thân"><?php echo escapeHtml($biography); ?></textarea>
                         </div>
                     </div>
 
@@ -270,7 +298,7 @@ $profileMessageType = $viewData['profileMessageType'];
                             <div class="text-end">
                                 <button
                                     type="submit"
-                                    class="btn button-brand">
+                                    class="btn profile-save-button">
                                     Lưu thay đổi
                                 </button>
                             </div>

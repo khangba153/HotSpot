@@ -7,6 +7,30 @@
     background-repeat: no-repeat;
 }
 
+/* Nút lưu hồ sơ: viền cam, đổi nền khi tương tác. */
+.profile-save-button {
+    padding: 10px 24px;
+    color: #ff512f;
+    background-color: #ffffff;
+    border: 1px solid #ff512f;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.profile-save-button:hover,
+.profile-save-button:focus-visible,
+.profile-save-button:active {
+    color: #ffffff;
+    background-color: #ff512f;
+    border-color: #ff512f;
+}
+
+.profile-save-button:focus-visible {
+    outline: 3px solid rgba(255, 81, 47, 0.3);
+    outline-offset: 3px;
+}
+
 @media (max-width: 575.98px) {
     .profile-cover {
         height: 180px;
