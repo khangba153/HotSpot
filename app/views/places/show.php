@@ -149,8 +149,9 @@ $fallbackImageScript = "this.onerror=null;this.src='" . $fallbackImageUrl . "';"
                         <h1 class="hs-place-heading__title"><?php echo escapeHtml($placeTitle); ?></h1>
 
                         <?php if ($isApproved) { ?>
-                            <!-- C09: vị trí nhúng Favorite widget partial của Khang (favorites/_widget). -->
-                            <div id="place-favorite-slot" class="hs-place-favorite-slot"></div>
+                            <div id="place-favorite-slot" class="hs-place-favorite-slot">
+                                <?php require dirname(__DIR__) . '/favorites/_button.php'; ?>
+                            </div>
                         <?php } ?>
                     </div>
 
@@ -248,3 +249,4 @@ $fallbackImageScript = "this.onerror=null;this.src='" . $fallbackImageUrl . "';"
         </div>
     </div>
 </section>
+<script src="assets/js/favorite.js" defer></script>
