@@ -7,6 +7,7 @@ use HotSpot\Core\Controller;
 use HotSpot\Core\HttpException;
 use HotSpot\Models\Place;
 use HotSpot\Models\PlaceImage;
+use HotSpot\Models\Review;
 use HotSpot\Models\User;
 use HotSpot\Models\Favorite;
 
@@ -60,6 +61,19 @@ final class PlaceController extends Controller
 
             if ($userInformation['role_code'] === 'ADMIN') {
                 $isAdmin = true;
+            }
+        }
+
+        $reviewList = [];
+        $currentReview = null;
+        $isLoggedIn = $userInformation !== null;
+        $canReview = $isApproved && $userInformation !== null
+            && ($userInformation['role_code'] ?? '') === 'MEMBER';
+        if ($isApproved) {
+            $reviewModel = new Review();
+            $reviewList = $reviewModel->findVisibleByPlaceId($placeId);
+            if ($canReview) {
+                $currentReview = $reviewModel->findForUserAndPlace((int) $userInformation['user_id'], $placeId);
             }
         }
 
@@ -118,6 +132,12 @@ final class PlaceController extends Controller
             'isOwner' => $isOwner,
             'isAdmin' => $isAdmin,
             'userInformation' => $userInformation,
+            'reviewList' => $reviewList,
+            'currentReview' => $currentReview,
+            'isLoggedIn' => $isLoggedIn,
+            'canReview' => $canReview,
+            'csrfToken' => (string) ($_SESSION['csrf_token'] ?? ''),
+            'placeId' => $placeId,
             'favoriteWidget' => $favoriteWidget,
         ];
 
