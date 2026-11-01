@@ -54,7 +54,6 @@
             if (keyword !== '' && total === 0) {
                 results.innerHTML = `
                     <div class="hs-empty-state" role="status">
-                        <span class="hs-empty-state__icon" aria-hidden="true">⌖</span>
                         <h3>Không tìm thấy địa điểm phù hợp</h3>
                         <p>Thử một từ khóa khác hoặc rút gọn từ khóa hiện tại.</p>
                     </div>`;

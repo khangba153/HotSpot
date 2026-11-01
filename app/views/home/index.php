@@ -95,7 +95,6 @@ $featuredPlaces = array_slice($places, 0, 12);
                         <rect x="14.5" y="14.5" width="6" height="6" rx="1"></rect>
                     </svg>
                     Tất cả danh mục
-                    <span class="hs-filter-pill__chevron">⌄</span>
                 </span>
 
                 <span class="hs-filter-pill">
@@ -104,7 +103,6 @@ $featuredPlaces = array_slice($places, 0, 12);
                         <circle cx="12" cy="10" r="2.2"></circle>
                     </svg>
                     Tỉnh/Thành
-                    <span class="hs-filter-pill__chevron">⌄</span>
                 </span>
 
                 <span class="hs-filter-pill">
@@ -113,7 +111,6 @@ $featuredPlaces = array_slice($places, 0, 12);
                         <circle cx="9" cy="9" r="1"></circle>
                     </svg>
                     Nhãn phổ biến
-                    <span class="hs-filter-pill__chevron">⌄</span>
                 </span>
             </div>
         </div>
@@ -123,10 +120,9 @@ $featuredPlaces = array_slice($places, 0, 12);
 
             <div class="hs-hero-place__copy">
                 <strong>Vịnh Hạ Long</strong>
-                <span><i aria-hidden="true">●</i> Quảng Ninh</span>
+                <span>Quảng Ninh</span>
             </div>
 
-            <span class="hs-hero-place__arrow" aria-hidden="true">›</span>
         </aside>
     </div>
 </section>
@@ -140,7 +136,7 @@ $featuredPlaces = array_slice($places, 0, 12);
             </div>
 
             <span class="hs-section-link">
-                Xem tất cả danh mục <span aria-hidden="true">→</span>
+                Xem tất cả danh mục
             </span>
         </div>
 
@@ -221,7 +217,7 @@ $featuredPlaces = array_slice($places, 0, 12);
                 id="home-featured-all-link"
                 <?php echo $keyword !== '' ? 'hidden' : ''; ?>>
 
-                Xem tất cả địa điểm <span aria-hidden="true">→</span>
+                Xem tất cả địa điểm
             </span>
         </div>
 
@@ -256,7 +252,6 @@ $featuredPlaces = array_slice($places, 0, 12);
         <div id="home-search-results">
             <?php if ($keyword !== '' && $featuredPlaces === []) : ?>
                 <div class="hs-empty-state" role="status">
-                    <span class="hs-empty-state__icon" aria-hidden="true">⌖</span>
                     <h3>Không tìm thấy địa điểm phù hợp</h3>
                     <p>Thử một từ khóa khác hoặc rút gọn từ khóa hiện tại.</p>
                 </div>
@@ -274,15 +269,15 @@ $featuredPlaces = array_slice($places, 0, 12);
             aria-label="Phân trang địa điểm"
             <?php echo $keyword !== '' ? 'hidden' : ''; ?>>
 
-            <span class="hs-pagination__arrow" aria-hidden="true">‹</span>
+            <span class="hs-pagination__direction" aria-disabled="true">Trước</span>
             <span class="hs-pagination__number hs-pagination__number--active" aria-current="page">1</span>
             <span class="hs-pagination__number">2</span>
             <span class="hs-pagination__number">3</span>
             <span class="hs-pagination__number">4</span>
             <span class="hs-pagination__number">5</span>
-            <span class="hs-pagination__arrow" aria-hidden="true">›</span>
+            <span class="hs-pagination__direction" aria-disabled="true">Sau</span>
         </nav>
     </section>
 </div>
 
-<script src="assets/js/search.js" defer></script>
+<script src="assets/js/search.js?v=2" defer></script>

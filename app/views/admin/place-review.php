@@ -7,9 +7,9 @@ $csrfToken = (string) ($viewData['csrfToken'] ?? '');
 $adminMessage = (string) ($viewData['adminMessage'] ?? '');
 ?>
 <div class="admin-shell">
-    <aside class="admin-sidebar"><small>QUẢN LÝ HỆ THỐNG</small><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">▦ &nbsp; Tổng quan</a><a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">◷ &nbsp; Chờ duyệt địa điểm</a><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">⌘ &nbsp; Quản lý địa điểm</a><a>☆ &nbsp; Quản lý đánh giá</a><a>▤ &nbsp; Quản lý danh mục</a><a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">↩ &nbsp; Quay về trang chủ</a></aside>
+    <aside class="admin-sidebar"><small>QUẢN LÝ HỆ THỐNG</small><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Tổng quan</a><a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Chờ duyệt địa điểm</a><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Quản lý địa điểm</a><a>Quản lý đánh giá</a><a>Quản lý danh mục</a><a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">Quay về trang chủ</a></aside>
     <main class="admin-content">
-        <div class="admin-heading"><div><small>HOT SPOT / QUẢN TRỊ</small><h1>Xem xét địa điểm</h1><p>Đọc thông tin bài đăng, kiểm tra hình ảnh và quyết định duyệt hoặc từ chối</p></div><span class="admin-pill">● &nbsp; PENDING</span></div>
+        <div class="admin-heading"><div><small>HOT SPOT / QUẢN TRỊ</small><h1>Xem xét địa điểm</h1><p>Đọc thông tin bài đăng, kiểm tra hình ảnh và quyết định duyệt hoặc từ chối</p></div><span class="admin-pill">PENDING</span></div>
         <?php if ($adminMessage !== '') { ?><div class="admin-action-note" role="alert"><?php echo escapeHtml($adminMessage); ?></div><?php } ?>
         <div class="admin-review-grid">
             <div>
@@ -25,15 +25,15 @@ $adminMessage = (string) ($viewData['adminMessage'] ?? '');
                 <?php if ($place['latitude'] !== null && $place['longitude'] !== null) { ?><a href="https://www.openstreetmap.org/?mlat=<?php echo rawurlencode((string) $place['latitude']); ?>&amp;mlon=<?php echo rawurlencode((string) $place['longitude']); ?>" target="_blank" rel="noopener noreferrer">Mở vị trí trên OpenStreetMap</a><?php } else { ?><span class="admin-muted">Người đăng chưa cung cấp tọa độ.</span><?php } ?></section>
             </div>
             <aside class="admin-review-side"><section class="admin-card"><h3>Thông tin bài đăng</h3>
-                <dl><dt>Người đăng</dt><dd><?php echo escapeHtml((string) $place['owner_name']); ?></dd><dt>Email</dt><dd><?php echo escapeHtml((string) $place['owner_email']); ?></dd><dt>Ngày gửi</dt><dd><?php echo escapeHtml(date('d/m/Y · H:i', strtotime((string) $place['created_at']))); ?></dd><dt>Danh mục</dt><dd><?php echo escapeHtml((string) $place['category_name']); ?></dd><dt>Tỉnh/thành</dt><dd><?php echo escapeHtml((string) $place['province_name']); ?></dd><dt>Hình ảnh</dt><dd><?php echo count($images); ?> ảnh đã gửi</dd><dt>Trạng thái</dt><dd><span class="admin-pill">● Chờ duyệt</span></dd></dl>
+                <dl><dt>Người đăng</dt><dd><?php echo escapeHtml((string) $place['owner_name']); ?></dd><dt>Email</dt><dd><?php echo escapeHtml((string) $place['owner_email']); ?></dd><dt>Ngày gửi</dt><dd><?php echo escapeHtml(date('d/m/Y · H:i', strtotime((string) $place['created_at']))); ?></dd><dt>Danh mục</dt><dd><?php echo escapeHtml((string) $place['category_name']); ?></dd><dt>Tỉnh/thành</dt><dd><?php echo escapeHtml((string) $place['province_name']); ?></dd><dt>Hình ảnh</dt><dd><?php echo count($images); ?> ảnh đã gửi</dd><dt>Trạng thái</dt><dd><span class="admin-pill">Chờ duyệt</span></dd></dl>
                 <div class="admin-actions">
                     <form method="post" action="<?php echo escapeHtml(createRouteUrl('admin/places/status')); ?>">
                         <input type="hidden" name="csrf_token" value="<?php echo escapeHtml($csrfToken); ?>">
                         <input type="hidden" name="place_id" value="<?php echo (int) $place['place_id']; ?>">
                         <input type="hidden" name="target_status" value="APPROVED">
-                        <button type="submit">✓ &nbsp; Duyệt bài</button>
+                        <button type="submit">Duyệt bài</button>
                     </form>
-                    <button type="submit" form="reject-form" class="admin-reject-shortcut">× &nbsp; Từ chối</button>
+                    <button type="submit" form="reject-form" class="admin-reject-shortcut">Từ chối</button>
                 </div>
             </section><section class="admin-card admin-reject"><h3>Từ chối địa điểm</h3><p>Nhập lý do cụ thể để thành viên biết cần chỉnh sửa những gì.</p>
                 <form id="reject-form" method="post" action="<?php echo escapeHtml(createRouteUrl('admin/places/status')); ?>">

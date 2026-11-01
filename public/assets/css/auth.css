@@ -89,19 +89,6 @@
     font-weight: 600;
 }
 
-.auth-benefits li span {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background-color: #ffffff;
-    color: #ff542e;
-    font-size: 24px;
-    flex-shrink: 0;
-}
-
 .auth-form-panel {
     max-width: 520px;
     margin: 0 auto;

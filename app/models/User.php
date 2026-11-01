@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace HotSpot\Models;
@@ -203,5 +204,46 @@ final class User extends Model
             'review_count' => (int) $statistics['review_count'],
             'image_count' => (int) $statistics['image_count'],
         ];
+    }
+
+    // Lấy lịch sử đánh giá của người dùng, gồm cả đánh giá đã bị ẩn.
+    public function findReviewHistoryByUserId(int $userId): array
+    {
+        if ($userId <= 0) {
+            return [];
+        }
+
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'SELECT reviews.review_id,
+                        reviews.place_id,
+                        reviews.rating,
+                        reviews.content,
+                        reviews.status_code AS review_status,
+                        reviews.created_at AS review_created_at,
+                        places.title AS place_title,
+                        places.status_code AS place_status
+                 FROM reviews
+                 INNER JOIN places
+                     ON places.place_id = reviews.place_id
+                 WHERE reviews.user_id = :user_id
+                 ORDER BY reviews.created_at DESC,
+                          reviews.review_id DESC';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':user_id',
+            $userId,
+            PDO::PARAM_INT
+        );
+
+        $preparedStatement->execute();
+
+        $reviewHistory = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
+
+        $preparedStatement->closeCursor();
+
+        return $reviewHistory;
     }
 }

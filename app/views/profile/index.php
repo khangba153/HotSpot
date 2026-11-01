@@ -23,6 +23,17 @@ if ($userInformation['bio'] !== null) {
 }
 
 $profileStatistics = $viewData['profileStatistics'];
+$activeTab = $viewData['activeTab'];
+$profilePageUrl = createRouteUrl('profile');
+$reviewHistoryUrl = $profilePageUrl . '&tab=reviews';
+$overviewLinkClass = 'profile-menu-item';
+$reviewLinkClass = 'profile-menu-item';
+
+if ($activeTab === 'reviews') {
+    $reviewLinkClass = $reviewLinkClass . ' active';
+} else {
+    $overviewLinkClass = $overviewLinkClass . ' active';
+}
 ?>
 
 <div
@@ -56,9 +67,12 @@ $profileStatistics = $viewData['profileStatistics'];
                     </p>
                 </div>
                 <nav class="profile-menu" aria-label="Menu hồ sơ">
-                    <span class="profile-menu-item active" aria-current="page">
+                    <a
+                        class="<?php echo escapeHtml($overviewLinkClass); ?>"
+                        href="<?php echo escapeHtml($profilePageUrl); ?>"
+                        <?php if ($activeTab === 'overview') { ?>aria-current="page"<?php } ?>>
                         Hồ sơ
-                    </span>
+                    </a>
 
                     <span class="profile-menu-item" aria-disabled="true">
                         Địa điểm của tôi
@@ -69,10 +83,12 @@ $profileStatistics = $viewData['profileStatistics'];
                         Yêu thích
                     </a>
 
-                    <span class="profile-menu-item" aria-disabled="true">
+                    <a
+                        class="<?php echo escapeHtml($reviewLinkClass); ?>"
+                        href="<?php echo escapeHtml($reviewHistoryUrl); ?>"
+                        <?php if ($activeTab === 'reviews') { ?>aria-current="page"<?php } ?>>
                         Đã đánh giá
-                        <small>Chưa hỗ trợ</small>
-                    </span>
+                    </a>
                 </nav>
 
                 <form
@@ -94,6 +110,9 @@ $profileStatistics = $viewData['profileStatistics'];
         </div>
 
         <div class="col-12 col-lg-9">
+            <?php if ($activeTab === 'reviews') { ?>
+                <?php require __DIR__ . '/_review-history.php'; ?>
+            <?php } else { ?>
             <section class="profile-overview mb-4">
                 <h2 class="profile-section-title">
                     Tổng quan hoạt động
@@ -306,6 +325,7 @@ $profileStatistics = $viewData['profileStatistics'];
                 </form>
             </section>
 
+            <?php } ?>
         </div>
 
     </div>

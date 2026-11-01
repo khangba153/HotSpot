@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace HotSpot\Controllers;
@@ -44,8 +45,28 @@ final class ProfileController extends Controller
             $_SESSION['profile_message'],
             $_SESSION['profile_message_type']
         );
-        
+
         $profileStatistics = $userModel->getProfileStatistics($userId);
+
+        // Chỉ chấp nhận những tab đã được triển khai.
+        $activeTab = 'overview';
+
+        if (isset($_GET['tab'])) {
+            if (
+                is_string($_GET['tab']) === false
+                || in_array($_GET['tab'], ['overview', 'reviews'], true) === false
+            ) {
+                throw new HttpException(400, 'Tab hồ sơ không hợp lệ.');
+            }
+
+            $activeTab = $_GET['tab'];
+        }
+
+        $reviewHistory = [];
+
+        if ($activeTab === 'reviews') {
+            $reviewHistory = $userModel->findReviewHistoryByUserId($userId);
+        }
 
         $viewData = [
             'title' => 'Hồ sơ cá nhân',
@@ -55,6 +76,8 @@ final class ProfileController extends Controller
             'profileMessage' => $profileMessage,
             'profileMessageType' => $profileMessageType,
             'profileStatistics' => $profileStatistics,
+            'activeTab' => $activeTab,
+            'reviewHistory' => $reviewHistory,
         ];
 
         $this->render('profile/index', $viewData);
