@@ -65,10 +65,9 @@ $profileStatistics = $viewData['profileStatistics'];
                         <small>Chưa hỗ trợ</small>
                     </span>
 
-                    <span class="profile-menu-item" aria-disabled="true">
+                    <a class="profile-menu-item" href="<?php echo escapeHtml(createRouteUrl('favorites')); ?>">
                         Yêu thích
-                        <small>Chưa hỗ trợ</small>
-                    </span>
+                    </a>
 
                     <span class="profile-menu-item" aria-disabled="true">
                         Đã đánh giá

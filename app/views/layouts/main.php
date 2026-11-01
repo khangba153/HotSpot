@@ -12,6 +12,23 @@ $homePageUrl = createRouteUrl('home');
 $loginPageUrl = createRouteUrl('login');
 $profilePageUrl = createRouteUrl('profile');
 
+$favoritePageUrl = createRouteUrl('favorites');
+
+$homeLinkClass = 'hs-main-nav__link hs-main-nav__link--active';
+$favoriteLinkClass = 'hs-main-nav__link hs-main-nav__link--heart';
+
+if (isset($_SESSION['user_id']) === false) {
+    $favoritePageUrl = $loginPageUrl;
+}
+
+if (
+    isset($viewData['isFavoritesPage'])
+    && $viewData['isFavoritesPage'] === true
+) {
+    $homeLinkClass = 'hs-main-nav__link';
+    $favoriteLinkClass = $favoriteLinkClass . ' hs-main-nav__link--active';
+}
+
 $userIsLoggedIn = isset($_SESSION['user_id']);
 $userIsAdmin = isset($viewData['userInformation']['role_code'])
     && $viewData['userInformation']['role_code'] === 'ADMIN';
@@ -49,6 +66,7 @@ if ($isLoginPage) {
     <link rel="stylesheet" href="assets/css/places.css?v=2">
     <link rel="stylesheet" href="assets/css/reviews.css?v=1">
     <link rel="stylesheet" href="assets/css/admin.css?v=1">
+    <link rel="stylesheet" href="assets/css/favorites.css?v=3">
 </head>
 
 <body class="hs-body d-flex flex-column min-vh-100<?php echo $isAdminPage ? ' admin-layout' : ''; ?>">
@@ -71,9 +89,17 @@ if ($isLoginPage) {
                 <div class="admin-top-title">TRANG QUẢN TRỊ</div>
             <?php } else { ?>
             <nav class="hs-main-nav" aria-label="Điều hướng chính">
-                <a class="hs-main-nav__link hs-main-nav__link--active" href="<?php echo escapeHtml($homePageUrl); ?>">Khám phá</a>
+                <a
+                    class="<?php echo escapeHtml($homeLinkClass); ?>"
+                    href="<?php echo escapeHtml($homePageUrl); ?>">
+                    Khám phá
+                </a>
                 <span class="hs-main-nav__link" aria-disabled="true">Đăng địa điểm</span>
-                <span class="hs-main-nav__link hs-main-nav__link--heart" aria-disabled="true"><span aria-hidden="true">♡</span> Yêu thích</span>
+                <a
+                    class="<?php echo escapeHtml($favoriteLinkClass); ?>"
+                    href="<?php echo escapeHtml($favoritePageUrl); ?>">
+                    <span aria-hidden="true">♡</span> Yêu thích
+                </a>
                 <?php if ($userIsAdmin) { ?>
                     <a class="hs-main-nav__link hs-main-nav__link--admin" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>"><span aria-hidden="true">⚙</span> Quản trị</a>
                 <?php } ?>
