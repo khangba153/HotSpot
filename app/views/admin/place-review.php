@@ -7,7 +7,7 @@ $csrfToken = (string) ($viewData['csrfToken'] ?? '');
 $adminMessage = (string) ($viewData['adminMessage'] ?? '');
 ?>
 <div class="admin-shell">
-    <aside class="admin-sidebar"><small>QUẢN LÝ HỆ THỐNG</small><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">▦ &nbsp; Tổng quan</a><a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">◷ &nbsp; Chờ duyệt địa điểm</a><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">⌘ &nbsp; Quản lý địa điểm</a><a>☆ &nbsp; Quản lý đánh giá</a><a>▤ &nbsp; Quản lý danh mục</a><a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">↩ &nbsp; Quay về trang chủ</a></aside>
+    <aside class="admin-sidebar"><small>QUẢN LÝ HỆ THỐNG</small><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">▦ &nbsp; Tổng quan</a><a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">◷ &nbsp; Chờ duyệt địa điểm</a><a href="<?php echo escapeHtml(createRouteUrl('admin/places') . '&view=managed'); ?>">⌘ &nbsp; Quản lý địa điểm</a><a>☆ &nbsp; Quản lý đánh giá</a><a>▤ &nbsp; Quản lý danh mục</a><a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">↩ &nbsp; Quay về trang chủ</a></aside>
     <main class="admin-content">
         <div class="admin-heading"><div><small>HOT SPOT / QUẢN TRỊ</small><h1>Xem xét địa điểm</h1><p>Đọc thông tin bài đăng, kiểm tra hình ảnh và quyết định duyệt hoặc từ chối</p></div><span class="admin-pill">● &nbsp; PENDING</span></div>
         <?php if ($adminMessage !== '') { ?><div class="admin-action-note" role="alert"><?php echo escapeHtml($adminMessage); ?></div><?php } ?>
