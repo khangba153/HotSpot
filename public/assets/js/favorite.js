@@ -78,6 +78,15 @@ async function submitFavorite(event) {
 
         const isFavorited = result.data.is_favorited;
 
+        // Trang danh sách tải lại sau khi server xác nhận đã bỏ yêu thích.
+        if (
+            form.dataset.favoriteList === 'true'
+            && isFavorited === false
+        ) {
+            window.location.reload();
+            return;
+        }
+
         button.classList.remove('btn-danger', 'btn-outline-danger');
 
         if (isFavorited) {

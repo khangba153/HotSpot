@@ -1,0 +1,219 @@
+/* Tiêu đề và khoảng cách của trang yêu thích. */
+.favorites-page {
+    padding-bottom: 48px !important;
+}
+
+.favorites-page h1 {
+    padding-left: 16px;
+    border-left: 5px solid var(--hs-orange);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+/* Sidebar theo bố cục tài khoản; các mục chưa có chức năng được ghi rõ. */
+.favorites-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 22px;
+    color: var(--hs-muted);
+    font-size: 13px;
+}
+
+.favorites-breadcrumb a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.favorites-sidebar {
+    padding: 20px 0 12px;
+    border: 1px solid var(--hs-line);
+    border-radius: 14px;
+    background: #fff;
+}
+
+.favorites-account {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 18px 20px;
+}
+
+.favorites-account img {
+    flex-shrink: 0;
+    border-radius: 50%;
+}
+
+.favorites-account > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.favorites-account strong {
+    display: block;
+    margin-bottom: 5px;
+    line-height: 1.5;
+}
+
+.favorites-account a {
+    color: var(--hs-orange);
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.favorites-account-menu > a,
+.favorites-account-menu > span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 3px 8px;
+    padding: 13px 14px;
+    border-radius: 9px;
+    color: var(--hs-ink);
+    text-decoration: none;
+}
+
+.favorites-menu-icon {
+    flex: 0 0 22px;
+    font-size: 22px;
+    line-height: 1;
+    text-align: center;
+}
+
+.favorites-account-menu .favorites-menu-active {
+    color: var(--hs-orange);
+    background: #fff0e9;
+    font-weight: 600;
+}
+
+.favorites-account-menu .favorites-menu-disabled {
+    color: var(--hs-muted);
+}
+
+.favorites-menu-disabled small {
+    display: block;
+    margin-top: 3px;
+    font-size: 11px;
+}
+
+.favorites-account-menu > a:hover,
+.favorites-account a:hover,
+.favorites-breadcrumb a:hover {
+    color: var(--hs-orange);
+}
+
+.favorites-account-menu > a:focus-visible,
+.favorites-account a:focus-visible,
+.favorites-breadcrumb a:focus-visible {
+    outline: 2px solid var(--hs-orange);
+    outline-offset: 2px;
+}
+
+.favorites-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.favorites-sort-label {
+    padding: 9px 14px;
+    border: 1px solid var(--hs-line);
+    border-radius: 8px;
+    color: var(--hs-muted);
+    background: #f8fafb;
+    font-size: 12px;
+}
+
+/* Card giữ ảnh đều nhau và các nút thẳng hàng. */
+.favorite-card {
+    overflow: hidden;
+    border: 1px solid var(--hs-line);
+    border-radius: 14px;
+    background: #fff;
+}
+
+.favorite-card:hover {
+    box-shadow: 0 8px 24px rgba(24, 37, 50, 0.08);
+}
+
+.favorite-card-image-link {
+    display: block;
+}
+
+.favorite-card-image {
+    display: block;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.favorite-card .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+    overflow-wrap: anywhere;
+}
+
+.favorite-card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.favorite-card-description {
+    color: var(--hs-muted);
+    line-height: 1.7;
+}
+
+.favorite-detail-link {
+    margin-top: auto;
+}
+
+.favorite-card .favorite-form {
+    width: 100%;
+}
+
+/* Các trạng thái nút dùng cùng màu chủ đạo và giữ viền khi focus. */
+.favorites-page .btn-outline-danger {
+    color: var(--hs-orange);
+    border-color: var(--hs-orange);
+}
+
+.favorites-page .btn-outline-danger:hover {
+    color: #fff;
+    background-color: var(--hs-orange);
+    border-color: var(--hs-orange);
+}
+
+.favorites-page .btn-outline-danger:focus-visible {
+    outline: 3px solid var(--hs-orange);
+    outline-offset: 3px;
+}
+
+.favorite-card-image-link:focus-visible {
+    outline: 3px solid var(--hs-orange);
+    outline-offset: -3px;
+}
+
+/* Menu thu gọn thành hai cột trên điện thoại và máy tính bảng. */
+@media (max-width: 991.98px) {
+    .favorites-account-menu {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 0 6px;
+    }
+
+    .favorites-account-menu > a,
+    .favorites-account-menu > span {
+        margin: 3px;
+        padding: 10px 8px;
+        gap: 8px;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+    }
+}

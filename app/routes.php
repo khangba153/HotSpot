@@ -32,6 +32,7 @@ $router->add('GET', 'admin/places', $adminController, 'places');
 $router->add('GET', 'admin/places/review', $adminController, 'review');
 $router->add('POST', 'admin/places/status', $adminController, 'updatePlaceStatus');
 $router->add('GET', 'login', $authController, 'showLogin');
+$router->add('GET', 'favorites', $favoriteController, 'index');
 
 // Nhận và xử lý form đăng nhập.
 $router->add('POST', 'login', $authController, 'login');

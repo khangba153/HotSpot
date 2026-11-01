@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace HotSpot\Models;
@@ -108,5 +109,65 @@ final class Favorite extends Model
 
             throw $exception;
         }
+    }
+
+    // Lấy những địa điểm đang công khai mà người dùng đã lưu.
+    public function findApprovedByUserId(int $userId): array
+    {
+        if ($userId <= 0) {
+            return [];
+        }
+
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'SELECT places.place_id,
+                        places.category_id,
+                        places.title,
+                        places.description,
+                        places.address,
+                        categories.name AS category_name,
+                        provinces.province_name,
+                        favorites.created_at AS saved_at,
+                        (
+                            SELECT place_images.image_path
+                            FROM place_images
+                            WHERE place_images.place_id = places.place_id
+                            ORDER BY place_images.sort_order,
+                                     place_images.image_id
+                            LIMIT 1
+                        ) AS cover_image
+                 FROM favorites
+                 INNER JOIN places
+                     ON places.place_id = favorites.place_id
+                 INNER JOIN categories
+                     ON categories.category_id = places.category_id
+                 INNER JOIN provinces
+                     ON provinces.province_code = places.province_code
+                 WHERE favorites.user_id = :user_id
+                   AND places.status_code = :status_code
+                 ORDER BY favorites.created_at DESC,
+                          places.place_id DESC';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':user_id',
+            $userId,
+            PDO::PARAM_INT
+        );
+
+        $preparedStatement->bindValue(
+            ':status_code',
+            'APPROVED',
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->execute();
+
+        $favoritePlaces = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
+
+        $preparedStatement->closeCursor();
+
+        return $favoritePlaces;
     }
 }

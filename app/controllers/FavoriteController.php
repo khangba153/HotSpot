@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace HotSpot\Controllers;
@@ -6,11 +7,59 @@ namespace HotSpot\Controllers;
 use HotSpot\Core\Controller;
 use HotSpot\Models\Favorite;
 use HotSpot\Models\User;
+use HotSpot\Core\HttpException;
 use PDOException;
 use Throwable;
 
 final class FavoriteController extends Controller
 {
+
+    // Hiển thị danh sách yêu thích của tài khoản đang đăng nhập.
+    public function index(): void
+    {
+        if (isset($_SESSION['user_id']) === false) {
+            throw new HttpException(
+                401,
+                'Vui lòng đăng nhập để xem danh sách yêu thích.'
+            );
+        }
+
+        $userId = (int) $_SESSION['user_id'];
+
+        $userModel = new User();
+        $userInformation = $userModel->findById($userId);
+
+        if ($userInformation === null) {
+            throw new HttpException(
+                401,
+                'Tài khoản không tồn tại. Vui lòng đăng nhập lại.'
+            );
+        }
+
+        if (isset($_SESSION['csrf_token']) === false) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        $favoriteModel = new Favorite();
+        $favoritePlaces = $favoriteModel->findApprovedByUserId($userId);
+
+        foreach ($favoritePlaces as $placeIndex => $placeInformation) {
+            $imagePath = trim((string) $placeInformation['cover_image']);
+
+            $favoritePlaces[$placeIndex]['cover_image'] =
+                $this->getCoverImageUrl($imagePath);
+        }
+
+        $viewData = [
+            'title' => 'Địa điểm yêu thích',
+            'userInformation' => $userInformation,
+            'favoritePlaces' => $favoritePlaces,
+            'csrfToken' => $_SESSION['csrf_token'],
+            'isFavoritesPage' => true,
+        ];
+
+        $this->render('favorites/index', $viewData);
+    }
     // Kiểm tra request và cập nhật yêu thích của tài khoản trong session.
     public function set(): void
     {
@@ -161,6 +210,43 @@ final class FavoriteController extends Controller
                 'Chưa thể cập nhật yêu thích. Vui lòng thử lại.'
             );
         }
+    }
+
+    // Chọn ảnh hợp lệ; dùng ảnh minh họa khi đường dẫn thiếu hoặc không an toàn.
+    private function getCoverImageUrl(string $imagePath): string
+    {
+        $fallbackImageUrl = 'assets/images/home/travel.webp';
+
+        if (
+            $imagePath === ''
+            || $imagePath === 'assets/images/demo-placeholder.svg'
+        ) {
+            return $fallbackImageUrl;
+        }
+
+        $isLocalPath = preg_match(
+            '#^(assets|uploads)/[A-Za-z0-9._/-]+$#',
+            $imagePath
+        ) === 1;
+
+        if ($isLocalPath && strpos($imagePath, '..') === false) {
+            $imageFilePath = dirname(__DIR__, 2) . '/public/' . $imagePath;
+
+            if (is_file($imageFilePath)) {
+                return $imagePath;
+            }
+        }
+
+        $isRemoteUrl = preg_match('#^https?://#i', $imagePath) === 1;
+
+        if (
+            $isRemoteUrl
+            && filter_var($imagePath, FILTER_VALIDATE_URL) !== false
+        ) {
+            return $imagePath;
+        }
+
+        return $fallbackImageUrl;
     }
 
     // Trả JSON theo cấu trúc thống nhất cho JavaScript.
