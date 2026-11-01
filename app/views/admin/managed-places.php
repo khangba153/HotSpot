@@ -28,6 +28,7 @@ sort($provinces);
         <a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">↩ &nbsp; Quay về trang chủ</a>
     </aside>
     <main class="admin-content">
+        <div class="container-fluid px-0"><div class="row"><div class="col-12">
         <div class="admin-heading"><div><small>HOT SPOT / QUẢN TRỊ</small><h1>Quản lý địa điểm</h1><p>Theo dõi các bài đã duyệt, tạm ẩn hoặc khôi phục địa điểm công khai.</p></div></div>
         <?php if ($adminMessage !== '') { ?><div class="admin-flash admin-flash--<?php echo escapeHtml($adminMessageType); ?>" role="status"><?php echo escapeHtml($adminMessage); ?></div><?php } ?>
         <div class="admin-management-tabs" aria-label="Lọc trạng thái">
@@ -67,6 +68,7 @@ sort($provinces);
         <div class="admin-pagination" id="managed-pagination" aria-label="Phân trang"></div>
         <p class="admin-table-summary" id="managed-summary"></p>
         <p class="admin-management-note">Chỉ chuyển trạng thái APPROVED ↔ HIDDEN. Địa điểm ẩn không hiển thị công khai.</p>
+        </div></div></div>
     </main>
 </div>
 <script src="assets/js/admin-managed-places.js"></script>

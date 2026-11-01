@@ -8,7 +8,8 @@ use PDO;
 
 final class PlaceModeration extends Model
 {
-    public function setPendingPlaceStatus(
+    // Kiểm tra trạng thái và gọi routine trong một giao dịch.
+    public function setPlaceStatus(
         int $adminId,
         int $placeId,
         string $newStatus,
@@ -16,6 +17,7 @@ final class PlaceModeration extends Model
         string $expectedStatus = 'PENDING'
     ): void {
         $connection = self::getConnection();
+        // Khóa bài trong giao dịch để tránh hai thao tác ghi đè nhau.
         $connection->beginTransaction();
 
         try {
@@ -74,6 +76,7 @@ final class PlaceModeration extends Model
             } else {
                 $procedure->bindValue(':rejection_reason', $rejectionReason, PDO::PARAM_STR);
             }
+            // Đọc hết các result set để có thể tiếp tục dùng kết nối PDO.
             $procedure->execute();
             while ($procedure->nextRowset()) {
             }
@@ -88,8 +91,10 @@ final class PlaceModeration extends Model
                 $approvedAt->execute();
                 $approvedAt->closeCursor();
             }
+            // Chỉ lưu khi routine và các bước liên quan đều thành công.
             $connection->commit();
         } catch (\Throwable $exception) {
+            // Khôi phục dữ liệu nếu bất kỳ bước nào thất bại.
             if ($connection->inTransaction()) {
                 $connection->rollBack();
             }

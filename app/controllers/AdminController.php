@@ -29,11 +29,20 @@ final class AdminController extends Controller
         unset($_SESSION['admin_message'], $_SESSION['admin_message_type']);
         $showManagedPlaces = isset($_GET['view']) && $_GET['view'] === 'managed';
         $placeModeration = new PlaceModeration();
+        $pendingPlaces = [];
+        $managedPlaces = [];
+        $pageTitle = 'Địa điểm chờ duyệt';
+        if ($showManagedPlaces) {
+            $managedPlaces = $placeModeration->findManagedPlaces();
+            $pageTitle = 'Quản lý địa điểm';
+        } else {
+            $pendingPlaces = $placeModeration->findPendingPlaces();
+        }
         $this->render('admin/places', [
-            'title' => 'Địa điểm chờ duyệt',
+            'title' => $pageTitle,
             'userInformation' => $user,
-            'pendingPlaces' => $showManagedPlaces ? [] : $placeModeration->findPendingPlaces(),
-            'managedPlaces' => $showManagedPlaces ? $placeModeration->findManagedPlaces() : [],
+            'pendingPlaces' => $pendingPlaces,
+            'managedPlaces' => $managedPlaces,
             'showManagedPlaces' => $showManagedPlaces,
             'csrfToken' => $_SESSION['csrf_token'] ?? '',
             'adminMessage' => $adminMessage,
@@ -133,7 +142,7 @@ final class AdminController extends Controller
         }
 
         try {
-            (new PlaceModeration())->setPendingPlaceStatus(
+            (new PlaceModeration())->setPlaceStatus(
                 (int) $admin['user_id'],
                 (int) $rawPlaceId,
                 $targetStatus,
