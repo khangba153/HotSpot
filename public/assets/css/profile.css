@@ -83,6 +83,17 @@
     color: #17263c;
     font-size: 15px;
     font-weight: 600;
+    text-decoration: none;
+}
+
+.profile-menu a:hover {
+    color: var(--hs-orange);
+    background-color: #fff7f2;
+}
+
+.profile-menu a:focus-visible {
+    outline: 2px solid var(--hs-orange);
+    outline-offset: 2px;
 }
 
 .profile-menu-item.active {
@@ -127,7 +138,7 @@
     }
 }
 
-/* Các ô thống kê hiện chỉ hiển thị giao diện. */
+/* Thống kê hoạt động lấy từ dữ liệu của tài khoản. */
 .profile-statistic {
     display: flex;
     align-items: center;
@@ -228,4 +239,121 @@
 @media (max-width: 575.98px) {
     .profile-information .form-label {
         margin-bottom: 8px;
-    }}
+    }
+}
+
+/* Lịch sử đánh giá riêng, tách trạng thái Review và trạng thái địa điểm. */
+.profile-review-history {
+    padding-top: 4px;
+    padding-bottom: 32px;
+}
+
+.profile-review-privacy {
+    color: var(--hs-muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.profile-review-card {
+    padding: 22px;
+    border: 1px solid var(--hs-line);
+    border-radius: 14px;
+    background: #fff;
+    overflow-wrap: anywhere;
+}
+
+.profile-review-heading,
+.profile-review-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-review-heading {
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.profile-review-heading h2 {
+    flex: 1 1 240px;
+    min-width: 0;
+    margin: 0;
+    color: var(--hs-ink);
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.profile-review-status {
+    padding: 5px 10px;
+    border-radius: 20px;
+    color: #276248;
+    background: #eaf6ef;
+    font-size: 12px;
+}
+
+.profile-review-status-hidden {
+    color: #8b5216;
+    background: #fff2db;
+}
+
+.profile-review-status-unavailable {
+    color: #56677a;
+    background: #eef2f6;
+}
+
+.profile-review-meta {
+    margin-bottom: 14px;
+    color: var(--hs-muted);
+    font-size: 12px;
+}
+
+.profile-review-stars {
+    display: inline-flex;
+    gap: 2px;
+    color: #d98200;
+    font-size: 21px;
+}
+
+.profile-review-star-empty {
+    color: var(--hs-muted);
+}
+
+.profile-review-content {
+    margin-bottom: 16px;
+    line-height: 1.8;
+}
+
+.profile-review-hidden-note {
+    padding: 10px 12px;
+    border-left: 3px solid #d98200;
+    color: #785126;
+    background: #fffbf2;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.profile-review-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.profile-review-unavailable {
+    color: var(--hs-muted);
+    font-size: 13px;
+}
+
+.profile-review-empty {
+    padding: 36px 20px;
+    border: 1px solid var(--hs-line);
+    border-radius: 14px;
+    text-align: center;
+    background: #fff;
+}
+
+@media (max-width: 575.98px) {
+    .profile-review-card {
+        padding: 16px;
+    }
+}

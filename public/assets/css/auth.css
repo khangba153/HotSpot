@@ -89,19 +89,6 @@
     font-weight: 600;
 }
 
-.auth-benefits li span {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background-color: #ffffff;
-    color: #ff542e;
-    font-size: 24px;
-    flex-shrink: 0;
-}
-
 .auth-form-panel {
     max-width: 520px;
     margin: 0 auto;
@@ -171,6 +158,27 @@
     padding: 14px;
     border-radius: 9px;
     background: linear-gradient(90deg, #ff542e, #ff7624);
+    color: #fff;
+    border: 1px solid #ff542e;
+    font-weight: 600;
+}
+
+.auth-submit:hover,
+.auth-submit:active {
+    color: #fff;
+    background: #dc3d20;
+    border-color: #dc3d20;
+}
+
+.auth-submit:focus-visible {
+    outline: 3px solid #ff542e;
+    outline-offset: 3px;
+}
+
+.auth-submit:disabled {
+    color: #fff;
+    background: #a54b39;
+    border-color: #a54b39;
 }
 
 .auth-divider {
@@ -199,9 +207,62 @@
     text-align: center;
 }
 
-.auth-registration span {
+.auth-registration span,
+.auth-registration a {
     color: #ff542e;
     font-weight: 600;
+}
+
+.auth-registration a {
+    text-decoration: none;
+}
+
+.auth-registration a:hover {
+    text-decoration: underline;
+}
+
+.auth-registration a:focus-visible {
+    outline: 2px solid #ff542e;
+    outline-offset: 3px;
+}
+
+/* Form đăng ký dùng chung bố cục Auth, không thêm biểu tượng trang trí. */
+.auth-register-panel {
+    max-width: 540px;
+    padding-top: 38px;
+    padding-bottom: 38px;
+}
+
+.auth-register-heading {
+    margin-bottom: 24px;
+}
+
+.auth-register-heading h1 {
+    color: #17263c;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.auth-register-heading h1 span {
+    color: #ff542e;
+}
+
+.auth-register-heading p,
+.auth-register-help {
+    color: #738095;
+    line-height: 1.7;
+}
+
+.auth-register-heading p {
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+.auth-register-help {
+    margin-top: 6px;
+    margin-bottom: 0;
+    font-size: 12px;
 }
 
 .auth-registration small {

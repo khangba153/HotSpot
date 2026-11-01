@@ -26,10 +26,10 @@ $selectedRating = (int) ($currentReview['rating'] ?? 0);
         </fieldset>
         <label class="visually-hidden" for="review-text">Nội dung đánh giá</label>
         <textarea id="review-text" name="content" rows="4" maxlength="2000" required placeholder="Chia sẻ điều bạn thích về địa điểm này..." aria-describedby="review-help"><?php echo escapeHtml((string) ($currentReview['content'] ?? '')); ?></textarea>
-        <div class="hs-review-form__footer"><small id="review-help"><span data-review-count>0</span>/2.000 ký tự</small><button class="hs-button-primary" type="submit"><span data-review-submit-label><?php echo $currentReview === null ? 'Gửi đánh giá' : 'Cập nhật đánh giá'; ?></span><span aria-hidden="true">↗</span></button></div>
+        <div class="hs-review-form__footer"><small id="review-help"><span data-review-count>0</span>/2.000 ký tự</small><button class="hs-button-primary" type="submit"><span data-review-submit-label><?php echo $currentReview === null ? 'Gửi đánh giá' : 'Cập nhật đánh giá'; ?></span></button></div>
         <p class="hs-review-form__feedback" data-review-feedback role="status" aria-live="polite" hidden></p>
     </form>
 <?php } elseif (($viewData['isLoggedIn'] ?? false) !== true) { ?>
-    <div class="hs-review-login"><span>Muốn chia sẻ trải nghiệm?</span><a href="<?php echo escapeHtml((string) ($viewData['loginUrl'] ?? 'index.php?route=login')); ?>">Đăng nhập để viết đánh giá <span aria-hidden="true">→</span></a></div>
+    <div class="hs-review-login"><span>Muốn chia sẻ trải nghiệm?</span><a href="<?php echo escapeHtml((string) ($viewData['loginUrl'] ?? 'index.php?route=login')); ?>">Đăng nhập để viết đánh giá </a></div>
 <?php } ?>
 <script src="assets/js/reviews.js" defer></script>

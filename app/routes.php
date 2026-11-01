@@ -11,7 +11,6 @@ use HotSpot\Controllers\AdminController;
 use HotSpot\Controllers\FavoriteController;
 use HotSpot\Controllers\ReviewController;
 
-
 $router = new Router();
 
 $homeController = new HomeController();
@@ -23,7 +22,6 @@ $adminController = new AdminController();
 $favoriteController = new FavoriteController();
 $reviewController = new ReviewController();
 
-
 // Các trang hiển thị.
 $router->add('GET', 'home', $homeController, 'index');
 $router->add('GET', 'api/places/search', $placeSearchController, 'search');
@@ -34,6 +32,9 @@ $router->add('GET', 'admin/places', $adminController, 'places');
 $router->add('GET', 'admin/places/review', $adminController, 'review');
 $router->add('POST', 'admin/places/status', $adminController, 'updatePlaceStatus');
 $router->add('GET', 'login', $authController, 'showLogin');
+$router->add('GET', 'favorites', $favoriteController, 'index');
+$router->add('GET', 'register', $authController, 'showRegister');
+$router->add('POST', 'register', $authController, 'register');
 
 // Nhận và xử lý form đăng nhập.
 $router->add('POST', 'login', $authController, 'login');
@@ -42,9 +43,11 @@ $router->add('POST', 'logout', $authController, 'logout');
 
 // Nhận form cập nhật hồ sơ.
 $router->add('POST', 'profile/update', $profileController, 'update');
-$router->add('POST', 'reviews/save', $reviewController, 'save');
 
 // Nhận yêu cầu thêm hoặc bỏ yêu thích.
 $router->add('POST', 'favorites/set', $favoriteController, 'set');
+
+// Nhận yêu cầu gửi hoặc sửa đánh giá.
+$router->add('POST', 'reviews/save', $reviewController, 'save');
 
 return $router;
