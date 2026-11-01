@@ -136,8 +136,7 @@ $loginUrl = createRouteUrl('login');
 
                     <div class="auth-registration">
                         Chưa có tài khoản?
-                        <span>Đăng ký</span>
-                        <small>Chức năng đăng ký chưa được triển khai.</small>
+                        <a href="<?php echo escapeHtml(createRouteUrl('register')); ?>">Đăng ký</a>
                     </div>
                 </section>
             </div>
