@@ -12,7 +12,8 @@ final class PlaceModeration extends Model
         int $adminId,
         int $placeId,
         string $newStatus,
-        ?string $rejectionReason
+        ?string $rejectionReason,
+        string $expectedStatus = 'PENDING'
     ): void {
         $connection = self::getConnection();
         $connection->beginTransaction();
@@ -26,11 +27,18 @@ final class PlaceModeration extends Model
             $place = $placeStatement->fetch(PDO::FETCH_ASSOC);
             $placeStatement->closeCursor();
 
-            if ($place === false || $place['status_code'] !== 'PENDING') {
-                throw new \RuntimeException('Địa điểm không còn ở trạng thái chờ duyệt.');
+            if ($place === false || $place['status_code'] !== $expectedStatus) {
+                throw new \RuntimeException('Trạng thái địa điểm đã thay đổi hoặc không phù hợp với thao tác.');
             }
 
-            if ($newStatus === 'APPROVED') {
+            $validTransition = ($expectedStatus === 'PENDING' && in_array($newStatus, ['APPROVED', 'REJECTED'], true))
+                || ($expectedStatus === 'APPROVED' && $newStatus === 'HIDDEN')
+                || ($expectedStatus === 'HIDDEN' && $newStatus === 'APPROVED');
+            if (!$validTransition) {
+                throw new \RuntimeException('Không thể chuyển trạng thái địa điểm theo thao tác này.');
+            }
+
+            if ($newStatus === 'APPROVED' && $expectedStatus === 'PENDING') {
                 $imageStatement = $connection->prepare(
                     'SELECT image_path FROM place_images WHERE place_id = :place_id ORDER BY sort_order, image_id'
                 );
@@ -72,7 +80,7 @@ final class PlaceModeration extends Model
             $procedure->closeCursor();
 
             // Ghi nhận lần duyệt đầu; restore về APPROVED không được thay ngày cũ.
-            if ($newStatus === 'APPROVED') {
+            if ($newStatus === 'APPROVED' && $expectedStatus === 'PENDING') {
                 $approvedAt = $connection->prepare(
                     'UPDATE places SET approved_at = CURRENT_TIMESTAMP WHERE place_id = :place_id AND approved_at IS NULL'
                 );
@@ -87,6 +95,26 @@ final class PlaceModeration extends Model
             }
             throw $exception;
         }
+    }
+
+    // Lấy địa điểm đã duyệt và đang ẩn cho trang quản lý.
+    public function findManagedPlaces(): array
+    {
+        $sql = "SELECT places.place_id, places.category_id, places.title, places.status_code,
+                       places.approved_at, categories.name AS category_name, provinces.province_name,
+                       (SELECT place_images.image_path FROM place_images
+                        WHERE place_images.place_id = places.place_id
+                        ORDER BY place_images.sort_order, place_images.image_id LIMIT 1) AS image_path
+                FROM places
+                INNER JOIN categories ON categories.category_id = places.category_id
+                INNER JOIN provinces ON provinces.province_code = places.province_code
+                WHERE places.status_code IN ('APPROVED', 'HIDDEN')
+                ORDER BY places.place_id DESC";
+        $statement = self::getConnection()->prepare($sql);
+        $statement->execute();
+        $places = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $places;
     }
 
     /** @return array<int, array<string, mixed>> */
