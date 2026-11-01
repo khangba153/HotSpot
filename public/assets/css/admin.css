@@ -464,3 +464,12 @@
     background:#fff0ef;
     color:#c94c42;
 }
+
+/* Nút phân trang dùng chữ thay ký hiệu mũi tên. */
+.admin-pagination button:first-child,
+.admin-pagination button:last-child {
+    width: auto;
+    min-width: 48px;
+    padding-right: 10px;
+    padding-left: 10px;
+}

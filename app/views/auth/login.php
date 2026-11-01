@@ -29,15 +29,12 @@ $loginUrl = createRouteUrl('login');
 
                     <ul class="auth-benefits">
                         <li>
-                            <span aria-hidden="true">♥</span>
                             Kết nối cộng đồng yêu du lịch
                         </li>
                         <li>
-                            <span aria-hidden="true">★</span>
                             Lưu lại địa điểm yêu thích
                         </li>
                         <li>
-                            <span aria-hidden="true">▣</span>
                             Chia sẻ trải nghiệm và hình ảnh đẹp
                         </li>
                     </ul>
@@ -129,7 +126,7 @@ $loginUrl = createRouteUrl('login');
                             type="submit"
                             class="btn button-brand auth-submit w-100"
                         >
-                            Đăng nhập →
+                            Đăng nhập
                         </button>
                     </form>
 
@@ -139,8 +136,7 @@ $loginUrl = createRouteUrl('login');
 
                     <div class="auth-registration">
                         Chưa có tài khoản?
-                        <span>Đăng ký</span>
-                        <small>Chức năng đăng ký chưa được triển khai.</small>
+                        <a href="<?php echo escapeHtml(createRouteUrl('register')); ?>">Đăng ký</a>
                     </div>
                 </section>
             </div>

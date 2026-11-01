@@ -75,13 +75,6 @@
     text-decoration: none;
 }
 
-.favorites-menu-icon {
-    flex: 0 0 22px;
-    font-size: 22px;
-    line-height: 1;
-    text-align: center;
-}
-
 .favorites-account-menu .favorites-menu-active {
     color: var(--hs-orange);
     background: #fff0e9;

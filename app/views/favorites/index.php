@@ -14,9 +14,9 @@ $userInformation = $viewData['userInformation'];
         <div class="col-12">
             <nav class="favorites-breadcrumb" aria-label="Đường dẫn trang">
                 <a href="<?php echo escapeHtml($homePageUrl); ?>">Trang chủ</a>
-                <span aria-hidden="true">›</span>
+                <span aria-hidden="true">/</span>
                 <a href="<?php echo escapeHtml($profilePageUrl); ?>">Trang cá nhân</a>
-                <span aria-hidden="true">›</span>
+                <span aria-hidden="true">/</span>
                 <span aria-current="page">Yêu thích</span>
             </nav>
         </div>
@@ -28,37 +28,26 @@ $userInformation = $viewData['userInformation'];
                     <img src="assets/images/default-avatar.svg" alt="" width="56" height="56">
                     <div>
                         <strong><?php echo escapeHtml($userInformation['full_name']); ?></strong>
-                        <a href="<?php echo escapeHtml($profilePageUrl); ?>">Xem hồ sơ cá nhân →</a>
+                        <a href="<?php echo escapeHtml($profilePageUrl); ?>">Xem hồ sơ cá nhân</a>
                     </div>
                 </div>
                 <nav class="favorites-account-menu" aria-label="Menu cá nhân">
                     <a href="<?php echo escapeHtml($profilePageUrl); ?>">
-                        <span class="favorites-menu-icon" aria-hidden="true">⌂</span>
                         <span>Tổng quan</span>
                     </a>
                     <span class="favorites-menu-disabled" aria-disabled="true">
-                        <span class="favorites-menu-icon" aria-hidden="true">▤</span>
                         <span>Bài viết của tôi<small>Chưa hỗ trợ</small></span>
                     </span>
                     <a class="favorites-menu-active" href="<?php echo escapeHtml($favoritePageUrl); ?>" aria-current="page">
-                        <span class="favorites-menu-icon" aria-hidden="true">♥</span>
                         <span>Yêu thích</span>
                     </a>
+                    <a href="<?php echo escapeHtml($profilePageUrl . '&tab=reviews'); ?>">
+                        <span>Đánh giá của tôi</span>
+                    </a>
                     <span class="favorites-menu-disabled" aria-disabled="true">
-                        <span class="favorites-menu-icon" aria-hidden="true">☆</span>
-                        <span>Đánh giá của tôi<small>Chưa hỗ trợ</small></span>
-                    </span>
-                    <span class="favorites-menu-disabled" aria-disabled="true">
-                        <span class="favorites-menu-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M18 8a6 6 0 0 0-12 0c0 6-2 6-2 9h16c0-3-2-3-2-9Z"></path>
-                                <path d="M10 21h4"></path>
-                            </svg>
-                        </span>
                         <span>Thông báo<small>Chưa hỗ trợ</small></span>
                     </span>
                     <a href="<?php echo escapeHtml($profilePageUrl); ?>">
-                        <span class="favorites-menu-icon" aria-hidden="true">⚙</span>
                         <span>Thông tin tài khoản</span>
                     </a>
                 </nav>

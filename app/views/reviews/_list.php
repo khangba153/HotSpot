@@ -14,7 +14,6 @@ $reviewCount = count($reviewList);
 
     <?php if ($reviewCount === 0) { ?>
         <div class="hs-reviews__empty">
-            <span aria-hidden="true">✦</span>
             <strong>Hãy là người đầu tiên chia sẻ trải nghiệm</strong>
             <p>Đánh giá của bạn sẽ giúp mọi người chọn được điểm đến phù hợp.</p>
         </div>

@@ -13,7 +13,6 @@ $demoImageByCategory = [
 if ($places === []) :
 ?>
     <div class="hs-empty-state" role="status">
-        <span class="hs-empty-state__icon" aria-hidden="true">⌖</span>
         <h3>Chưa có địa điểm để hiển thị</h3>
         <p>Các địa điểm đã được duyệt sẽ xuất hiện tại đây.</p>
     </div>
@@ -121,7 +120,7 @@ if ($places === []) :
                         <?php if ($categoryName !== '') : ?>
                             <span class="hs-place-tag"><?php echo escapeHtml($categoryName); ?></span>
                         <?php endif; ?>
-                        <a class="hs-place-card__more" href="<?php echo escapeHtml($detailUrl); ?>">Chi tiết <span aria-hidden="true">↗</span></a>
+                        <a class="hs-place-card__more" href="<?php echo escapeHtml($detailUrl); ?>">Chi tiết </a>
                     </div>
                 </div>
             </article>

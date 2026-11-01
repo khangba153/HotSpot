@@ -60,13 +60,13 @@ if ($isLoginPage) {
     <meta name="theme-color" content="#fffaf7">
     <title><?php echo escapeHtml($pageTitle); ?> | Hot Spot</title>
     <link rel="stylesheet" href="assets/vendor/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/app.css?v=4">
-    <link rel="stylesheet" href="assets/css/profile.css?v=1">
-    <link rel="stylesheet" href="assets/css/auth.css?v=1">
+    <link rel="stylesheet" href="assets/css/app.css?v=5">
+    <link rel="stylesheet" href="assets/css/profile.css?v=3">
+    <link rel="stylesheet" href="assets/css/auth.css?v=3">
     <link rel="stylesheet" href="assets/css/places.css?v=2">
     <link rel="stylesheet" href="assets/css/reviews.css?v=1">
-    <link rel="stylesheet" href="assets/css/admin.css?v=1">
-    <link rel="stylesheet" href="assets/css/favorites.css?v=3">
+    <link rel="stylesheet" href="assets/css/admin.css?v=2">
+    <link rel="stylesheet" href="assets/css/favorites.css?v=4">
 </head>
 
 <body class="hs-body d-flex flex-column min-vh-100<?php echo $isAdminPage ? ' admin-layout' : ''; ?>">
@@ -113,13 +113,6 @@ if ($isLoginPage) {
                         <path d="m16 16 4.4 4.4"></path>
                     </svg>
                 </a>
-                <span class="hs-header-icon hs-header-icon--bell" aria-hidden="true">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
-                        <path d="M10 21h4"></path>
-                    </svg>
-                    <i></i>
-                </span>
                 <?php if ($userIsLoggedIn) { ?>
                     <a
                         class="hs-profile-link"
@@ -167,9 +160,6 @@ if ($isLoginPage) {
                     <span class="hs-brand__copy"><strong>Hot Spot</strong><small>Khám phá Việt Nam theo cách của bạn</small></span>
                 </a>
                 <p>Cộng đồng chia sẻ và khám phá những địa điểm thú vị tại Việt Nam.</p>
-                <div class="hs-socials" aria-label="Mạng xã hội">
-                    <span>f</span><span>◎</span><span>▶</span><span>♪</span>
-                </div>
             </div>
 
             <div class="hs-footer-column">
