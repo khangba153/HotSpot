@@ -24,7 +24,7 @@ sort($provinces);
         <a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">▦ &nbsp; Tổng quan</a>
         <a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">◷ &nbsp; Chờ duyệt địa điểm</a>
         <a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places') . '&view=managed'); ?>">⌘ &nbsp; Quản lý địa điểm</a>
-        <a>☆ &nbsp; Quản lý đánh giá</a><a>▤ &nbsp; Quản lý danh mục</a>
+        <a href="<?php echo escapeHtml(createRouteUrl('admin/reviews')); ?>">☆ &nbsp; Quản lý đánh giá</a><a>▤ &nbsp; Quản lý danh mục</a>
         <a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">↩ &nbsp; Quay về trang chủ</a>
     </aside>
     <main class="admin-content">

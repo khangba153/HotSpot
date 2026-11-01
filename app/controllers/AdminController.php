@@ -6,6 +6,7 @@ namespace HotSpot\Controllers;
 use HotSpot\Core\Controller;
 use HotSpot\Core\HttpException;
 use HotSpot\Models\PlaceModeration;
+use HotSpot\Models\Review;
 use HotSpot\Models\User;
 
 final class AdminController extends Controller
@@ -178,6 +179,53 @@ final class AdminController extends Controller
             : 'Đã từ chối địa điểm và lưu lý do.';
         $_SESSION['admin_message_type'] = 'success';
         header('Location: ' . createRouteUrl('admin/places'));
+        exit;
+    }
+
+    // Hiển thị danh sách đánh giá cho Admin.
+    public function reviews(): void
+    {
+        $admin = $this->requireAdmin();
+        $reviews = (new Review())->findAllForAdmin();
+        $message = $_SESSION['review_admin_message'] ?? '';
+        $messageType = $_SESSION['review_admin_message_type'] ?? 'success';
+        unset($_SESSION['review_admin_message'], $_SESSION['review_admin_message_type']);
+        $this->render('admin/reviews', [
+            'title' => 'Quản lý đánh giá', 'userInformation' => $admin,
+            'reviews' => $reviews, 'csrfToken' => $_SESSION['csrf_token'] ?? '',
+            'message' => $message, 'messageType' => $messageType, 'isAdminPage' => true,
+        ]);
+    }
+
+    // Chỉ Admin có CSRF hợp lệ mới được ẩn hoặc khôi phục đánh giá.
+    public function updateReviewStatus(): void
+    {
+        $admin = $this->requireAdmin();
+        $token = $_POST['csrf_token'] ?? '';
+        if (!is_string($token) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            throw new HttpException(400, 'Phiên làm việc hết hạn. Hãy tải lại trang và thử lại.');
+        }
+        $reviewId = $_POST['review_id'] ?? '';
+        $targetStatus = $_POST['target_status'] ?? '';
+        if (!is_string($reviewId) || strlen($reviewId) > 18 || !ctype_digit($reviewId) || (int) $reviewId <= 0
+            || !is_string($targetStatus) || !in_array($targetStatus, ['VISIBLE', 'HIDDEN'], true)) {
+            throw new HttpException(400, 'Thông tin đánh giá không hợp lệ.');
+        }
+        try {
+            (new Review())->setModerationStatus((int) $admin['user_id'], (int) $reviewId, $targetStatus);
+            $_SESSION['review_admin_message'] = $targetStatus === 'HIDDEN' ? 'Đã ẩn đánh giá.' : 'Đã khôi phục đánh giá.';
+            $_SESSION['review_admin_message_type'] = 'success';
+        } catch (\PDOException $exception) {
+            $_SESSION['review_admin_message'] = 'Không thể cập nhật đánh giá. Vui lòng thử lại.';
+            $_SESSION['review_admin_message_type'] = 'danger';
+        } catch (\RuntimeException $exception) {
+            $_SESSION['review_admin_message'] = $exception->getMessage();
+            $_SESSION['review_admin_message_type'] = 'danger';
+        } catch (\Throwable $exception) {
+            $_SESSION['review_admin_message'] = 'Không thể cập nhật đánh giá. Vui lòng thử lại.';
+            $_SESSION['review_admin_message_type'] = 'danger';
+        }
+        header('Location: ' . createRouteUrl('admin/reviews'));
         exit;
     }
 
