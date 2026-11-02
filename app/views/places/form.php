@@ -97,7 +97,12 @@ if (isset($viewData['isStoreReady']) && $viewData['isStoreReady'] === true) {
 $homePageUrl = createRouteUrl('home');
 $createPageUrl = createRouteUrl('places/create');
 $previewSampleUrl = $createPageUrl . '&preview=1';
-$formActionUrl = $isStoreReady ? createRouteUrl('places/store') : $createPageUrl;
+$formActionUrl = $createPageUrl;
+$storeReadyAttribute = 'false';
+if ($isStoreReady) {
+    $formActionUrl = createRouteUrl('places/store');
+    $storeReadyAttribute = 'true';
+}
 if ($isStoreReady && isset($viewData['formAction']) && is_string($viewData['formAction']) && trim($viewData['formAction']) !== '') {
     $formActionUrl = trim($viewData['formAction']);
 }
@@ -107,12 +112,13 @@ if (isset($viewData['wardsApiUrl']) && is_string($viewData['wardsApiUrl']) && tr
     $wardsApiUrl = trim($viewData['wardsApiUrl']);
 }
 
-$initialTitleLength = function_exists('mb_strlen')
-    ? mb_strlen($formValues['title'], 'UTF-8')
-    : strlen($formValues['title']);
-$initialDescriptionLength = function_exists('mb_strlen')
-    ? mb_strlen($formValues['description'], 'UTF-8')
-    : strlen($formValues['description']);
+if (function_exists('mb_strlen')) {
+    $initialTitleLength = mb_strlen($formValues['title'], 'UTF-8');
+    $initialDescriptionLength = mb_strlen($formValues['description'], 'UTF-8');
+} else {
+    $initialTitleLength = strlen($formValues['title']);
+    $initialDescriptionLength = strlen($formValues['description']);
+}
 ?>
 <section class="hs-place-form-hero" aria-labelledby="place-form-hero-title">
     <div class="hs-place-form-hero__overlay" aria-hidden="true"></div>
@@ -199,7 +205,7 @@ $initialDescriptionLength = function_exists('mb_strlen')
                     action="<?php echo escapeHtml($formActionUrl); ?>"
                     enctype="multipart/form-data"
                     data-wards-url="<?php echo escapeHtml($wardsApiUrl); ?>"
-                    data-store-ready="<?php echo $isStoreReady ? 'true' : 'false'; ?>"
+                    data-store-ready="<?php echo $storeReadyAttribute; ?>"
                     novalidate>
 
                     <input
@@ -303,7 +309,7 @@ $initialDescriptionLength = function_exists('mb_strlen')
                                     ?>
                                         <option
                                             value="<?php echo escapeHtml($categoryIdString); ?>"
-                                            <?php echo $isSelectedCategory ? 'selected' : ''; ?>>
+                                            <?php if ($isSelectedCategory) { echo 'selected'; } ?>>
                                             <?php echo escapeHtml($categoryName); ?>
                                         </option>
                                     <?php } ?>
@@ -363,7 +369,7 @@ $initialDescriptionLength = function_exists('mb_strlen')
                                             $tagInputId = 'place-tag-' . $tagId;
                                         ?>
                                             <label
-                                                class="hs-place-tag-choice<?php echo $isTagChecked ? ' is-selected' : ''; ?>"
+                                                class="hs-place-tag-choice<?php if ($isTagChecked) { echo ' is-selected'; } ?>"
                                                 for="<?php echo escapeHtml($tagInputId); ?>"
                                                 data-tag-label="<?php echo escapeHtml($tagName); ?>">
                                                 <input
@@ -374,7 +380,7 @@ $initialDescriptionLength = function_exists('mb_strlen')
                                                     class="hs-place-tag-choice__input"
                                                     data-place-tag-checkbox
                                                     data-tag-name="<?php echo escapeHtml($tagName); ?>"
-                                                    <?php echo $isTagChecked ? 'checked' : ''; ?>>
+                                                    <?php if ($isTagChecked) { echo 'checked'; } ?>>
                                                 <span class="hs-place-tag-choice__text">
                                                     <?php echo escapeHtml($tagName); ?>
                                                 </span>
@@ -426,7 +432,7 @@ $initialDescriptionLength = function_exists('mb_strlen')
                                     ?>
                                         <option
                                             value="<?php echo escapeHtml($provinceCode); ?>"
-                                            <?php echo $isSelectedProvince ? 'selected' : ''; ?>>
+                                            <?php if ($isSelectedProvince) { echo 'selected'; } ?>>
                                             <?php echo escapeHtml($provinceName); ?>
                                         </option>
                                     <?php } ?>
@@ -462,7 +468,7 @@ $initialDescriptionLength = function_exists('mb_strlen')
                                     ?>
                                         <option
                                             value="<?php echo escapeHtml($wardCode); ?>"
-                                            <?php echo $isSelectedWard ? 'selected' : ''; ?>>
+                                            <?php if ($isSelectedWard) { echo 'selected'; } ?>>
                                             <?php echo escapeHtml($wardName); ?>
                                         </option>
                                     <?php } ?>
@@ -691,27 +697,22 @@ $initialDescriptionLength = function_exists('mb_strlen')
                 <aside class="hs-place-form-sidebar" aria-label="Hướng dẫn đăng địa điểm">
                     <section class="hs-place-form-sidecard hs-place-form-sidecard--tips" aria-labelledby="place-tips-heading">
                         <h2 id="place-tips-heading" class="hs-place-form-sidecard__title">
-                            <span aria-hidden="true">💡</span> Mẹo đăng địa điểm
+                            Mẹo đăng địa điểm
                         </h2>
                         <ul class="hs-place-form-tips">
                             <li>
-                                <span class="hs-place-form-tips__icon" aria-hidden="true">📷</span>
                                 <span>Sử dụng hình ảnh rõ nét, chất lượng cao</span>
                             </li>
                             <li>
-                                <span class="hs-place-form-tips__icon" aria-hidden="true">📝</span>
                                 <span>Viết mô tả chi tiết, chân thực và hữu ích</span>
                             </li>
                             <li>
-                                <span class="hs-place-form-tips__icon" aria-hidden="true">📍</span>
                                 <span>Chọn danh mục và nhãn phù hợp</span>
                             </li>
                             <li>
-                                <span class="hs-place-form-tips__icon" aria-hidden="true">🗺️</span>
                                 <span>Thêm vị trí trên bản đồ để dễ tìm kiếm hơn</span>
                             </li>
                             <li>
-                                <span class="hs-place-form-tips__icon" aria-hidden="true">❤️</span>
                                 <span>Chia sẻ những trải nghiệm thực tế, độc đáo của bạn</span>
                             </li>
                         </ul>
@@ -719,23 +720,19 @@ $initialDescriptionLength = function_exists('mb_strlen')
 
                     <section class="hs-place-form-sidecard hs-place-form-sidecard--rules" aria-labelledby="place-rules-heading">
                         <h2 id="place-rules-heading" class="hs-place-form-sidecard__title">
-                            <span aria-hidden="true">🛡️</span> Quy định nội dung
+                            Quy định nội dung
                         </h2>
                         <ul class="hs-place-form-rules">
                             <li>
-                                <span class="hs-place-form-rules__check" aria-hidden="true">✓</span>
                                 <span>Nội dung phải liên quan đến địa điểm du lịch, ẩm thực, vui chơi, trải nghiệm tại Việt Nam.</span>
                             </li>
                             <li>
-                                <span class="hs-place-form-rules__check" aria-hidden="true">✓</span>
                                 <span>Thông tin phải chính xác, không gây hiểu nhầm.</span>
                             </li>
                             <li>
-                                <span class="hs-place-form-rules__check" aria-hidden="true">✓</span>
                                 <span>Không đăng nội dung vi phạm pháp luật, thuần phong mỹ tục.</span>
                             </li>
                             <li>
-                                <span class="hs-place-form-rules__check" aria-hidden="true">✓</span>
                                 <span>Hình ảnh phải do bạn sở hữu hoặc có quyền sử dụng.</span>
                             </li>
                         </ul>
