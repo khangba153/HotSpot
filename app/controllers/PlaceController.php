@@ -209,6 +209,88 @@ final class PlaceController extends Controller
         $this->render('places/form', $viewData);
     }
 
+    // Hiển thị danh sách địa điểm của tài khoản đang đăng nhập (TV3-05, hợp đồng C08).
+    public function mine(): void
+    {
+        if (isset($_SESSION['user_id']) === false) {
+            throw new HttpException(401, 'Vui lòng đăng nhập để xem địa điểm đã đăng.');
+        }
+
+        // Chủ bài luôn lấy từ session, không nhận từ URL/request.
+        $ownerId = (int) $_SESSION['user_id'];
+        $userModel = new User();
+        $userInformation = $userModel->findById($ownerId);
+
+        if ($userInformation === null) {
+            throw new HttpException(401, 'Tài khoản không tồn tại. Vui lòng đăng nhập lại.');
+        }
+
+        if (isset($_SESSION['csrf_token']) === false) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        $allowedStatusFilters = ['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'HIDDEN'];
+        $activeStatusFilter = 'ALL';
+
+        if (isset($_GET['status']) && is_string($_GET['status'])) {
+            $requestedStatus = strtoupper(trim($_GET['status']));
+            if (in_array($requestedStatus, $allowedStatusFilters, true)) {
+                $activeStatusFilter = $requestedStatus;
+            }
+        }
+
+        $placeModel = new Place();
+        $rawPlaceList = $placeModel->findByOwnerId($ownerId);
+
+        $myPlaceList = [];
+        $statusCounts = [
+            'total' => 0,
+            'PENDING' => 0,
+            'APPROVED' => 0,
+            'REJECTED' => 0,
+            'HIDDEN' => 0,
+        ];
+
+        foreach ($rawPlaceList as $placeItem) {
+            $categoryId = (int) $placeItem['category_id'];
+            $fallbackImageUrl = $this->getDemoImage($categoryId);
+            $rawCoverImage = trim((string) ($placeItem['cover_image'] ?? ''));
+            $coverImageUrl = $fallbackImageUrl;
+
+            if ($rawCoverImage !== '' && $rawCoverImage !== self::SEED_PLACEHOLDER_IMAGE) {
+                if ($this->isSafeImagePath($rawCoverImage)) {
+                    $coverImageUrl = $rawCoverImage;
+                }
+            }
+
+            $statusCode = (string) ($placeItem['status_code'] ?? '');
+            $statusCounts['total'] = $statusCounts['total'] + 1;
+
+            if (isset($statusCounts[$statusCode])) {
+                $statusCounts[$statusCode] = $statusCounts[$statusCode] + 1;
+            }
+
+            if ($activeStatusFilter !== 'ALL' && $statusCode !== $activeStatusFilter) {
+                continue;
+            }
+
+            $placeItem['cover_image_url'] = $coverImageUrl;
+            $placeItem['fallback_image_url'] = $fallbackImageUrl;
+            $myPlaceList[] = $placeItem;
+        }
+
+        $viewData = [
+            'title' => 'Địa điểm của tôi',
+            'userInformation' => $userInformation,
+            'csrfToken' => (string) $_SESSION['csrf_token'],
+            'myPlaces' => $myPlaceList,
+            'statusCounts' => $statusCounts,
+            'activeStatusFilter' => $activeStatusFilter,
+        ];
+
+        $this->render('places/mine', $viewData);
+    }
+
     // Dữ liệu mẫu chỉ dùng riêng khi bật chế độ preview giao diện (?preview=1), không thay dữ liệu thật.
     private function getPreviewSampleData(): array
     {
