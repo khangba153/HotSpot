@@ -313,4 +313,117 @@ final class User extends Model
             throw $exception;
         }
     }
+
+    // Tìm tài khoản Hot Spot đã liên kết với mã định danh Google.
+    public function findByGoogleSubject(string $googleSubject): ?array
+    {
+        if ($googleSubject === '') {
+            return null;
+        }
+
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'SELECT user_id,
+                        full_name,
+                        email,
+                        role_code,
+                        google_subject
+                 FROM users
+                 WHERE google_subject = :google_subject
+                 LIMIT 1';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':google_subject',
+            $googleSubject,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->execute();
+
+        $userInformation = $preparedStatement->fetch(PDO::FETCH_ASSOC);
+
+        $preparedStatement->closeCursor();
+
+        if ($userInformation === false) {
+            return null;
+        }
+
+        return $userInformation;
+    }
+
+    // Tạo tài khoản Member mới từ thông tin Google đã xác minh.
+    public function createGoogleUser(
+        string $fullName,
+        string $email,
+        string $googleSubject
+    ): int {
+        $databaseConnection = self::getConnection();
+
+        // Mật khẩu ngẫu nhiên không được dùng trong luồng đăng nhập Google.
+        $randomPassword = bin2hex(random_bytes(32));
+        $passwordHash = password_hash($randomPassword, PASSWORD_BCRYPT);
+
+        $sqlQuery = 'INSERT INTO users (
+                    role_code,
+                    full_name,
+                    email,
+                    password_hash,
+                    google_subject
+                ) VALUES (
+                    :role_code,
+                    :full_name,
+                    :email,
+                    :password_hash,
+                    :google_subject
+                )';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':role_code',
+            'MEMBER',
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->bindValue(
+            ':full_name',
+            $fullName,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->bindValue(
+            ':email',
+            strtolower(trim($email)),
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->bindValue(
+            ':password_hash',
+            $passwordHash,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->bindValue(
+            ':google_subject',
+            $googleSubject,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->execute();
+
+        $userId = (int) $databaseConnection->lastInsertId();
+
+        $preparedStatement->closeCursor();
+
+        return $userId;
+    }
+
+
+
+
+
+
+
 }

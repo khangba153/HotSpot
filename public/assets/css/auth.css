@@ -265,6 +265,29 @@
     font-size: 12px;
 }
 
+.auth-google {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.auth-google-button {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+}
+
+.auth-google-status {
+    margin: 8px 0 0;
+    color: #738095;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.auth-google-status:empty {
+    display: none;
+}
+
 .auth-registration small {
     display: block;
     margin-top: 6px;

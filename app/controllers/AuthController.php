@@ -9,6 +9,8 @@ use HotSpot\Core\HttpException;
 use HotSpot\Models\User;
 use PDOException;
 use Throwable;
+use Google\Client as GoogleClient;
+use RuntimeException;
 
 final class AuthController extends Controller
 {
@@ -27,11 +29,17 @@ final class AuthController extends Controller
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
 
+        // Tạo mã để đối chiếu token Google với phiên hiện tại.
+        if (isset($_SESSION['google_nonce']) === false) {
+            $_SESSION['google_nonce'] = bin2hex(random_bytes(32));
+        }
+
         $viewData = [
             'title' => 'Đăng nhập',
             'errorMessage' => $errorMessage,
             'email' => $email,
             'csrfToken' => $_SESSION['csrf_token'],
+            'googleNonce' => $_SESSION['google_nonce'],
             'isLoginPage' => true,
         ];
 
@@ -342,4 +350,237 @@ final class AuthController extends Controller
 
         return '';
     }
+
+    // Xác minh token Google và đối chiếu mã của lần đăng nhập hiện tại.
+    private function verifyGoogleCredential(
+        string $credential,
+        string $expectedNonce
+    ): array {
+        if (
+            $credential === ''
+            || strlen($credential) > 20000
+            || $expectedNonce === ''
+        ) {
+            throw new HttpException(401, 'Thông tin đăng nhập Google không hợp lệ.');
+        }
+
+        $configuration = require dirname(__DIR__) . '/config/app.php';
+
+        if (
+            isset($configuration['google_client_id']) === false
+            || is_string($configuration['google_client_id']) === false
+            || $configuration['google_client_id'] === ''
+        ) {
+            throw new RuntimeException('Chưa cấu hình Google Client ID.');
+        }
+
+        $googleClient = new GoogleClient([
+            'client_id' => $configuration['google_client_id'],
+        ]);
+
+        $googleInformation = $googleClient->verifyIdToken($credential);
+
+        if (is_array($googleInformation) === false) {
+            throw new HttpException(401, 'Token Google không hợp lệ hoặc đã hết hạn.');
+        }
+
+        if (
+            isset($googleInformation['sub'], $googleInformation['nonce']) === false
+            || is_string($googleInformation['sub']) === false
+            || $googleInformation['sub'] === ''
+            || strlen($googleInformation['sub']) > 255
+            || is_string($googleInformation['nonce']) === false
+            || hash_equals($expectedNonce, $googleInformation['nonce']) === false
+        ) {
+            throw new HttpException(401, 'Không xác minh được lần đăng nhập Google.');
+        }
+
+        if (
+            isset($googleInformation['email']) === false
+            || is_string($googleInformation['email']) === false
+            || filter_var(
+                $googleInformation['email'],
+                FILTER_VALIDATE_EMAIL
+            ) === false
+            || ($googleInformation['email_verified'] ?? false) !== true
+        ) {
+            throw new HttpException(401, 'Email Google chưa được xác minh hợp lệ.');
+        }
+
+        return $googleInformation;
+    }
+
+    // Kiểm tra phiên làm việc và lấy token Google từ form.
+    private function getSubmittedGoogleCredential(): string
+    {
+        if (
+            isset($_SESSION['csrf_token'], $_SESSION['google_nonce']) === false
+            || is_string($_SESSION['csrf_token']) === false
+            || is_string($_SESSION['google_nonce']) === false
+            || $_SESSION['google_nonce'] === ''
+        ) {
+            throw new HttpException(
+                400,
+                'Phiên làm việc không hợp lệ. Vui lòng tải lại trang đăng nhập.'
+            );
+        }
+
+        if (
+            isset($_POST['csrf_token']) === false
+            || is_string($_POST['csrf_token']) === false
+            || hash_equals(
+                $_SESSION['csrf_token'],
+                $_POST['csrf_token']
+            ) === false
+        ) {
+            throw new HttpException(
+                400,
+                'Yêu cầu đăng nhập không hợp lệ. Vui lòng thử lại.'
+            );
+        }
+
+        if (
+            isset($_POST['credential']) === false
+            || is_string($_POST['credential']) === false
+            || $_POST['credential'] === ''
+            || strlen($_POST['credential']) > 20000
+        ) {
+            throw new HttpException(
+                400,
+                'Không nhận được thông tin đăng nhập Google hợp lệ.'
+            );
+        }
+
+        return $_POST['credential'];
+    }
+
+    // Xác minh Google, tìm hoặc tạo tài khoản rồi lưu phiên đăng nhập.
+    public function googleLogin(): void
+    {
+        if (isset($_SESSION['user_id'])) {
+            header('Location: ' . createRouteUrl('profile'));
+            exit;
+        }
+
+        try {
+            $credential = $this->getSubmittedGoogleCredential();
+            $expectedNonce = $_SESSION['google_nonce'];
+
+            // Mỗi mã chỉ dùng cho một lần gửi đăng nhập.
+            unset($_SESSION['google_nonce']);
+
+            $googleInformation = $this->verifyGoogleCredential(
+                $credential,
+                $expectedNonce
+            );
+        } catch (HttpException $exception) {
+            http_response_code($exception->getCode());
+            $this->showLogin($exception->getMessage());
+            return;
+        } catch (Throwable $exception) {
+            http_response_code(503);
+            $this->showLogin(
+                'Chưa thể xác minh đăng nhập Google. Vui lòng thử lại sau.'
+            );
+            return;
+        }
+
+        $googleSubject = $googleInformation['sub'];
+        $email = strtolower(trim($googleInformation['email']));
+
+        if (strlen($email) > 254) {
+            http_response_code(422);
+            $this->showLogin('Email Google vượt quá độ dài cho phép.');
+            return;
+        }
+
+        try {
+            $userModel = new User();
+            $userInformation = $userModel->findByGoogleSubject(
+                $googleSubject
+            );
+
+            if ($userInformation !== null) {
+                $userId = (int) $userInformation['user_id'];
+            } else {
+                $existingUser = $userModel->findByEmail($email);
+
+                // Không tự liên kết Google với tài khoản chỉ vì trùng email.
+                if ($existingUser !== null) {
+                    http_response_code(409);
+                    $this->showLogin(
+                        'Email này đã có tài khoản Hot Spot. '
+                            . 'Vui lòng đăng nhập bằng mật khẩu hiện tại.',
+                        $email
+                    );
+                    return;
+                }
+
+                $fullName = 'Người dùng Google';
+
+                if (
+                    isset($googleInformation['name'])
+                    && is_string($googleInformation['name'])
+                    && trim($googleInformation['name']) !== ''
+                ) {
+                    $fullName = trim($googleInformation['name']);
+                }
+
+                $fullName = mb_substr($fullName, 0, 120, 'UTF-8');
+
+                $userId = $userModel->createGoogleUser(
+                    $fullName,
+                    $email,
+                    $googleSubject
+                );
+            }
+
+            if ($userId <= 0) {
+                throw new RuntimeException(
+                    'Không xác định được tài khoản đăng nhập.'
+                );
+            }
+        } catch (PDOException $exception) {
+            if (
+                isset($exception->errorInfo[1])
+                && (int) $exception->errorInfo[1] === 1062
+            ) {
+                http_response_code(409);
+                $this->showLogin(
+                    'Thông tin tài khoản đã được sử dụng. '
+                        . 'Vui lòng thử đăng nhập lại.'
+                );
+                return;
+            }
+
+            http_response_code(500);
+            $this->showLogin(
+                'Chưa thể xử lý tài khoản Google. Vui lòng thử lại sau.'
+            );
+            return;
+        } catch (Throwable $exception) {
+            http_response_code(500);
+            $this->showLogin(
+                'Chưa thể hoàn tất đăng nhập. Vui lòng thử lại sau.'
+            );
+            return;
+        }
+
+        session_regenerate_id(true);
+
+        $_SESSION['user_id'] = $userId;
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+
+        header('Location: ' . createRouteUrl('profile'), true, 303);
+        exit;
+    }
+
+
+
+
+
+
+
+
+
 }

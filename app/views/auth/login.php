@@ -6,6 +6,17 @@ $errorMessage = $viewData['errorMessage'];
 $email = $viewData['email'];
 $csrfToken = $viewData['csrfToken'];
 $loginUrl = createRouteUrl('login');
+$googleNonce = $viewData['googleNonce'];
+$googleLoginUrl = createRouteUrl('login/google');
+$googleConfiguration = require dirname(__DIR__, 2) . '/config/app.php';
+$googleClientId = '';
+
+if (
+    isset($googleConfiguration['google_client_id'])
+    && is_string($googleConfiguration['google_client_id'])
+) {
+    $googleClientId = $googleConfiguration['google_client_id'];
+}
 ?>
 
 <div class="container">
@@ -134,6 +145,25 @@ $loginUrl = createRouteUrl('login');
                         <span>hoặc</span>
                     </div>
 
+                    <div class="auth-google">
+                        <form
+                            id="google-login-form"
+                            method="post"
+                            action="<?php echo escapeHtml($googleLoginUrl); ?>"
+                            data-client-id="<?php echo escapeHtml($googleClientId); ?>"
+                            data-nonce="<?php echo escapeHtml($googleNonce); ?>"
+                        >
+                            <input type="hidden" name="csrf_token"
+                                value="<?php echo escapeHtml($csrfToken); ?>">
+                            <input type="hidden" name="credential" id="google-credential">
+                            <div id="google-login-button" class="auth-google-button"></div>
+                        </form>
+                        <p id="google-login-status" class="auth-google-status" role="status">
+                            Đang tải đăng nhập Google…
+                        </p>
+                        <noscript>Bật JavaScript để đăng nhập bằng Google.</noscript>
+                    </div>
+
                     <div class="auth-registration">
                         Chưa có tài khoản?
                         <a href="<?php echo escapeHtml(createRouteUrl('register')); ?>">Đăng ký</a>
@@ -144,3 +174,4 @@ $loginUrl = createRouteUrl('login');
         </div>
     </div>
 </div>
+<script src="assets/js/google-login.js?v=1" defer></script>

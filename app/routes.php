@@ -38,6 +38,10 @@ $router->add('POST', 'register', $authController, 'register');
 
 // Nhận và xử lý form đăng nhập.
 $router->add('POST', 'login', $authController, 'login');
+
+// Nhận token từ nút đăng nhập Google.
+$router->add('POST', 'login/google', $authController, 'googleLogin');
+
 // Xử lý đăng xuất.
 $router->add('POST', 'logout', $authController, 'logout');
 
