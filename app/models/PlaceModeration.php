@@ -8,13 +8,16 @@ use PDO;
 
 final class PlaceModeration extends Model
 {
-    public function setPendingPlaceStatus(
+    // Kiểm tra trạng thái và gọi routine trong một giao dịch.
+    public function setPlaceStatus(
         int $adminId,
         int $placeId,
         string $newStatus,
-        ?string $rejectionReason
+        ?string $rejectionReason,
+        string $expectedStatus = 'PENDING'
     ): void {
         $connection = self::getConnection();
+        // Khóa bài trong giao dịch để tránh hai thao tác ghi đè nhau.
         $connection->beginTransaction();
 
         try {
@@ -26,11 +29,18 @@ final class PlaceModeration extends Model
             $place = $placeStatement->fetch(PDO::FETCH_ASSOC);
             $placeStatement->closeCursor();
 
-            if ($place === false || $place['status_code'] !== 'PENDING') {
-                throw new \RuntimeException('Địa điểm không còn ở trạng thái chờ duyệt.');
+            if ($place === false || $place['status_code'] !== $expectedStatus) {
+                throw new \RuntimeException('Trạng thái địa điểm đã thay đổi hoặc không phù hợp với thao tác.');
             }
 
-            if ($newStatus === 'APPROVED') {
+            $validTransition = ($expectedStatus === 'PENDING' && in_array($newStatus, ['APPROVED', 'REJECTED'], true))
+                || ($expectedStatus === 'APPROVED' && $newStatus === 'HIDDEN')
+                || ($expectedStatus === 'HIDDEN' && $newStatus === 'APPROVED');
+            if (!$validTransition) {
+                throw new \RuntimeException('Không thể chuyển trạng thái địa điểm theo thao tác này.');
+            }
+
+            if ($newStatus === 'APPROVED' && $expectedStatus === 'PENDING') {
                 $imageStatement = $connection->prepare(
                     'SELECT image_path FROM place_images WHERE place_id = :place_id ORDER BY sort_order, image_id'
                 );
@@ -66,13 +76,14 @@ final class PlaceModeration extends Model
             } else {
                 $procedure->bindValue(':rejection_reason', $rejectionReason, PDO::PARAM_STR);
             }
+            // Đọc hết các result set để có thể tiếp tục dùng kết nối PDO.
             $procedure->execute();
             while ($procedure->nextRowset()) {
             }
             $procedure->closeCursor();
 
             // Ghi nhận lần duyệt đầu; restore về APPROVED không được thay ngày cũ.
-            if ($newStatus === 'APPROVED') {
+            if ($newStatus === 'APPROVED' && $expectedStatus === 'PENDING') {
                 $approvedAt = $connection->prepare(
                     'UPDATE places SET approved_at = CURRENT_TIMESTAMP WHERE place_id = :place_id AND approved_at IS NULL'
                 );
@@ -80,13 +91,35 @@ final class PlaceModeration extends Model
                 $approvedAt->execute();
                 $approvedAt->closeCursor();
             }
+            // Chỉ lưu khi routine và các bước liên quan đều thành công.
             $connection->commit();
         } catch (\Throwable $exception) {
+            // Khôi phục dữ liệu nếu bất kỳ bước nào thất bại.
             if ($connection->inTransaction()) {
                 $connection->rollBack();
             }
             throw $exception;
         }
+    }
+
+    // Lấy địa điểm đã duyệt và đang ẩn cho trang quản lý.
+    public function findManagedPlaces(): array
+    {
+        $sql = "SELECT places.place_id, places.category_id, places.title, places.status_code,
+                       places.approved_at, categories.name AS category_name, provinces.province_name,
+                       (SELECT place_images.image_path FROM place_images
+                        WHERE place_images.place_id = places.place_id
+                        ORDER BY place_images.sort_order, place_images.image_id LIMIT 1) AS image_path
+                FROM places
+                INNER JOIN categories ON categories.category_id = places.category_id
+                INNER JOIN provinces ON provinces.province_code = places.province_code
+                WHERE places.status_code IN ('APPROVED', 'HIDDEN')
+                ORDER BY places.place_id DESC";
+        $statement = self::getConnection()->prepare($sql);
+        $statement->execute();
+        $places = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $places;
     }
 
     /** @return array<int, array<string, mixed>> */

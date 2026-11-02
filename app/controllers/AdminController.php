@@ -6,6 +6,7 @@ namespace HotSpot\Controllers;
 use HotSpot\Core\Controller;
 use HotSpot\Core\HttpException;
 use HotSpot\Models\PlaceModeration;
+use HotSpot\Models\Review;
 use HotSpot\Models\User;
 
 final class AdminController extends Controller
@@ -27,10 +28,24 @@ final class AdminController extends Controller
         $adminMessage = $_SESSION['admin_message'] ?? '';
         $adminMessageType = $_SESSION['admin_message_type'] ?? 'success';
         unset($_SESSION['admin_message'], $_SESSION['admin_message_type']);
+        $showManagedPlaces = isset($_GET['view']) && $_GET['view'] === 'managed';
+        $placeModeration = new PlaceModeration();
+        $pendingPlaces = [];
+        $managedPlaces = [];
+        $pageTitle = 'Địa điểm chờ duyệt';
+        if ($showManagedPlaces) {
+            $managedPlaces = $placeModeration->findManagedPlaces();
+            $pageTitle = 'Quản lý địa điểm';
+        } else {
+            $pendingPlaces = $placeModeration->findPendingPlaces();
+        }
         $this->render('admin/places', [
-            'title' => 'Địa điểm chờ duyệt',
+            'title' => $pageTitle,
             'userInformation' => $user,
-            'pendingPlaces' => (new PlaceModeration())->findPendingPlaces(),
+            'pendingPlaces' => $pendingPlaces,
+            'managedPlaces' => $managedPlaces,
+            'showManagedPlaces' => $showManagedPlaces,
+            'csrfToken' => $_SESSION['csrf_token'] ?? '',
             'adminMessage' => $adminMessage,
             'adminMessageType' => $adminMessageType,
             'isAdminPage' => true,
@@ -81,7 +96,7 @@ final class AdminController extends Controller
     public function updatePlaceStatus(): void
     {
         $admin = $this->requireAdmin();
-        $allowedFields = ['csrf_token', 'place_id', 'target_status', 'rejection_reason'];
+        $allowedFields = ['csrf_token', 'place_id', 'target_status', 'rejection_reason', 'moderation_action'];
         foreach ($_POST as $field => $value) {
             if (!in_array($field, $allowedFields, true)) {
                 throw new HttpException(400, 'Form không hợp lệ.');
@@ -98,7 +113,20 @@ final class AdminController extends Controller
         if (!is_string($rawPlaceId) || strlen($rawPlaceId) > 18 || !ctype_digit($rawPlaceId) || (int) $rawPlaceId <= 0) {
             throw new HttpException(400, 'Địa điểm không hợp lệ.');
         }
-        if (!is_string($targetStatus) || !in_array($targetStatus, ['APPROVED', 'REJECTED'], true)) {
+        $moderationAction = $_POST['moderation_action'] ?? 'review';
+        if (!is_string($moderationAction) || !in_array($moderationAction, ['review', 'hide', 'restore'], true)) {
+            throw new HttpException(400, 'Thao tác không hợp lệ.');
+        }
+        $expectedStatus = 'PENDING';
+        if ($moderationAction === 'hide') {
+            $expectedStatus = 'APPROVED';
+        } elseif ($moderationAction === 'restore') {
+            $expectedStatus = 'HIDDEN';
+        }
+        $validTarget = ($moderationAction === 'review' && in_array($targetStatus, ['APPROVED', 'REJECTED'], true))
+            || ($moderationAction === 'hide' && $targetStatus === 'HIDDEN')
+            || ($moderationAction === 'restore' && $targetStatus === 'APPROVED');
+        if (!is_string($targetStatus) || !$validTarget) {
             throw new HttpException(400, 'Trạng thái duyệt không hợp lệ.');
         }
 
@@ -115,18 +143,35 @@ final class AdminController extends Controller
         }
 
         try {
-            (new PlaceModeration())->setPendingPlaceStatus(
+            (new PlaceModeration())->setPlaceStatus(
                 (int) $admin['user_id'],
                 (int) $rawPlaceId,
                 $targetStatus,
-                $reason === '' ? null : $reason
+                $reason === '' ? null : $reason,
+                $expectedStatus
             );
         } catch (\PDOException $exception) {
+            if ($moderationAction !== 'review') {
+                $this->redirectToManagedPlaces('Không thể đổi trạng thái. Hãy kiểm tra dữ liệu địa điểm và routine; khi khôi phục cần có từ 1 đến 3 ảnh.', 'danger');
+            }
             $this->redirectWithAdminMessage((int) $rawPlaceId, 'Không thể lưu quyết định. Hãy kiểm tra cấu hình cơ sở dữ liệu và routine.', 'danger');
         } catch (\RuntimeException $exception) {
+            if ($moderationAction !== 'review') {
+                $this->redirectToManagedPlaces($exception->getMessage(), 'danger');
+            }
             $this->redirectWithAdminMessage((int) $rawPlaceId, $exception->getMessage(), 'danger');
         } catch (\Throwable $exception) {
+            if ($moderationAction !== 'review') {
+                $this->redirectToManagedPlaces('Chưa thể đổi trạng thái. Vui lòng thử lại.', 'danger');
+            }
             $this->redirectWithAdminMessage((int) $rawPlaceId, 'Chưa thể lưu quyết định. Vui lòng thử lại.', 'danger');
+        }
+
+        if ($moderationAction === 'hide') {
+            $this->redirectToManagedPlaces('Đã ẩn địa điểm.', 'success');
+        }
+        if ($moderationAction === 'restore') {
+            $this->redirectToManagedPlaces('Đã khôi phục địa điểm.', 'success');
         }
 
         $_SESSION['admin_message'] = $targetStatus === 'APPROVED'
@@ -134,6 +179,62 @@ final class AdminController extends Controller
             : 'Đã từ chối địa điểm và lưu lý do.';
         $_SESSION['admin_message_type'] = 'success';
         header('Location: ' . createRouteUrl('admin/places'));
+        exit;
+    }
+
+    // Hiển thị danh sách đánh giá cho Admin.
+    public function reviews(): void
+    {
+        $admin = $this->requireAdmin();
+        $reviews = (new Review())->findAllForAdmin();
+        $message = $_SESSION['review_admin_message'] ?? '';
+        $messageType = $_SESSION['review_admin_message_type'] ?? 'success';
+        unset($_SESSION['review_admin_message'], $_SESSION['review_admin_message_type']);
+        $this->render('admin/reviews', [
+            'title' => 'Quản lý đánh giá', 'userInformation' => $admin,
+            'reviews' => $reviews, 'csrfToken' => $_SESSION['csrf_token'] ?? '',
+            'message' => $message, 'messageType' => $messageType, 'isAdminPage' => true,
+        ]);
+    }
+
+    // Chỉ Admin có CSRF hợp lệ mới được ẩn hoặc khôi phục đánh giá.
+    public function updateReviewStatus(): void
+    {
+        $admin = $this->requireAdmin();
+        $token = $_POST['csrf_token'] ?? '';
+        if (!is_string($token) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            throw new HttpException(400, 'Phiên làm việc hết hạn. Hãy tải lại trang và thử lại.');
+        }
+        $reviewId = $_POST['review_id'] ?? '';
+        $targetStatus = $_POST['target_status'] ?? '';
+        if (!is_string($reviewId) || strlen($reviewId) > 18 || !ctype_digit($reviewId) || (int) $reviewId <= 0
+            || !is_string($targetStatus) || !in_array($targetStatus, ['VISIBLE', 'HIDDEN'], true)) {
+            throw new HttpException(400, 'Thông tin đánh giá không hợp lệ.');
+        }
+        try {
+            (new Review())->setModerationStatus((int) $admin['user_id'], (int) $reviewId, $targetStatus);
+            $_SESSION['review_admin_message'] = $targetStatus === 'HIDDEN' ? 'Đã ẩn đánh giá.' : 'Đã khôi phục đánh giá.';
+            $_SESSION['review_admin_message_type'] = 'success';
+        } catch (\PDOException $exception) {
+            $_SESSION['review_admin_message'] = 'Không thể cập nhật đánh giá. Vui lòng thử lại.';
+            $_SESSION['review_admin_message_type'] = 'danger';
+        } catch (\RuntimeException $exception) {
+            $_SESSION['review_admin_message'] = $exception->getMessage();
+            $_SESSION['review_admin_message_type'] = 'danger';
+        } catch (\Throwable $exception) {
+            $_SESSION['review_admin_message'] = 'Không thể cập nhật đánh giá. Vui lòng thử lại.';
+            $_SESSION['review_admin_message_type'] = 'danger';
+        }
+        header('Location: ' . createRouteUrl('admin/reviews'));
+        exit;
+    }
+
+    // Trở về trang quản lý sau khi ẩn hoặc khôi phục.
+    private function redirectToManagedPlaces(string $message, string $type): void
+    {
+        $_SESSION['admin_message'] = $message;
+        $_SESSION['admin_message_type'] = $type;
+        header('Location: ' . createRouteUrl('admin/places') . '&view=managed');
         exit;
     }
 
