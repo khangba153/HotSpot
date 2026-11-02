@@ -42,6 +42,42 @@ $router->add('POST', 'register', $authController, 'register');
 
 // Nhận và xử lý form đăng nhập.
 $router->add('POST', 'login', $authController, 'login');
+
+// Nhận token từ nút đăng nhập Google.
+$router->add('POST', 'login/google', $authController, 'googleLogin');
+
+// Hiển thị form yêu cầu đặt lại mật khẩu.
+$router->add(
+    'GET',
+    'forgot-password',
+    $authController,
+    'showForgotPassword'
+);
+
+// Mở form đặt mật khẩu mới từ liên kết trong email.
+$router->add(
+    'GET',
+    'reset-password',
+    $authController,
+    'showResetPassword'
+);
+
+// Xử lý yêu cầu gửi liên kết đặt lại mật khẩu.
+$router->add(
+    'POST',
+    'forgot-password',
+    $authController,
+    'requestPasswordReset'
+);
+
+// Lưu mật khẩu mới từ form khôi phục.
+$router->add(
+    'POST',
+    'reset-password',
+    $authController,
+    'resetPassword'
+);
+
 // Xử lý đăng xuất.
 $router->add('POST', 'logout', $authController, 'logout');
 

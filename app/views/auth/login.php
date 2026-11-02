@@ -6,6 +6,28 @@ $errorMessage = $viewData['errorMessage'];
 $email = $viewData['email'];
 $csrfToken = $viewData['csrfToken'];
 $loginUrl = createRouteUrl('login');
+$googleNonce = $viewData['googleNonce'];
+$googleLoginUrl = createRouteUrl('login/google');
+$googleConfiguration = require dirname(__DIR__, 2) . '/config/app.php';
+$googleClientId = '';
+$successMessage = '';
+
+// Thông báo sau khi đổi mật khẩu chỉ hiển thị một lần.
+if (
+    isset($_SESSION['auth_success_message'])
+    && is_string($_SESSION['auth_success_message'])
+) {
+    $successMessage = $_SESSION['auth_success_message'];
+}
+
+unset($_SESSION['auth_success_message']);
+
+if (
+    isset($googleConfiguration['google_client_id'])
+    && is_string($googleConfiguration['google_client_id'])
+) {
+    $googleClientId = $googleConfiguration['google_client_id'];
+}
 ?>
 
 <div class="container">
@@ -60,6 +82,12 @@ $loginUrl = createRouteUrl('login');
                         </p>
                     </div>
 
+                    <?php if ($successMessage !== '') { ?>
+                        <div class="alert alert-success" role="status">
+                            <?php echo escapeHtml($successMessage); ?>
+                        </div>
+                    <?php } ?>
+
                     <?php if ($errorMessage !== '') { ?>
                         <div class="alert alert-danger" role="alert">
                             <?php echo escapeHtml($errorMessage); ?>
@@ -110,16 +138,15 @@ $loginUrl = createRouteUrl('login');
                             >
                         </div>
 
-                        <!-- Hai chức năng này hiện chỉ hiển thị giao diện. -->
                         <div class="auth-options">
                             <label class="auth-remember">
-                                <input type="checkbox" disabled>
+                                <input type="checkbox" name="remember_login" value="1">
                                 Ghi nhớ đăng nhập
                             </label>
 
-                            <span title="Chưa hỗ trợ khôi phục mật khẩu">
+                            <a class="auth-forgot-link" href="<?php echo escapeHtml(createRouteUrl('forgot-password')); ?>">
                                 Quên mật khẩu?
-                            </span>
+                            </a>
                         </div>
 
                         <button
@@ -134,6 +161,25 @@ $loginUrl = createRouteUrl('login');
                         <span>hoặc</span>
                     </div>
 
+                    <div class="auth-google">
+                        <form
+                            id="google-login-form"
+                            method="post"
+                            action="<?php echo escapeHtml($googleLoginUrl); ?>"
+                            data-client-id="<?php echo escapeHtml($googleClientId); ?>"
+                            data-nonce="<?php echo escapeHtml($googleNonce); ?>"
+                        >
+                            <input type="hidden" name="csrf_token"
+                                value="<?php echo escapeHtml($csrfToken); ?>">
+                            <input type="hidden" name="credential" id="google-credential">
+                            <div id="google-login-button" class="auth-google-button"></div>
+                        </form>
+                        <p id="google-login-status" class="auth-google-status" role="status">
+                            Đang tải đăng nhập Google…
+                        </p>
+                        <noscript>Bật JavaScript để đăng nhập bằng Google.</noscript>
+                    </div>
+
                     <div class="auth-registration">
                         Chưa có tài khoản?
                         <a href="<?php echo escapeHtml(createRouteUrl('register')); ?>">Đăng ký</a>
@@ -144,3 +190,4 @@ $loginUrl = createRouteUrl('login');
         </div>
     </div>
 </div>
+<script src="assets/js/google-login.js?v=1" defer></script>
