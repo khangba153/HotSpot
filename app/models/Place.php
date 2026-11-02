@@ -87,4 +87,58 @@ final class Place extends Model
 
         return $tagList;
     }
+
+    // Lấy danh sách địa điểm do một tài khoản đăng (TV3-05), mới nhất trước.
+    public function findByOwnerId(int $ownerId): array
+    {
+        if ($ownerId <= 0) {
+            return [];
+        }
+
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'SELECT
+                        places.place_id,
+                        places.owner_id,
+                        places.category_id,
+                        places.province_code,
+                        places.ward_code,
+                        places.status_code,
+                        places.title,
+                        places.description,
+                        places.address,
+                        places.rejection_reason,
+                        places.created_at,
+                        categories.name AS category_name,
+                        provinces.province_name,
+                        wards.ward_name,
+                        place_statuses.display_name AS status_name,
+                        (
+                            SELECT place_images.image_path
+                            FROM place_images
+                            WHERE place_images.place_id = places.place_id
+                            ORDER BY place_images.sort_order, place_images.image_id
+                            LIMIT 1
+                        ) AS cover_image
+                     FROM places
+                     INNER JOIN categories
+                         ON categories.category_id = places.category_id
+                     INNER JOIN provinces
+                         ON provinces.province_code = places.province_code
+                     LEFT JOIN wards
+                         ON wards.ward_code = places.ward_code
+                     INNER JOIN place_statuses
+                         ON place_statuses.status_code = places.status_code
+                     WHERE places.owner_id = :owner_id
+                     ORDER BY places.created_at DESC, places.place_id DESC';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+        $preparedStatement->bindValue(':owner_id', $ownerId, PDO::PARAM_INT);
+        $preparedStatement->execute();
+
+        $placeList = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
+        $preparedStatement->closeCursor();
+
+        return $placeList;
+    }
 }
