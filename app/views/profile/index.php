@@ -268,23 +268,6 @@ if ($activeTab === 'reviews') {
                         </div>
                     </div>
 
-                    <div class="row align-items-center mb-3">
-                        <div class="col-12 col-sm-3">
-                            <label for="profile-province" class="form-label">
-                                Tỉnh/Thành
-                            </label>
-                        </div>
-
-                        <div class="col-12 col-sm-9">
-                            <select
-                                id="profile-province"
-                                class="form-select"
-                                disabled>
-                                <option>Chưa hỗ trợ</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <div class="row mb-3">
                         <div class="col-12 col-sm-3">
                             <label for="profile-introduction" class="form-label">
