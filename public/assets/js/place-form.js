@@ -244,7 +244,10 @@
             return;
         }
 
-        var separator = wardsBaseUrl.indexOf('?') === -1 ? '?' : '&';
+        var separator = '&';
+        if (wardsBaseUrl.indexOf('?') === -1) {
+            separator = '?';
+        }
         var requestUrl = wardsBaseUrl + separator + 'province_code=' + encodeURIComponent(provinceCode);
 
         if (typeof AbortController !== 'undefined') {
@@ -323,10 +326,10 @@
             return true;
         }
 
-        var rawLat = latitudeInput.value.trim();
-        var rawLng = longitudeInput.value.trim();
+        var rawLatitude = latitudeInput.value.trim();
+        var rawLongitude = longitudeInput.value.trim();
 
-        if (rawLat === '' && rawLng === '') {
+        if (rawLatitude === '' && rawLongitude === '') {
             setFieldError('place-coords-error', '');
             if (mapReadout) {
                 mapReadout.textContent = 'Chưa nhập tọa độ (không bắt buộc)';
@@ -334,7 +337,7 @@
             return true;
         }
 
-        if (rawLat === '' || rawLng === '') {
+        if (rawLatitude === '' || rawLongitude === '') {
             setFieldError(
                 'place-coords-error',
                 'Vĩ độ và kinh độ phải đi theo cặp (nhập cả hai hoặc để trống cả hai).'
@@ -342,15 +345,15 @@
             return false;
         }
 
-        var latNumber = Number(rawLat);
-        var lngNumber = Number(rawLng);
+        var latitudeNumber = Number(rawLatitude);
+        var longitudeNumber = Number(rawLongitude);
 
-        if (!Number.isFinite(latNumber) || !Number.isFinite(lngNumber)) {
+        if (!Number.isFinite(latitudeNumber) || !Number.isFinite(longitudeNumber)) {
             setFieldError('place-coords-error', 'Tọa độ phải là số thập phân hợp lệ.');
             return false;
         }
 
-        if (latNumber < -90 || latNumber > 90 || lngNumber < -180 || lngNumber > 180) {
+        if (latitudeNumber < -90 || latitudeNumber > 90 || longitudeNumber < -180 || longitudeNumber > 180) {
             setFieldError(
                 'place-coords-error',
                 'Tọa độ ngoài phạm vi hợp lệ (Vĩ độ: -90 đến 90, Kinh độ: -180 đến 180).'
@@ -358,7 +361,7 @@
             return false;
         }
 
-        if (latNumber === 0 && lngNumber === 0) {
+        if (latitudeNumber === 0 && longitudeNumber === 0) {
             setFieldError(
                 'place-coords-error',
                 'Không sử dụng tọa độ giả (0, 0). Vui lòng để trống nếu chưa có tọa độ.'
@@ -368,7 +371,7 @@
 
         setFieldError('place-coords-error', '');
         if (mapReadout) {
-            mapReadout.textContent = 'Tọa độ: ' + latNumber.toFixed(5) + ', ' + lngNumber.toFixed(5);
+            mapReadout.textContent = 'Tọa độ: ' + latitudeNumber.toFixed(5) + ', ' + longitudeNumber.toFixed(5);
         }
         return true;
     }
@@ -436,7 +439,11 @@
 
                 var badgeElement = document.createElement('span');
                 badgeElement.className = 'hs-place-form__preview-badge';
-                badgeElement.textContent = fileIndex === 0 ? 'Ảnh bìa' : 'Ảnh ' + (fileIndex + 1);
+                if (fileIndex === 0) {
+                    badgeElement.textContent = 'Ảnh bìa';
+                } else {
+                    badgeElement.textContent = 'Ảnh ' + (fileIndex + 1);
+                }
 
                 var removeButton = document.createElement('button');
                 removeButton.type = 'button';
@@ -523,7 +530,10 @@
             }
         }
 
-        var titleValue = titleInput ? titleInput.value.trim() : '';
+        var titleValue = '';
+        if (titleInput) {
+            titleValue = titleInput.value.trim();
+        }
         if (titleValue === '') {
             setFieldError('place-title-error', 'Vui lòng nhập tên địa điểm.');
             markInvalid(titleInput);
@@ -531,7 +541,10 @@
             setFieldError('place-title-error', '');
         }
 
-        var descriptionValue = descriptionInput ? descriptionInput.value.trim() : '';
+        var descriptionValue = '';
+        if (descriptionInput) {
+            descriptionValue = descriptionInput.value.trim();
+        }
         if (descriptionValue === '') {
             setFieldError('place-description-error', 'Vui lòng nhập mô tả giới thiệu địa điểm.');
             markInvalid(descriptionInput);
@@ -539,7 +552,10 @@
             setFieldError('place-description-error', '');
         }
 
-        var categoryValue = categorySelect ? categorySelect.value.trim() : '';
+        var categoryValue = '';
+        if (categorySelect) {
+            categoryValue = categorySelect.value.trim();
+        }
         if (categoryValue === '') {
             setFieldError('place-category-error', 'Vui lòng chọn danh mục cho địa điểm.');
             markInvalid(categorySelect);
@@ -556,7 +572,10 @@
             markInvalid(tagFilterInput);
         }
 
-        var provinceValue = provinceSelect ? provinceSelect.value.trim() : '';
+        var provinceValue = '';
+        if (provinceSelect) {
+            provinceValue = provinceSelect.value.trim();
+        }
         if (provinceValue === '') {
             setFieldError('place-province-error', 'Vui lòng chọn tỉnh/thành phố.');
             markInvalid(provinceSelect);
@@ -564,7 +583,10 @@
             setFieldError('place-province-error', '');
         }
 
-        var addressValue = addressInput ? addressInput.value.trim() : '';
+        var addressValue = '';
+        if (addressInput) {
+            addressValue = addressInput.value.trim();
+        }
         if (addressValue === '') {
             setFieldError('place-address-error', 'Vui lòng nhập địa chỉ chi tiết.');
             markInvalid(addressInput);
