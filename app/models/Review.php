@@ -111,4 +111,46 @@ final class Review extends Model
 
         return $review === false ? null : $review;
     }
+    // Lấy đánh giá cùng tác giả và địa điểm cho Admin.
+    public function findAllForAdmin(): array
+    {
+        $statement = self::getConnection()->prepare('SELECT reviews.review_id, reviews.place_id, reviews.rating, reviews.content, reviews.status_code, reviews.created_at, users.full_name, places.title FROM reviews INNER JOIN users ON users.user_id = reviews.user_id INNER JOIN places ON places.place_id = reviews.place_id ORDER BY reviews.created_at DESC, reviews.review_id DESC');
+        $statement->execute();
+        $reviews = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $reviews;
+    }
+
+    // Khóa đánh giá và gọi routine trong cùng một giao dịch.
+    public function setModerationStatus(int $adminId, int $reviewId, string $targetStatus): void
+    {
+        $connection = self::getConnection();
+        $connection->beginTransaction();
+        try {
+            $statement = $connection->prepare('SELECT status_code FROM reviews WHERE review_id = :review_id FOR UPDATE');
+            $statement->bindValue(':review_id', $reviewId, PDO::PARAM_INT);
+            $statement->execute();
+            $review = $statement->fetch(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
+            $expectedStatus = $targetStatus === 'HIDDEN' ? 'VISIBLE' : 'HIDDEN';
+            if ($review === false || $review['status_code'] !== $expectedStatus) {
+                throw new \RuntimeException('Đánh giá không tồn tại hoặc trạng thái đã thay đổi.');
+            }
+            $procedure = $connection->prepare('CALL HTH_SET_REVIEW_STATUS(:admin_id, :review_id, :status)');
+            $procedure->bindValue(':admin_id', $adminId, PDO::PARAM_INT);
+            $procedure->bindValue(':review_id', $reviewId, PDO::PARAM_INT);
+            $procedure->bindValue(':status', $targetStatus, PDO::PARAM_STR);
+            $procedure->execute();
+            while ($procedure->nextRowset()) {
+            }
+            $procedure->closeCursor();
+            $connection->commit();
+        } catch (Throwable $exception) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
+            throw $exception;
+        }
+    }
+
 }

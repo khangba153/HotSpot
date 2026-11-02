@@ -148,6 +148,33 @@
     font-size: 12px;
 }
 
+.auth-forgot-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.auth-forgot-link:hover {
+    color: #ff542e;
+    text-decoration: underline;
+}
+
+.auth-forgot-link:focus-visible {
+    outline: 2px solid #ff542e;
+    outline-offset: 4px;
+}
+
+.auth-recovery-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 620px;
+    height: 100%;
+}
+
+.auth-recovery-back {
+    margin-top: 24px;
+}
+
 .auth-remember {
     display: flex;
     align-items: center;
@@ -263,6 +290,29 @@
     margin-top: 6px;
     margin-bottom: 0;
     font-size: 12px;
+}
+
+.auth-google {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.auth-google-button {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+}
+
+.auth-google-status {
+    margin: 8px 0 0;
+    color: #738095;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.auth-google-status:empty {
+    display: none;
 }
 
 .auth-registration small {

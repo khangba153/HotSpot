@@ -4,9 +4,13 @@ $places = $viewData['pendingPlaces'] ?? [];
 $adminMessage = (string) ($viewData['adminMessage'] ?? '');
 $adminMessageType = ($viewData['adminMessageType'] ?? 'success') === 'danger' ? 'danger' : 'success';
 $categoryImages = [1 => 'assets/images/home/food.webp', 2 => 'assets/images/home/coffee.webp', 3 => 'assets/images/home/travel.webp', 4 => 'assets/images/home/fun.webp', 5 => 'assets/images/home/nature.webp', 6 => 'assets/images/home/culture.webp'];
+if (($viewData['showManagedPlaces'] ?? false) === true) {
+    require __DIR__ . '/managed-places.php';
+    return;
+}
 ?>
 <div class="admin-shell admin-list-shell">
-    <aside class="admin-sidebar"><small>QUẢN LÝ HỆ THỐNG</small><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Tổng quan</a><a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Chờ duyệt địa điểm</a><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Quản lý địa điểm</a><a>Quản lý đánh giá</a><a>Quản lý danh mục</a><a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">Quay về trang chủ</a></aside>
+    <aside class="admin-sidebar"><small>QUẢN LÝ HỆ THỐNG</small><a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Tổng quan</a><a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Chờ duyệt địa điểm</a><a href="<?php echo escapeHtml(createRouteUrl('admin/places') . '&view=managed'); ?>">Quản lý địa điểm</a><a href="<?php echo escapeHtml(createRouteUrl('admin/reviews')); ?>">Quản lý đánh giá</a><a>Quản lý danh mục</a><a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">Quay về trang chủ</a></aside>
     <main class="admin-content">
         <div class="admin-heading"><div><small>HOT SPOT / QUẢN TRỊ</small><h1>Địa điểm chờ duyệt</h1><p>Xem các địa điểm thành viên gửi lên và xử lý từng bài theo quy định.</p></div><span class="admin-pill"><?php echo count($places); ?> bài cần xem xét</span></div>
         <?php if ($adminMessage !== '') { ?><div class="admin-flash admin-flash--<?php echo escapeHtml($adminMessageType); ?>" role="status"><?php echo escapeHtml($adminMessage); ?></div><?php } ?>

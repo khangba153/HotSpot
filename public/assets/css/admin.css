@@ -465,11 +465,36 @@
     color:#c94c42;
 }
 
+.admin-management-tabs { display:flex; gap:6px; margin:18px 0; flex-wrap:wrap; }
+.admin-management-tabs button { border:0; background:#fff; color:#738397; border-radius:7px; padding:9px 12px; font-size:10px; font-weight:700; }
+.admin-management-tabs button.selected { background:#fff0eb; color:#f05a46; }
+.admin-status-approved { background:#e8f8ef; color:#269960; }
+.admin-status-hidden { background:#f0ebff; color:#8061c1; }
+.admin-manage-action { border:0; border-radius:5px; padding:7px 9px; font-size:9px; font-weight:700; }
+.admin-hide-action { background:#fff0ef; color:#dd5d53; }
+.admin-restore-action { background:#eaf4ff; color:#397fb6; }
+.admin-management-note { margin-top:24px; color:#8796a7; font-size:10px; }
+.managed-place-row[hidden], #managed-empty[hidden] { display:none; }
+
 /* Nút phân trang dùng chữ thay ký hiệu mũi tên. */
-.admin-pagination button:first-child,
-.admin-pagination button:last-child {
+.admin-pagination:not(#managed-pagination) button:first-child,
+.admin-pagination:not(#managed-pagination) button:last-child {
     width: auto;
     min-width: 48px;
     padding-right: 10px;
     padding-left: 10px;
 }
+
+/* Trang quản lý đánh giá. */
+.admin-review-stats { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; margin:22px 0 18px; }
+.admin-review-stats div { background:#fff; border:1px solid #e5ebf1; border-radius:12px; padding:18px; }
+.admin-review-stats span { display:block; color:#78889a; font-size:11px; font-weight:700; }
+.admin-review-stats strong { display:block; font-size:26px; margin-top:6px; }
+.admin-review-author { display:flex; align-items:center; gap:8px; }
+.admin-review-author img { width:28px; height:28px; border-radius:50%; }
+.admin-reviews-table td:first-child { color:#26384e; }
+.admin-reviews-table td.admin-review-content { white-space:normal; min-width:180px; overflow-wrap:anywhere; }
+.admin-review-stars { color:#e9a519; font-size:14px; letter-spacing:1px; }
+.admin-review-note { margin:20px 0 0; padding:14px; border:1px solid #e2eaf1; border-radius:9px; color:#78899c; background:#f8fbfd; font-size:11px; }
+.admin-review-row[hidden], #review-empty[hidden] { display:none; }
+@media(max-width:760px) { .admin-review-stats { gap:8px; } .admin-review-stats div { padding:12px 8px; } .admin-review-stats strong { font-size:21px; } }
