@@ -420,8 +420,101 @@ final class User extends Model
         return $userId;
     }
 
+    // Lưu bản băm token và thời hạn ghi nhớ đăng nhập.
+    public function createRememberToken(
+        int $userId,
+        string $tokenHash,
+        string $expiresAt
+    ): void {
+        $databaseConnection = self::getConnection();
 
+        $sqlQuery = 'INSERT INTO user_remember_tokens (
+                    user_id,
+                    token_hash,
+                    expires_at
+                ) VALUES (
+                    :user_id,
+                    :token_hash,
+                    :expires_at
+                )';
 
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':user_id',
+            $userId,
+            PDO::PARAM_INT
+        );
+
+        $preparedStatement->bindValue(
+            ':token_hash',
+            $tokenHash,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->bindValue(
+            ':expires_at',
+            $expiresAt,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->execute();
+        $preparedStatement->closeCursor();
+    }
+
+    // Tìm token ghi nhớ còn hạn để khôi phục phiên đăng nhập.
+    public function findValidRememberToken(string $tokenHash): ?array
+    {
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'SELECT remember_token_id,
+                        user_id,
+                        expires_at
+                 FROM user_remember_tokens
+                 WHERE token_hash = :token_hash
+                   AND expires_at > UTC_TIMESTAMP()
+                 LIMIT 1';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':token_hash',
+            $tokenHash,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->execute();
+
+        $rememberToken = $preparedStatement->fetch(PDO::FETCH_ASSOC);
+
+        $preparedStatement->closeCursor();
+
+        if ($rememberToken === false) {
+            return null;
+        }
+
+        return $rememberToken;
+    }
+
+    // Xóa token ghi nhớ của trình duyệt hiện tại.
+    public function deleteRememberToken(string $tokenHash): void
+    {
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'DELETE FROM user_remember_tokens
+                 WHERE token_hash = :token_hash';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':token_hash',
+            $tokenHash,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->execute();
+        $preparedStatement->closeCursor();
+    }
 
 
 

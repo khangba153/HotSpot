@@ -121,10 +121,9 @@ if (
                             >
                         </div>
 
-                        <!-- Hai chức năng này hiện chỉ hiển thị giao diện. -->
                         <div class="auth-options">
                             <label class="auth-remember">
-                                <input type="checkbox" disabled>
+                                <input type="checkbox" name="remember_login" value="1">
                                 Ghi nhớ đăng nhập
                             </label>
 

@@ -108,6 +108,37 @@ final class AuthController extends Controller
             return;
         }
 
+        $rememberLogin = false;
+
+        if (isset($_POST['remember_login'])) {
+            if (
+                is_string($_POST['remember_login']) === false
+                || $_POST['remember_login'] !== '1'
+            ) {
+                throw new HttpException(
+                    400,
+                    'Lựa chọn ghi nhớ đăng nhập không hợp lệ.'
+                );
+            }
+
+            $rememberLogin = true;
+        }
+
+        if ($rememberLogin) {
+            try {
+                $this->createRememberLogin(
+                    (int) $userInformation['user_id']
+                );
+            } catch (Throwable $exception) {
+                http_response_code(503);
+                $this->showLogin(
+                    'Chưa thể ghi nhớ đăng nhập. Vui lòng thử lại sau.',
+                    $email
+                );
+                return;
+            }
+        }
+
         // Đổi mã phiên sau khi đăng nhập để tránh dùng lại mã phiên cũ.
         session_regenerate_id(true);
 
@@ -133,6 +164,8 @@ final class AuthController extends Controller
         if (hash_equals($_SESSION['csrf_token'], $submittedToken) === false) {
             throw new HttpException(400, 'Form đăng xuất không hợp lệ.');
         }
+
+        $this->clearRememberLogin();
 
         $_SESSION = [];
         session_destroy();
@@ -575,8 +608,146 @@ final class AuthController extends Controller
         exit;
     }
 
+    // Xóa token trong database và cookie ghi nhớ của trình duyệt.
+    private function clearRememberLogin(): void
+    {
+        if (
+            isset($_COOKIE['hotspot_remember'])
+            && is_string($_COOKIE['hotspot_remember'])
+            && preg_match(
+                '/\A[a-f0-9]{64}\z/',
+                $_COOKIE['hotspot_remember']
+            ) === 1
+        ) {
+            $tokenHash = hash(
+                'sha256',
+                $_COOKIE['hotspot_remember']
+            );
 
+            $userModel = new User();
+            $userModel->deleteRememberToken($tokenHash);
+        }
 
+        $isSecureConnection = false;
+
+        if (
+            isset($_SERVER['HTTPS'])
+            && $_SERVER['HTTPS'] !== ''
+            && $_SERVER['HTTPS'] !== 'off'
+        ) {
+            $isSecureConnection = true;
+        }
+
+        setcookie(
+            'hotspot_remember',
+            '',
+            [
+                'expires' => time() - 3600,
+                'path' => '/',
+                'secure' => $isSecureConnection,
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]
+        );
+
+        unset($_COOKIE['hotspot_remember']);
+    }
+
+    // Tạo token và cookie ghi nhớ đăng nhập trong 30 ngày.
+    private function createRememberLogin(int $userId): void
+    {
+        $rememberToken = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $rememberToken);
+
+        $expirationTimestamp = time() + 30 * 24 * 60 * 60;
+        $expiresAt = gmdate('Y-m-d H:i:s', $expirationTimestamp);
+
+        $userModel = new User();
+        $userModel->createRememberToken(
+            $userId,
+            $tokenHash,
+            $expiresAt
+        );
+
+        $isSecureConnection = false;
+
+        if (
+            isset($_SERVER['HTTPS'])
+            && $_SERVER['HTTPS'] !== ''
+            && $_SERVER['HTTPS'] !== 'off'
+        ) {
+            $isSecureConnection = true;
+        }
+
+        $cookieWasCreated = setcookie(
+            'hotspot_remember',
+            $rememberToken,
+            [
+                'expires' => $expirationTimestamp,
+                'path' => '/',
+                'secure' => $isSecureConnection,
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]
+        );
+
+        if ($cookieWasCreated === false) {
+            $userModel->deleteRememberToken($tokenHash);
+
+            throw new RuntimeException(
+                'Không thể tạo cookie ghi nhớ đăng nhập.'
+            );
+        }
+    }
+
+    // Khôi phục phiên khi cookie ghi nhớ còn hợp lệ.
+    public function restoreRememberLogin(): void
+    {
+        if (isset($_SESSION['user_id'])) {
+            return;
+        }
+
+        if (isset($_COOKIE['hotspot_remember']) === false) {
+            return;
+        }
+
+        if (
+            is_string($_COOKIE['hotspot_remember']) === false
+            || preg_match(
+                '/\A[a-f0-9]{64}\z/',
+                $_COOKIE['hotspot_remember']
+            ) !== 1
+        ) {
+            $this->clearRememberLogin();
+            return;
+        }
+
+        $tokenHash = hash(
+            'sha256',
+            $_COOKIE['hotspot_remember']
+        );
+
+        $userModel = new User();
+        $rememberToken = $userModel->findValidRememberToken($tokenHash);
+
+        if ($rememberToken === null) {
+            $this->clearRememberLogin();
+            return;
+        }
+
+        $userId = (int) $rememberToken['user_id'];
+        $userInformation = $userModel->findById($userId);
+
+        if ($userInformation === null) {
+            $this->clearRememberLogin();
+            return;
+        }
+
+        session_regenerate_id(true);
+
+        $_SESSION['user_id'] = $userId;
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 
 
 
