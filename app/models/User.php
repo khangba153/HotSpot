@@ -516,7 +516,206 @@ final class User extends Model
         $preparedStatement->closeCursor();
     }
 
+    // Lưu bản băm token đặt lại mật khẩu và thời hạn sử dụng.
+    public function createPasswordResetToken(
+        int $userId,
+        string $tokenHash,
+        string $expiresAt
+    ): void {
+        $databaseConnection = self::getConnection();
 
+        $sqlQuery = 'INSERT INTO user_password_reset_tokens (
+                    user_id,
+                    token_hash,
+                    expires_at,
+                    created_at
+                ) VALUES (
+                    :user_id,
+                    :token_hash,
+                    :expires_at,
+                    UTC_TIMESTAMP()
+                )';
 
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
 
+        $preparedStatement->bindValue(
+            ':user_id',
+            $userId,
+            PDO::PARAM_INT
+        );
+
+        $preparedStatement->bindValue(
+            ':token_hash',
+            $tokenHash,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->bindValue(
+            ':expires_at',
+            $expiresAt,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->execute();
+        $preparedStatement->closeCursor();
+    }
+
+    // Tìm token đặt lại mật khẩu chưa dùng và còn hạn.
+    public function findValidPasswordResetToken(string $tokenHash): ?array
+    {
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'SELECT password_reset_token_id,
+                        user_id,
+                        expires_at
+                 FROM user_password_reset_tokens
+                 WHERE token_hash = :token_hash
+                   AND used_at IS NULL
+                   AND expires_at > UTC_TIMESTAMP()
+                 LIMIT 1';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':token_hash',
+            $tokenHash,
+            PDO::PARAM_STR
+        );
+
+        $preparedStatement->execute();
+
+        $passwordResetToken = $preparedStatement->fetch(PDO::FETCH_ASSOC);
+
+        $preparedStatement->closeCursor();
+
+        if ($passwordResetToken === false) {
+            return null;
+        }
+
+        return $passwordResetToken;
+    }
+
+    // Đổi mật khẩu bằng token hợp lệ và thu hồi các token liên quan.
+    public function resetPasswordWithToken(
+        string $tokenHash,
+        string $passwordHash
+    ): bool {
+        $databaseConnection = self::getConnection();
+        $databaseConnection->beginTransaction();
+
+        try {
+            // Khóa dòng token để hai yêu cầu không cùng sử dụng một token.
+            $sqlQuery = 'SELECT user_id
+                     FROM user_password_reset_tokens
+                     WHERE token_hash = :token_hash
+                       AND used_at IS NULL
+                       AND expires_at > UTC_TIMESTAMP()
+                     LIMIT 1
+                     FOR UPDATE';
+
+            $preparedStatement = $databaseConnection->prepare($sqlQuery);
+            $preparedStatement->bindValue(
+                ':token_hash',
+                $tokenHash,
+                PDO::PARAM_STR
+            );
+            $preparedStatement->execute();
+
+            $passwordResetToken = $preparedStatement->fetch(PDO::FETCH_ASSOC);
+            $preparedStatement->closeCursor();
+
+            if ($passwordResetToken === false) {
+                $databaseConnection->rollBack();
+                return false;
+            }
+
+            $userId = (int) $passwordResetToken['user_id'];
+
+            $sqlQuery = 'UPDATE users
+                     SET password_hash = :password_hash
+                     WHERE user_id = :user_id';
+
+            $preparedStatement = $databaseConnection->prepare($sqlQuery);
+            $preparedStatement->bindValue(
+                ':password_hash',
+                $passwordHash,
+                PDO::PARAM_STR
+            );
+            $preparedStatement->bindValue(
+                ':user_id',
+                $userId,
+                PDO::PARAM_INT
+            );
+            $preparedStatement->execute();
+            $preparedStatement->closeCursor();
+
+            // Vô hiệu hóa cả các liên kết đặt lại mật khẩu cũ của tài khoản.
+            $sqlQuery = 'UPDATE user_password_reset_tokens
+                     SET used_at = UTC_TIMESTAMP()
+                     WHERE user_id = :user_id
+                       AND used_at IS NULL';
+
+            $preparedStatement = $databaseConnection->prepare($sqlQuery);
+            $preparedStatement->bindValue(
+                ':user_id',
+                $userId,
+                PDO::PARAM_INT
+            );
+            $preparedStatement->execute();
+            $preparedStatement->closeCursor();
+
+            $sqlQuery = 'DELETE FROM user_remember_tokens
+                     WHERE user_id = :user_id';
+
+            $preparedStatement = $databaseConnection->prepare($sqlQuery);
+            $preparedStatement->bindValue(
+                ':user_id',
+                $userId,
+                PDO::PARAM_INT
+            );
+            $preparedStatement->execute();
+            $preparedStatement->closeCursor();
+
+            $databaseConnection->commit();
+
+            return true;
+        } catch (Throwable $exception) {
+            if ($databaseConnection->inTransaction()) {
+                $databaseConnection->rollBack();
+            }
+
+            throw $exception;
+        }
+    }
+
+    // Kiểm tra tài khoản đã yêu cầu đặt lại mật khẩu trong 60 giây qua.
+    public function hasRecentPasswordResetRequest(int $userId): bool
+    {
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'SELECT password_reset_token_id
+                 FROM user_password_reset_tokens
+                 WHERE user_id = :user_id
+                   AND created_at > DATE_SUB(
+                       UTC_TIMESTAMP(),
+                       INTERVAL 60 SECOND
+                   )
+                 LIMIT 1';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        $preparedStatement->bindValue(
+            ':user_id',
+            $userId,
+            PDO::PARAM_INT
+        );
+
+        $preparedStatement->execute();
+
+        $passwordResetTokenId = $preparedStatement->fetchColumn();
+
+        $preparedStatement->closeCursor();
+
+        return $passwordResetTokenId !== false;
+    }
 }

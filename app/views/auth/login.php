@@ -10,6 +10,17 @@ $googleNonce = $viewData['googleNonce'];
 $googleLoginUrl = createRouteUrl('login/google');
 $googleConfiguration = require dirname(__DIR__, 2) . '/config/app.php';
 $googleClientId = '';
+$successMessage = '';
+
+// Thông báo sau khi đổi mật khẩu chỉ hiển thị một lần.
+if (
+    isset($_SESSION['auth_success_message'])
+    && is_string($_SESSION['auth_success_message'])
+) {
+    $successMessage = $_SESSION['auth_success_message'];
+}
+
+unset($_SESSION['auth_success_message']);
 
 if (
     isset($googleConfiguration['google_client_id'])
@@ -71,6 +82,12 @@ if (
                         </p>
                     </div>
 
+                    <?php if ($successMessage !== '') { ?>
+                        <div class="alert alert-success" role="status">
+                            <?php echo escapeHtml($successMessage); ?>
+                        </div>
+                    <?php } ?>
+
                     <?php if ($errorMessage !== '') { ?>
                         <div class="alert alert-danger" role="alert">
                             <?php echo escapeHtml($errorMessage); ?>
@@ -127,9 +144,9 @@ if (
                                 Ghi nhớ đăng nhập
                             </label>
 
-                            <span title="Chưa hỗ trợ khôi phục mật khẩu">
+                            <a class="auth-forgot-link" href="<?php echo escapeHtml(createRouteUrl('forgot-password')); ?>">
                                 Quên mật khẩu?
-                            </span>
+                            </a>
                         </div>
 
                         <button

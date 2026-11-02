@@ -148,6 +148,33 @@
     font-size: 12px;
 }
 
+.auth-forgot-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.auth-forgot-link:hover {
+    color: #ff542e;
+    text-decoration: underline;
+}
+
+.auth-forgot-link:focus-visible {
+    outline: 2px solid #ff542e;
+    outline-offset: 4px;
+}
+
+.auth-recovery-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 620px;
+    height: 100%;
+}
+
+.auth-recovery-back {
+    margin-top: 24px;
+}
+
 .auth-remember {
     display: flex;
     align-items: center;

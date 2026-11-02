@@ -11,6 +11,7 @@ use PDOException;
 use Throwable;
 use Google\Client as GoogleClient;
 use RuntimeException;
+use HotSpot\Core\Mailer;
 
 final class AuthController extends Controller
 {
@@ -749,9 +750,352 @@ final class AuthController extends Controller
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
 
+    // Hiển thị form yêu cầu đặt lại mật khẩu và thông báo kết quả.
+    public function showForgotPassword(
+        string $errorMessage = '',
+        string $successMessage = '',
+        string $email = ''
+    ): void {
+        if (isset($_SESSION['csrf_token']) === false) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
 
+        $viewData = [
+            'title' => 'Quên mật khẩu',
+            'errorMessage' => $errorMessage,
+            'successMessage' => $successMessage,
+            'email' => $email,
+            'csrfToken' => $_SESSION['csrf_token'],
+            'isLoginPage' => true,
+            'canRequestReset' => true,
+        ];
 
+        $this->render('auth/forgot-password', $viewData);
+    }
 
+    // Tạo token và gửi liên kết khôi phục cho tài khoản đã tìm thấy.
+    private function sendPasswordResetForUser(
+        int $userId,
+        string $email
+    ): void {
+        $userModel = new User();
 
+        if ($userModel->hasRecentPasswordResetRequest($userId)) {
+            return;
+        }
 
+        $configuration = require dirname(__DIR__) . '/config/app.php';
+
+        if (
+            isset($configuration['app_url']) === false
+            || is_string($configuration['app_url']) === false
+            || filter_var(
+                $configuration['app_url'],
+                FILTER_VALIDATE_URL
+            ) === false
+        ) {
+            throw new RuntimeException(
+                'Chưa cấu hình địa chỉ website hợp lệ.'
+            );
+        }
+
+        $resetToken = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $resetToken);
+
+        $expirationTimestamp = time() + 15 * 60;
+        $expiresAt = gmdate('Y-m-d H:i:s', $expirationTimestamp);
+
+        $userModel->createPasswordResetToken(
+            $userId,
+            $tokenHash,
+            $expiresAt
+        );
+
+        // Dùng địa chỉ cấu hình sẵn, không lấy tên miền từ request.
+        $applicationUrl = rtrim($configuration['app_url'], '/');
+
+        $resetUrl = $applicationUrl
+            . '/'
+            . createRouteUrl('reset-password')
+            . '&token='
+            . rawurlencode($resetToken);
+
+        $mailer = new Mailer();
+        $mailer->sendPasswordResetLink($email, $resetUrl);
+    }
+
+    // Kiểm tra form và xử lý yêu cầu gửi liên kết đặt lại mật khẩu.
+    public function requestPasswordReset(): void
+    {
+        $submittedToken = $_POST['csrf_token'] ?? null;
+
+        if (
+            is_string($submittedToken) === false
+            || isset($_SESSION['csrf_token']) === false
+            || is_string($_SESSION['csrf_token']) === false
+            || hash_equals(
+                $_SESSION['csrf_token'],
+                $submittedToken
+            ) === false
+        ) {
+            throw new HttpException(
+                400,
+                'Form không hợp lệ. Vui lòng tải lại trang.'
+            );
+        }
+
+        $email = '';
+
+        if (isset($_POST['email']) && is_string($_POST['email'])) {
+            $email = strtolower(trim($_POST['email']));
+        }
+
+        if (
+            $email === ''
+            || strlen($email) > 254
+            || filter_var($email, FILTER_VALIDATE_EMAIL) === false
+        ) {
+            http_response_code(422);
+            $this->showForgotPassword(
+                'Vui lòng nhập địa chỉ email hợp lệ.',
+                '',
+                $email
+            );
+            return;
+        }
+
+        $successMessage =
+            'Nếu email khớp với tài khoản Hot Spot, '
+            . 'bạn sẽ nhận được liên kết đặt lại mật khẩu. '
+            . 'Vui lòng kiểm tra cả thư mục Spam. '
+            . 'Nếu cần gửi lại, hãy chờ ít nhất 60 giây.';
+
+        // Hạn chế gửi liên tục từ cùng một phiên trình duyệt.
+        if (
+            isset($_SESSION['password_reset_requested_at'])
+            && is_int($_SESSION['password_reset_requested_at'])
+            && time() - $_SESSION['password_reset_requested_at'] < 60
+        ) {
+            $this->showForgotPassword('', $successMessage, $email);
+            return;
+        }
+
+        $_SESSION['password_reset_requested_at'] = time();
+
+        try {
+            $userModel = new User();
+            $userInformation = $userModel->findByEmail($email);
+
+            if ($userInformation !== null) {
+                $this->sendPasswordResetForUser(
+                    (int) $userInformation['user_id'],
+                    $userInformation['email']
+                );
+            }
+        } catch (Throwable $exception) {
+            // Không ghi mật khẩu, token hoặc liên kết khôi phục vào log.
+            error_log(
+                'Hot Spot password reset failed: '
+                    . get_class($exception)
+            );
+        }
+
+        $this->showForgotPassword('', $successMessage, $email);
+    }
+
+    // Kiểm tra liên kết và hiển thị form đặt mật khẩu mới.
+    public function showResetPassword(
+        string $errorMessage = '',
+        string $resetToken = ''
+    ): void {
+        header('Referrer-Policy: no-referrer');
+        header('Cache-Control: no-store');
+
+        if ($resetToken === '') {
+            if (
+                isset($_GET['token'])
+                && is_string($_GET['token'])
+            ) {
+                $resetToken = $_GET['token'];
+            }
+        }
+
+        if (preg_match('/\A[a-f0-9]{64}\z/', $resetToken) !== 1) {
+            throw new HttpException(
+                400,
+                'Liên kết đặt lại mật khẩu không hợp lệ.'
+            );
+        }
+
+        $tokenHash = hash('sha256', $resetToken);
+
+        $userModel = new User();
+        $passwordResetToken = $userModel->findValidPasswordResetToken(
+            $tokenHash
+        );
+
+        if ($passwordResetToken === null) {
+            throw new HttpException(
+                410,
+                'Liên kết đã hết hạn hoặc đã được sử dụng. '
+                    . 'Vui lòng gửi yêu cầu mới.'
+            );
+        }
+
+        if (isset($_SESSION['csrf_token']) === false) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        $viewData = [
+            'title' => 'Đặt mật khẩu mới',
+            'errorMessage' => $errorMessage,
+            'resetToken' => $resetToken,
+            'csrfToken' => $_SESSION['csrf_token'],
+            'isLoginPage' => true,
+            'canResetPassword' => true,
+        ];
+
+        $this->render('auth/reset-password', $viewData);
+    }
+
+    // Kiểm tra mật khẩu mới; chuỗi rỗng nghĩa là hợp lệ.
+    private function validateNewPassword(
+        string $password,
+        string $passwordConfirmation
+    ): string {
+        if ($password === '' || $passwordConfirmation === '') {
+            return 'Vui lòng nhập đầy đủ mật khẩu mới và xác nhận.';
+        }
+
+        if (mb_strlen($password, 'UTF-8') < 8) {
+            return 'Mật khẩu phải có ít nhất 8 ký tự.';
+        }
+
+        // Bcrypt chỉ xử lý tối đa 72 byte.
+        if (strlen($password) > 72) {
+            return 'Mật khẩu quá dài. Vui lòng rút ngắn mật khẩu.';
+        }
+
+        if (strpos($password, "\0") !== false) {
+            return 'Mật khẩu chứa ký tự không hợp lệ.';
+        }
+
+        if (
+            preg_match('/[A-Z]/', $password) !== 1
+            || preg_match('/[a-z]/', $password) !== 1
+            || preg_match('/[0-9]/', $password) !== 1
+        ) {
+            return 'Mật khẩu phải có chữ hoa, chữ thường và chữ số.';
+        }
+
+        if ($password !== $passwordConfirmation) {
+            return 'Mật khẩu xác nhận không khớp.';
+        }
+
+        return '';
+    }
+
+    // Kiểm tra form và lưu mật khẩu mới bằng token khôi phục.
+    public function resetPassword(): void
+    {
+        header('Referrer-Policy: no-referrer');
+        header('Cache-Control: no-store');
+
+        $submittedToken = $_POST['csrf_token'] ?? null;
+
+        if (
+            is_string($submittedToken) === false
+            || isset($_SESSION['csrf_token']) === false
+            || is_string($_SESSION['csrf_token']) === false
+            || hash_equals(
+                $_SESSION['csrf_token'],
+                $submittedToken
+            ) === false
+        ) {
+            throw new HttpException(
+                400,
+                'Form không hợp lệ. Vui lòng mở lại liên kết trong email.'
+            );
+        }
+
+        $resetData = [
+            'token' => '',
+            'password' => '',
+            'password_confirmation' => '',
+        ];
+
+        foreach ($resetData as $fieldName => $fieldValue) {
+            if (isset($_POST[$fieldName])) {
+                if (is_string($_POST[$fieldName]) === false) {
+                    throw new HttpException(
+                        400,
+                        'Dữ liệu đặt lại mật khẩu không hợp lệ.'
+                    );
+                }
+
+                $resetData[$fieldName] = $_POST[$fieldName];
+            }
+        }
+
+        $resetToken = $resetData['token'];
+        $password = $resetData['password'];
+        $passwordConfirmation = $resetData['password_confirmation'];
+
+        if (preg_match('/\A[a-f0-9]{64}\z/', $resetToken) !== 1) {
+            throw new HttpException(
+                400,
+                'Mã đặt lại mật khẩu không hợp lệ.'
+            );
+        }
+
+        $errorMessage = $this->validateNewPassword(
+            $password,
+            $passwordConfirmation
+        );
+
+        if ($errorMessage !== '') {
+            http_response_code(422);
+            $this->showResetPassword($errorMessage, $resetToken);
+            return;
+        }
+
+        try {
+            $tokenHash = hash('sha256', $resetToken);
+            $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+
+            $userModel = new User();
+            $passwordWasReset = $userModel->resetPasswordWithToken(
+                $tokenHash,
+                $passwordHash
+            );
+        } catch (Throwable $exception) {
+            http_response_code(500);
+            $this->showResetPassword(
+                'Chưa thể đổi mật khẩu. Vui lòng thử lại sau.',
+                $resetToken
+            );
+            return;
+        }
+
+        if ($passwordWasReset === false) {
+            throw new HttpException(
+                410,
+                'Liên kết đã hết hạn hoặc đã được sử dụng. '
+                    . 'Vui lòng gửi yêu cầu mới.'
+            );
+        }
+
+        $this->clearRememberLogin();
+
+        // Yêu cầu đăng nhập lại sau khi đổi mật khẩu thành công.
+        $_SESSION = [];
+        session_regenerate_id(true);
+
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        $_SESSION['auth_success_message'] =
+            'Đổi mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.';
+
+        header('Location: ' . createRouteUrl('login'), true, 303);
+        exit;
+    }
 }
