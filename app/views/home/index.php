@@ -2,6 +2,9 @@
 /** @var array<string, mixed> $viewData */
 $places = $viewData['places'] ?? [];
 $categories = $viewData['categories'] ?? [];
+$provinces = $viewData['provinces'] ?? [];
+$selectedCategoryId = $viewData['selectedCategoryId'] ?? '';
+$selectedProvinceCode = $viewData['selectedProvinceCode'] ?? '';
 $keyword = $viewData['keyword'] ?? '';
 $totalCount = $viewData['totalCount'] ?? null;
 
@@ -11,6 +14,20 @@ if (!is_array($places)) {
 
 if (!is_array($categories)) {
     $categories = [];
+}
+
+if (!is_array($provinces)) {
+    $provinces = [];
+}
+
+if (is_string($selectedCategoryId) === false && is_int($selectedCategoryId) === false) {
+    $selectedCategoryId = '';
+}
+
+$selectedCategoryId = (string) $selectedCategoryId;
+
+if (is_string($selectedProvinceCode) === false) {
+    $selectedProvinceCode = '';
 }
 
 if (!is_string($keyword)) {
@@ -37,6 +54,9 @@ $categoryVisuals = [
 ];
 
 $featuredPlaces = array_slice($places, 0, 12);
+$hasActiveFilters = $keyword !== ''
+    || $selectedCategoryId !== ''
+    || $selectedProvinceCode !== '';
 ?>
 
 <section class="hs-hero" aria-labelledby="home-hero-title">
@@ -57,62 +77,66 @@ $featuredPlaces = array_slice($places, 0, 12);
             </p>
 
             <form
-                class="hs-search-shell"
+                class="hs-search-form"
                 id="home-search"
                 data-search-url="<?php echo escapeHtml(createRouteUrl('api/places/search')); ?>"
                 action="index.php"
                 method="get"
                 role="search"
-                aria-label="Tìm kiếm địa điểm">
+                aria-label="Tìm kiếm và lọc địa điểm">
 
                 <input type="hidden" name="route" value="home">
 
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="10.8" cy="10.8" r="6.8"></circle>
-                    <path d="m16 16 4.4 4.4"></path>
-                </svg>
+                <div class="hs-search-shell">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="10.8" cy="10.8" r="6.8"></circle>
+                        <path d="m16 16 4.4 4.4"></path>
+                    </svg>
 
-                <input
-                    class="hs-search-shell__input"
-                    type="search"
-                    name="keyword"
-                    value="<?php echo escapeHtml($keyword); ?>"
-                    placeholder="Tìm địa điểm, món ăn, quán cà phê, trải nghiệm..."
-                    maxlength="100"
-                    aria-label="Từ khóa tìm kiếm">
+                    <input
+                        class="hs-search-shell__input"
+                        type="search"
+                        name="keyword"
+                        value="<?php echo escapeHtml($keyword); ?>"
+                        placeholder="Tìm địa điểm, món ăn, quán cà phê, trải nghiệm..."
+                        maxlength="100"
+                        aria-label="Từ khóa tìm kiếm">
 
-                <button class="hs-search-shell__button" type="submit">
-                    Tìm kiếm
-                </button>
+                    <button class="hs-search-shell__button" type="submit">
+                        Tìm kiếm
+                    </button>
+                </div>
+
+                <div class="hs-hero__filters" aria-label="Bộ lọc tìm kiếm">
+                    <label class="hs-filter-pill hs-filter-control">
+                        <span>Danh mục</span>
+                        <select class="hs-filter-select" name="category_id" aria-label="Lọc theo danh mục">
+                            <option value="">Tất cả danh mục</option>
+                            <?php foreach ($categories as $categoryInformation) : ?>
+                                <option
+                                    value="<?php echo (int) $categoryInformation['category_id']; ?>"
+                                    <?php if ($selectedCategoryId === (string) $categoryInformation['category_id']) { ?>selected<?php } ?>>
+                                    <?php echo escapeHtml((string) $categoryInformation['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+
+                    <label class="hs-filter-pill hs-filter-control">
+                        <span>Tỉnh/thành</span>
+                        <select class="hs-filter-select" name="province_code" aria-label="Lọc theo tỉnh/thành">
+                            <option value="">Tất cả tỉnh/thành</option>
+                            <?php foreach ($provinces as $provinceInformation) : ?>
+                                <option
+                                    value="<?php echo escapeHtml((string) $provinceInformation['province_code']); ?>"
+                                    <?php if ($selectedProvinceCode === (string) $provinceInformation['province_code']) { ?>selected<?php } ?>>
+                                    <?php echo escapeHtml((string) $provinceInformation['province_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                </div>
             </form>
-
-            <div class="hs-hero__filters" aria-label="Bộ lọc tìm kiếm">
-                <span class="hs-filter-pill">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <rect x="3.5" y="3.5" width="6" height="6" rx="1"></rect>
-                        <rect x="14.5" y="3.5" width="6" height="6" rx="1"></rect>
-                        <rect x="3.5" y="14.5" width="6" height="6" rx="1"></rect>
-                        <rect x="14.5" y="14.5" width="6" height="6" rx="1"></rect>
-                    </svg>
-                    Tất cả danh mục
-                </span>
-
-                <span class="hs-filter-pill">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M19 10.2c0 5-7 10.3-7 10.3S5 15.2 5 10.2a7 7 0 1 1 14 0Z"></path>
-                        <circle cx="12" cy="10" r="2.2"></circle>
-                    </svg>
-                    Tỉnh/Thành
-                </span>
-
-                <span class="hs-filter-pill">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="m12 3 8.5 8.5L12 20l-8.5-8.5Z"></path>
-                        <circle cx="9" cy="9" r="1"></circle>
-                    </svg>
-                    Nhãn phổ biến
-                </span>
-            </div>
         </div>
 
         <aside class="hs-hero-place" aria-label="Điểm đến minh họa">
@@ -197,7 +221,7 @@ $featuredPlaces = array_slice($places, 0, 12);
                 <span class="hs-section-heading__marker" aria-hidden="true"></span>
 
                 <h2 id="featured-places-heading"><?php
-                    echo $keyword !== '' ? 'Kết quả tìm kiếm' : 'Địa điểm nổi bật';
+                    echo $hasActiveFilters ? 'Kết quả tìm kiếm' : 'Địa điểm nổi bật';
                 ?></h2>
             </div>
 
@@ -205,7 +229,7 @@ $featuredPlaces = array_slice($places, 0, 12);
                 class="hs-featured-tools"
                 id="home-featured-tools"
                 aria-label="Các cách xem địa điểm"
-                <?php echo $keyword !== '' ? 'hidden' : ''; ?>>
+                <?php echo $hasActiveFilters ? 'hidden' : ''; ?>>
 
                 <span class="hs-sort-pill hs-sort-pill--active">Được yêu thích</span>
                 <span class="hs-sort-pill">Mới cập nhật</span>
@@ -215,7 +239,7 @@ $featuredPlaces = array_slice($places, 0, 12);
             <span
                 class="hs-section-link"
                 id="home-featured-all-link"
-                <?php echo $keyword !== '' ? 'hidden' : ''; ?>>
+                <?php echo $hasActiveFilters ? 'hidden' : ''; ?>>
 
                 Xem tất cả địa điểm
             </span>
@@ -225,32 +249,25 @@ $featuredPlaces = array_slice($places, 0, 12);
             class="hs-search-feedback"
             id="home-search-feedback"
             role="status"
-            <?php echo $keyword === '' ? 'hidden' : ''; ?>>
+            <?php echo $hasActiveFilters ? '' : 'hidden'; ?>>
 
             <span id="home-search-feedback-text">
-                <?php if ($keyword !== '') : ?>
+                <?php if ($hasActiveFilters) : ?>
                     Tìm thấy <strong><?php echo escapeHtml(number_format($totalCount)); ?></strong>
-                    địa điểm phù hợp với từ khóa
-                    <strong>“<?php echo escapeHtml($keyword); ?>”</strong>.
-
-                    <?php if (count($featuredPlaces) < $totalCount) : ?>
-                        Đang hiển thị
-                        <?php echo escapeHtml((string) count($featuredPlaces)); ?>
-                        kết quả đầu tiên.
-                    <?php endif; ?>
+                    địa điểm phù hợp với bộ lọc hiện tại.
                 <?php endif; ?>
             </span>
 
             <a
                 href="<?php echo escapeHtml(createRouteUrl('home')); ?>"
                 id="home-search-clear"
-                <?php echo $keyword === '' ? 'hidden' : ''; ?>>
+                <?php echo $hasActiveFilters ? '' : 'hidden'; ?>>
                 Xóa tìm kiếm
             </a>
         </p>
 
         <div id="home-search-results">
-            <?php if ($keyword !== '' && $featuredPlaces === []) : ?>
+            <?php if ($hasActiveFilters && $featuredPlaces === []) : ?>
                 <div class="hs-empty-state" role="status">
                     <h3>Không tìm thấy địa điểm phù hợp</h3>
                     <p>Thử một từ khóa khác hoặc rút gọn từ khóa hiện tại.</p>
@@ -267,7 +284,7 @@ $featuredPlaces = array_slice($places, 0, 12);
             class="hs-pagination"
             id="home-pagination"
             aria-label="Phân trang địa điểm"
-            <?php echo $keyword !== '' ? 'hidden' : ''; ?>>
+            <?php echo $hasActiveFilters ? 'hidden' : ''; ?>>
 
             <span class="hs-pagination__direction" aria-disabled="true">Trước</span>
             <span class="hs-pagination__number hs-pagination__number--active" aria-current="page">1</span>
@@ -280,4 +297,4 @@ $featuredPlaces = array_slice($places, 0, 12);
     </section>
 </div>
 
-<script src="assets/js/search.js?v=2" defer></script>
+<script src="assets/js/search.js?v=4" defer></script>
