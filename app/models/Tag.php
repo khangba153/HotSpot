@@ -23,12 +23,14 @@ final class Tag extends Model
 
         $preparedStatement = $databaseConnection->prepare($sqlQuery);
 
-        $preparedStatement->execute();
+        try {
+            $preparedStatement->execute();
 
-        $tagList = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
+            $tagList = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
 
-        $preparedStatement->closeCursor();
-
-        return $tagList;
+            return $tagList;
+        } finally {
+            $preparedStatement->closeCursor();
+        }
     }
 }

@@ -297,4 +297,4 @@ $hasActiveFilters = $keyword !== ''
     </section>
 </div>
 
-<script src="assets/js/search.js?v=3" defer></script>
+<script src="assets/js/search.js?v=4" defer></script>

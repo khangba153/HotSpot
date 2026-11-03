@@ -35,4 +35,30 @@ final class Category extends Model
             $preparedStatement->closeCursor();
         }
     }
+
+    public function isActiveCategory(int $categoryId): bool
+    {
+        if ($categoryId <= 0) {
+            return false;
+        }
+
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'SELECT 1
+                     FROM categories
+                     WHERE category_id = :category_id
+                       AND is_active = 1
+                     LIMIT 1';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        try {
+            $preparedStatement->bindValue(':category_id', $categoryId, PDO::PARAM_INT);
+            $preparedStatement->execute();
+
+            return $preparedStatement->fetchColumn() !== false;
+        } finally {
+            $preparedStatement->closeCursor();
+        }
+    }
 }

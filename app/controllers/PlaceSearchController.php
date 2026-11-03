@@ -7,6 +7,7 @@ use HotSpot\Core\Controller;
 use HotSpot\Models\Category;
 use HotSpot\Models\PlaceSearch;
 use HotSpot\Models\Province;
+use InvalidArgumentException;
 use Throwable;
 
 final class PlaceSearchController extends Controller
@@ -41,17 +42,26 @@ final class PlaceSearchController extends Controller
                 }
             }
 
-            $categoryModel = new Category();
-            $provinceModel = new Province();
+            $categoryId = $this->readCategoryId();
+            $provinceCode = $this->readProvinceCode();
 
-            $categoryList = $categoryModel->findActiveCategories();
-            $provinceList = $provinceModel->findAllProvinces();
+            if ($categoryId !== null) {
+                $categoryModel = new Category();
 
-            $categoryId = $this->readCategoryId($categoryList);
-            $provinceCode = $this->readProvinceCode($provinceList);
+                if ($categoryModel->isActiveCategory($categoryId) === false) {
+                    throw new InvalidArgumentException('Danh mục không hợp lệ.');
+                }
+            }
+
+            if ($provinceCode !== null) {
+                $provinceModel = new Province();
+
+                if ($provinceModel->existsProvinceCode($provinceCode) === false) {
+                    throw new InvalidArgumentException('Tỉnh/thành không hợp lệ.');
+                }
+            }
 
             $placeSearchModel = new PlaceSearch();
-
             $searchResult = $placeSearchModel->searchApprovedForHome(
                 $keyword !== '' ? $keyword : null,
                 $categoryId,
@@ -82,10 +92,17 @@ final class PlaceSearchController extends Controller
                 ],
                 'errors' => [],
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        } catch (InvalidArgumentException $exception) {
+            http_response_code(422);
+
+            echo json_encode([
+                'success' => false,
+                'message' => $exception->getMessage(),
+                'data' => null,
+                'errors' => [],
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         } catch (Throwable $exception) {
-            error_log(
-                'PlaceSearch API error: ' . $exception->getMessage()
-            );
+            error_log('PlaceSearch API error: ' . $exception->getMessage());
 
             http_response_code(500);
 
@@ -98,65 +115,52 @@ final class PlaceSearchController extends Controller
         }
     }
 
-    /**
-     * Chỉ chấp nhận category_id thuộc danh sách danh mục đang hoạt động.
-     *
-     * @param array<int, array<string, mixed>> $categoryList
-     */
-    private function readCategoryId(array $categoryList): ?int
+    private function readCategoryId(): ?int
     {
         $rawCategoryId = $_GET['category_id'] ?? '';
 
+        if ($rawCategoryId === '') {
+            return null;
+        }
+
         if (
             is_string($rawCategoryId) === false
-            || $rawCategoryId === ''
             || ctype_digit($rawCategoryId) === false
         ) {
-            return null;
+            throw new InvalidArgumentException('Danh mục không hợp lệ.');
         }
 
-        $requestedCategoryId = (int) $rawCategoryId;
+        $categoryId = (int) $rawCategoryId;
 
-        if ($requestedCategoryId <= 0) {
-            return null;
+        if ($categoryId <= 0) {
+            throw new InvalidArgumentException('Danh mục không hợp lệ.');
         }
 
-        foreach ($categoryList as $categoryInformation) {
-            if ((int) $categoryInformation['category_id'] === $requestedCategoryId) {
-                return $requestedCategoryId;
-            }
-        }
-
-        return null;
+        return $categoryId;
     }
 
-    /**
-     * Chỉ chấp nhận province_code có trong database và giữ nguyên dạng string.
-     *
-     * @param array<int, array<string, mixed>> $provinceList
-     */
-    private function readProvinceCode(array $provinceList): ?string
+    private function readProvinceCode(): ?string
     {
         $rawProvinceCode = $_GET['province_code'] ?? '';
 
+        if ($rawProvinceCode === '') {
+            return null;
+        }
+
         if (is_string($rawProvinceCode) === false) {
+            throw new InvalidArgumentException('Tỉnh/thành không hợp lệ.');
+        }
+
+        $provinceCode = trim($rawProvinceCode);
+
+        if ($provinceCode === '') {
             return null;
         }
 
-        $requestedProvinceCode = trim($rawProvinceCode);
-
-        if ($requestedProvinceCode === '' || strlen($requestedProvinceCode) > 10) {
-            return null;
+        if (strlen($provinceCode) > 10) {
+            throw new InvalidArgumentException('Tỉnh/thành không hợp lệ.');
         }
 
-        foreach ($provinceList as $provinceInformation) {
-            $availableProvinceCode = (string) $provinceInformation['province_code'];
-
-            if ($availableProvinceCode === $requestedProvinceCode) {
-                return $requestedProvinceCode;
-            }
-        }
-
-        return null;
+        return $provinceCode;
     }
 }

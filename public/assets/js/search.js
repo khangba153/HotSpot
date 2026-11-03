@@ -61,7 +61,7 @@ function searchPlaces() {
         window.location.href
     );
 
-    const keyword = homeSearchState.input.value.trim();
+    const keyword = homeSearchState.input.value.trim().replace(/\s+/g, ' ');
     const categoryId = homeSearchState.categorySelect.value;
     const provinceCode = homeSearchState.provinceSelect.value;
 
@@ -119,9 +119,21 @@ function handleSearchData(searchResponse) {
     }
 
     const keyword = searchResponse.data.keyword || '';
+    const categoryId = searchResponse.data.category_id === null
+        ? ''
+        : String(searchResponse.data.category_id);
+    const provinceCode = searchResponse.data.province_code || '';
+    const currentKeyword = homeSearchState.input.value.trim().replace(/\s+/g, ' ');
+
+    if (
+        keyword !== currentKeyword
+        || categoryId !== homeSearchState.categorySelect.value
+        || provinceCode !== homeSearchState.provinceSelect.value
+    ) {
+        return;
+    }
+
     const totalCount = Number(searchResponse.data.total_count) || 0;
-    const categoryId = homeSearchState.categorySelect.value;
-    const provinceCode = homeSearchState.provinceSelect.value;
     const hasActiveFilters = keyword !== '' || categoryId !== '' || provinceCode !== '';
 
     if (hasActiveFilters && totalCount === 0) {
@@ -140,7 +152,7 @@ function handleSearchData(searchResponse) {
 
     if (hasActiveFilters) {
         homeSearchState.feedbackText.textContent =
-            'Tìm thấy ' + totalCount + ' địa điểm phù hợp với bộ lọc hiện tại.';
+            'Tìm thấy ' + totalCount.toLocaleString('vi-VN') + ' địa điểm phù hợp với bộ lọc hiện tại.';
     } else {
         homeSearchState.feedbackText.textContent = '';
     }

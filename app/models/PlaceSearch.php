@@ -54,35 +54,33 @@ final class PlaceSearch extends Model
         }
 
         $databaseConnection = self::getConnection();
-
         $sqlQuery = 'CALL PTH_SEARCH_APPROVED_PLACES(?, ?, ?, ?, ?, ?, ?)';
-
         $preparedStatement = $databaseConnection->prepare($sqlQuery);
 
-        $preparedStatement->bindValue(
-            1,
-            $keyword,
-            $keyword === null ? PDO::PARAM_NULL : PDO::PARAM_STR
-        );
-
-        $preparedStatement->bindValue(
-            2,
-            $categoryId,
-            $categoryId === null ? PDO::PARAM_NULL : PDO::PARAM_INT
-        );
-
-        $preparedStatement->bindValue(
-            3,
-            $provinceCode,
-            $provinceCode === null ? PDO::PARAM_NULL : PDO::PARAM_STR
-        );
-
-        $preparedStatement->bindValue(4, null, PDO::PARAM_NULL);
-        $preparedStatement->bindValue(5, null, PDO::PARAM_NULL);
-        $preparedStatement->bindValue(6, 1, PDO::PARAM_INT);
-        $preparedStatement->bindValue(7, 12, PDO::PARAM_INT);
+        $pageNumber = 1;
+        $pageSize = 12;
 
         try {
+            $preparedStatement->bindValue(
+                1,
+                $keyword,
+                $keyword === null ? PDO::PARAM_NULL : PDO::PARAM_STR
+            );
+            $preparedStatement->bindValue(
+                2,
+                $categoryId,
+                $categoryId === null ? PDO::PARAM_NULL : PDO::PARAM_INT
+            );
+            $preparedStatement->bindValue(
+                3,
+                $provinceCode,
+                $provinceCode === null ? PDO::PARAM_NULL : PDO::PARAM_STR
+            );
+            $preparedStatement->bindValue(4, null, PDO::PARAM_NULL);
+            $preparedStatement->bindValue(5, null, PDO::PARAM_NULL);
+            $preparedStatement->bindValue(6, $pageNumber, PDO::PARAM_INT);
+            $preparedStatement->bindValue(7, $pageSize, PDO::PARAM_INT);
+
             $preparedStatement->execute();
 
             $placeList = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
@@ -100,7 +98,7 @@ final class PlaceSearch extends Model
             }
 
             return [
-                'places' => array_slice($placeList, 0, 12),
+                'places' => $placeList,
                 'total_count' => max(0, $totalCount),
             ];
         } finally {

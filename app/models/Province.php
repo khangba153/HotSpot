@@ -25,12 +25,41 @@ final class Province extends Model
 
         $preparedStatement = $databaseConnection->prepare($sqlQuery);
 
-        $preparedStatement->execute();
+        try {
+            $preparedStatement->execute();
 
-        $provinceList = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
+            $provinceList = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
 
-        $preparedStatement->closeCursor();
+            return $provinceList;
+        } finally {
+            $preparedStatement->closeCursor();
+        }
+    }
 
-        return $provinceList;
+    public function existsProvinceCode(string $provinceCode): bool
+    {
+        $provinceCode = trim($provinceCode);
+
+        if ($provinceCode === '' || strlen($provinceCode) > 10) {
+            return false;
+        }
+
+        $databaseConnection = self::getConnection();
+
+        $sqlQuery = 'SELECT 1
+                     FROM provinces
+                     WHERE province_code = :province_code
+                     LIMIT 1';
+
+        $preparedStatement = $databaseConnection->prepare($sqlQuery);
+
+        try {
+            $preparedStatement->bindValue(':province_code', $provinceCode, PDO::PARAM_STR);
+            $preparedStatement->execute();
+
+            return $preparedStatement->fetchColumn() !== false;
+        } finally {
+            $preparedStatement->closeCursor();
+        }
     }
 }
