@@ -40,7 +40,7 @@ final class PlaceModeration extends Model
                 throw new \RuntimeException('Không thể chuyển trạng thái địa điểm theo thao tác này.');
             }
 
-            if ($newStatus === 'APPROVED' && $expectedStatus === 'PENDING') {
+            if ($newStatus === 'APPROVED') {
                 $imageStatement = $connection->prepare(
                     'SELECT image_path FROM place_images WHERE place_id = :place_id ORDER BY sort_order, image_id'
                 );
