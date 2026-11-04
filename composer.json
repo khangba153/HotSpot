@@ -1,0 +1,20 @@
+{
+    "name": "hotspot/web",
+    "description": "Website chia se dia diem Hot Spot",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "ext-curl": "*",
+        "ext-fileinfo": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-pdo_mysql": "*",
+        "google/apiclient": "^2.20",
+        "phpmailer/phpmailer": "^7.1"
+    },
+    "config": {
+        "platform": {
+            "php": "8.4.0"
+        }
+    }
+}

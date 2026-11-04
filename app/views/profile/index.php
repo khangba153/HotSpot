@@ -25,6 +25,7 @@ if ($userInformation['bio'] !== null) {
 $profileStatistics = $viewData['profileStatistics'];
 $activeTab = $viewData['activeTab'];
 $profilePageUrl = createRouteUrl('profile');
+$myPlacesUrl = createRouteUrl('places/mine');
 $reviewHistoryUrl = $profilePageUrl . '&tab=reviews';
 $overviewLinkClass = 'profile-menu-item';
 $reviewLinkClass = 'profile-menu-item';
@@ -74,10 +75,9 @@ if ($activeTab === 'reviews') {
                         Hồ sơ
                     </a>
 
-                    <span class="profile-menu-item" aria-disabled="true">
+                    <a class="profile-menu-item" href="<?php echo escapeHtml($myPlacesUrl); ?>">
                         Địa điểm của tôi
-                        <small>Chưa hỗ trợ</small>
-                    </span>
+                    </a>
 
                     <a class="profile-menu-item" href="<?php echo escapeHtml(createRouteUrl('favorites')); ?>">
                         Yêu thích
@@ -265,23 +265,6 @@ if ($activeTab === 'reviews') {
                                 value="<?php echo escapeHtml($phone); ?>"
                                 maxlength="20"
                                 placeholder="Nhập số điện thoại">
-                        </div>
-                    </div>
-
-                    <div class="row align-items-center mb-3">
-                        <div class="col-12 col-sm-3">
-                            <label for="profile-province" class="form-label">
-                                Tỉnh/Thành
-                            </label>
-                        </div>
-
-                        <div class="col-12 col-sm-9">
-                            <select
-                                id="profile-province"
-                                class="form-select"
-                                disabled>
-                                <option>Chưa hỗ trợ</option>
-                            </select>
                         </div>
                     </div>
 

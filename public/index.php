@@ -3,12 +3,17 @@ declare(strict_types=1);
 
 use HotSpot\Core\HttpException;
 use HotSpot\Core\View;
+use HotSpot\Controllers\AuthController;
 
 require_once dirname(__DIR__) . '/app/bootstrap.php';
 header('Content-Type: text/html; charset=UTF-8');
 
 try {
     $routeName = 'home';
+
+    // Khôi phục phiên từ cookie trước khi xử lý route.
+    $authenticationController = new AuthController();
+    $authenticationController->restoreRememberLogin();
 
     if (isset($_GET['route'])) {
         if (is_string($_GET['route']) === false) {

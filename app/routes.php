@@ -27,6 +27,8 @@ $router->add('GET', 'home', $homeController, 'index');
 $router->add('GET', 'api/places/search', $placeSearchController, 'search');
 // Trang chi tiết địa điểm (C01: card Home link tới places/show&id=...).
 $router->add('GET', 'places/show', $placeController, 'show');
+$router->add('GET', 'places/create', $placeController, 'create');
+$router->add('GET', 'places/mine', $placeController, 'mine');
 $router->add('GET', 'profile', $profileController, 'index');
 $router->add('GET', 'admin/reviews', $adminController, 'reviews');
 $router->add('POST', 'admin/reviews/status', $adminController, 'updateReviewStatus');
@@ -40,6 +42,42 @@ $router->add('POST', 'register', $authController, 'register');
 
 // Nhận và xử lý form đăng nhập.
 $router->add('POST', 'login', $authController, 'login');
+
+// Nhận token từ nút đăng nhập Google.
+$router->add('POST', 'login/google', $authController, 'googleLogin');
+
+// Hiển thị form yêu cầu đặt lại mật khẩu.
+$router->add(
+    'GET',
+    'forgot-password',
+    $authController,
+    'showForgotPassword'
+);
+
+// Mở form đặt mật khẩu mới từ liên kết trong email.
+$router->add(
+    'GET',
+    'reset-password',
+    $authController,
+    'showResetPassword'
+);
+
+// Xử lý yêu cầu gửi liên kết đặt lại mật khẩu.
+$router->add(
+    'POST',
+    'forgot-password',
+    $authController,
+    'requestPasswordReset'
+);
+
+// Lưu mật khẩu mới từ form khôi phục.
+$router->add(
+    'POST',
+    'reset-password',
+    $authController,
+    'resetPassword'
+);
+
 // Xử lý đăng xuất.
 $router->add('POST', 'logout', $authController, 'logout');
 

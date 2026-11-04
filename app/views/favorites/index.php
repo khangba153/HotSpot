@@ -6,6 +6,7 @@ $favoritePlaces = $viewData['favoritePlaces'];
 $homePageUrl = createRouteUrl('home');
 $profilePageUrl = createRouteUrl('profile');
 $favoritePageUrl = createRouteUrl('favorites');
+$myPlacesUrl = createRouteUrl('places/mine');
 $userInformation = $viewData['userInformation'];
 ?>
 
@@ -35,18 +36,15 @@ $userInformation = $viewData['userInformation'];
                     <a href="<?php echo escapeHtml($profilePageUrl); ?>">
                         <span>Tổng quan</span>
                     </a>
-                    <span class="favorites-menu-disabled" aria-disabled="true">
-                        <span>Bài viết của tôi<small>Chưa hỗ trợ</small></span>
-                    </span>
+                    <a href="<?php echo escapeHtml($myPlacesUrl); ?>">
+                        <span>Địa điểm của tôi</span>
+                    </a>
                     <a class="favorites-menu-active" href="<?php echo escapeHtml($favoritePageUrl); ?>" aria-current="page">
                         <span>Yêu thích</span>
                     </a>
                     <a href="<?php echo escapeHtml($profilePageUrl . '&tab=reviews'); ?>">
                         <span>Đánh giá của tôi</span>
                     </a>
-                    <span class="favorites-menu-disabled" aria-disabled="true">
-                        <span>Thông báo<small>Chưa hỗ trợ</small></span>
-                    </span>
                     <a href="<?php echo escapeHtml($profilePageUrl); ?>">
                         <span>Thông tin tài khoản</span>
                     </a>

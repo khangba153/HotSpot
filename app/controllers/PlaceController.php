@@ -7,6 +7,7 @@ use HotSpot\Core\Controller;
 use HotSpot\Core\HttpException;
 use HotSpot\Models\Place;
 use HotSpot\Models\PlaceImage;
+use HotSpot\Models\PlaceSearch;
 use HotSpot\Models\Review;
 use HotSpot\Models\User;
 use HotSpot\Models\Favorite;
@@ -142,6 +143,182 @@ final class PlaceController extends Controller
         ];
 
         $this->render('places/show', $viewData);
+    }
+
+    // Hiển thị form đăng địa điểm mới (TV3-02): bắt buộc đăng nhập.
+    public function create(): void
+    {
+        if (isset($_SESSION['user_id']) === false) {
+            throw new HttpException(401, 'Vui lòng đăng nhập để đăng địa điểm.');
+        }
+
+        $userId = (int) $_SESSION['user_id'];
+        $userModel = new User();
+        $userInformation = $userModel->findById($userId);
+
+        if ($userInformation === null) {
+            throw new HttpException(401, 'Tài khoản không tồn tại. Vui lòng đăng nhập lại.');
+        }
+
+        if (isset($_SESSION['csrf_token']) === false) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        // Hợp đồng C02/C03: dùng PlaceSearch::findActiveCategories() đã có của TV2;
+        // TV2 chưa bàn giao Model đọc tỉnh/nhãn và API phường/xã nên không tự tạo bản trùng.
+        $categories = [];
+        $provinces = [];
+        $wards = [];
+        $tags = [];
+        $missingDependencies = [];
+
+        try {
+            $placeSearchModel = new PlaceSearch();
+            $categories = $placeSearchModel->findActiveCategories();
+        } catch (\Throwable $exception) {
+            error_log('PlaceController::create categories load error: ' . $exception->getMessage());
+            $missingDependencies[] = 'Danh mục địa điểm hiện chưa tải được. Vui lòng thử lại sau.';
+        }
+
+        $missingDependencies[] = 'Dữ liệu tỉnh/thành phố, phường/xã và nhãn hiện chưa sẵn sàng. Bạn có thể bật chế độ xem thử với dữ liệu mẫu để kiểm tra biểu mẫu.';
+
+        $isPreviewSample = false;
+        if (isset($_GET['preview']) && is_string($_GET['preview']) && $_GET['preview'] === '1') {
+            $isPreviewSample = true;
+            $sampleData = $this->getPreviewSampleData();
+            if (count($categories) === 0) {
+                $categories = $sampleData['categories'];
+            }
+            $provinces = $sampleData['provinces'];
+            $tags = $sampleData['tags'];
+        }
+
+        $viewData = [
+            'title' => 'Đăng địa điểm mới',
+            'userInformation' => $userInformation,
+            'csrfToken' => $_SESSION['csrf_token'],
+            'categories' => $categories,
+            'provinces' => $provinces,
+            'wards' => $wards,
+            'tags' => $tags,
+            'missingDependencies' => $missingDependencies,
+            'isPreviewSample' => $isPreviewSample,
+            'isStoreReady' => false,
+        ];
+
+        $this->render('places/form', $viewData);
+    }
+
+    // Hiển thị danh sách địa điểm của tài khoản đang đăng nhập (TV3-05, hợp đồng C08).
+    public function mine(): void
+    {
+        if (isset($_SESSION['user_id']) === false) {
+            throw new HttpException(401, 'Vui lòng đăng nhập để xem địa điểm đã đăng.');
+        }
+
+        // Chủ bài luôn lấy từ session, không nhận từ URL/request.
+        $ownerId = (int) $_SESSION['user_id'];
+        $userModel = new User();
+        $userInformation = $userModel->findById($ownerId);
+
+        if ($userInformation === null) {
+            throw new HttpException(401, 'Tài khoản không tồn tại. Vui lòng đăng nhập lại.');
+        }
+
+        if (isset($_SESSION['csrf_token']) === false) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        $allowedStatusFilters = ['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'HIDDEN'];
+        $activeStatusFilter = 'ALL';
+
+        if (isset($_GET['status']) && is_string($_GET['status'])) {
+            $requestedStatus = strtoupper(trim($_GET['status']));
+            if (in_array($requestedStatus, $allowedStatusFilters, true)) {
+                $activeStatusFilter = $requestedStatus;
+            }
+        }
+
+        $placeModel = new Place();
+        $rawPlaceList = $placeModel->findByOwnerId($ownerId);
+
+        $myPlaceList = [];
+        $statusCounts = [
+            'total' => 0,
+            'PENDING' => 0,
+            'APPROVED' => 0,
+            'REJECTED' => 0,
+            'HIDDEN' => 0,
+        ];
+
+        foreach ($rawPlaceList as $placeItem) {
+            $categoryId = (int) $placeItem['category_id'];
+            $fallbackImageUrl = $this->getDemoImage($categoryId);
+            $rawCoverImage = trim((string) ($placeItem['cover_image'] ?? ''));
+            $coverImageUrl = $fallbackImageUrl;
+
+            if ($rawCoverImage !== '' && $rawCoverImage !== self::SEED_PLACEHOLDER_IMAGE) {
+                if ($this->isSafeImagePath($rawCoverImage)) {
+                    $coverImageUrl = $rawCoverImage;
+                }
+            }
+
+            $statusCode = (string) ($placeItem['status_code'] ?? '');
+            $statusCounts['total'] = $statusCounts['total'] + 1;
+
+            if (isset($statusCounts[$statusCode])) {
+                $statusCounts[$statusCode] = $statusCounts[$statusCode] + 1;
+            }
+
+            if ($activeStatusFilter !== 'ALL' && $statusCode !== $activeStatusFilter) {
+                continue;
+            }
+
+            $placeItem['cover_image_url'] = $coverImageUrl;
+            $placeItem['fallback_image_url'] = $fallbackImageUrl;
+            $myPlaceList[] = $placeItem;
+        }
+
+        $viewData = [
+            'title' => 'Địa điểm của tôi',
+            'userInformation' => $userInformation,
+            'csrfToken' => (string) $_SESSION['csrf_token'],
+            'myPlaces' => $myPlaceList,
+            'statusCounts' => $statusCounts,
+            'activeStatusFilter' => $activeStatusFilter,
+        ];
+
+        $this->render('places/mine', $viewData);
+    }
+
+    // Dữ liệu mẫu chỉ dùng riêng khi bật chế độ preview giao diện (?preview=1), không thay dữ liệu thật.
+    private function getPreviewSampleData(): array
+    {
+        return [
+            'categories' => [
+                ['category_id' => 1, 'name' => 'Ẩm thực'],
+                ['category_id' => 2, 'name' => 'Cà phê'],
+                ['category_id' => 3, 'name' => 'Du lịch'],
+                ['category_id' => 4, 'name' => 'Vui chơi'],
+                ['category_id' => 5, 'name' => 'Thiên nhiên'],
+                ['category_id' => 6, 'name' => 'Văn hóa'],
+            ],
+            'provinces' => [
+                ['province_code' => '01', 'province_name' => 'Thành phố Hà Nội'],
+                ['province_code' => '48', 'province_name' => 'Thành phố Đà Nẵng'],
+                ['province_code' => '68', 'province_name' => 'Tỉnh Lâm Đồng'],
+                ['province_code' => '79', 'province_name' => 'Thành phố Hồ Chí Minh'],
+            ],
+            'tags' => [
+                ['tag_id' => 1, 'name' => 'Cà phê'],
+                ['tag_id' => 2, 'name' => 'View đẹp'],
+                ['tag_id' => 3, 'name' => 'Đà Lạt'],
+                ['tag_id' => 4, 'name' => 'Yên tĩnh'],
+                ['tag_id' => 5, 'name' => 'Check-in'],
+                ['tag_id' => 6, 'name' => 'Gia đình'],
+                ['tag_id' => 7, 'name' => 'Giá hợp lý'],
+            ],
+        ];
     }
 
     // Đọc id từ query string; trả về 0 nếu không phải số nguyên dương.
