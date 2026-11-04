@@ -19,7 +19,7 @@ $messageType = ($viewData['messageType'] ?? '') === 'danger' ? 'danger' : 'succe
         <a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Chờ duyệt địa điểm</a>
         <a href="<?php echo escapeHtml(createRouteUrl('admin/places') . '&view=managed'); ?>">Quản lý địa điểm</a>
         <a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/reviews')); ?>">Quản lý đánh giá</a>
-        <a>Quản lý danh mục</a>
+        <a href="<?php echo escapeHtml(createRouteUrl('admin/categories')); ?>">Quản lý danh mục</a>
         <a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">Quay về trang chủ</a>
     </aside>
     <main class="admin-content admin-reviews-page">

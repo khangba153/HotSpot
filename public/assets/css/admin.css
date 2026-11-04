@@ -498,3 +498,18 @@
 .admin-review-note { margin:20px 0 0; padding:14px; border:1px solid #e2eaf1; border-radius:9px; color:#78899c; background:#f8fbfd; font-size:11px; }
 .admin-review-row[hidden], #review-empty[hidden] { display:none; }
 @media(max-width:760px) { .admin-review-stats { gap:8px; } .admin-review-stats div { padding:12px 8px; } .admin-review-stats strong { font-size:21px; } }
+
+/* Trang quản lý danh mục. */
+.category-primary { background:#ff5947; color:#fff; border:0; border-radius:8px; padding:10px 15px; font-size:11px; font-weight:700; }
+.category-edit { background:#fff; color:#42566b; border:1px solid #dce5ed; border-radius:6px; padding:7px 10px; font-size:10px; font-weight:700; }
+.category-actions { display:flex; align-items:center; gap:7px; }
+.category-table td.category-description { white-space:normal; min-width:180px; overflow-wrap:anywhere; }
+.category-row[hidden], #category-empty[hidden] { display:none; }
+.category-modal-content { border:0; border-radius:14px; padding:12px; }
+.category-modal-content h2 { font-size:20px; font-weight:700; }
+.category-modal-content p { color:#78899c; font-size:12px; margin:12px 0 18px; }
+.category-modal-content label { display:block; margin:14px 0 6px; font-weight:700; font-size:12px; }
+.category-modal-content label span { color:#e45e55; }
+.category-modal-content .form-control { font-size:13px; }
+.category-modal-content .modal-footer { border:0; }
+@media(max-width:760px) { .admin-categories-page .admin-heading { flex-wrap:wrap; } }
