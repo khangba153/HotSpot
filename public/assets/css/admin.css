@@ -534,3 +534,6 @@
 .dashboard-overview p { display:flex; justify-content:space-between; gap:10px; border-bottom:1px solid #edf1f5; padding:8px 0; margin:0; font-size:10px; }
 .dashboard-overview p span { color:#78899c; }
 @media(max-width:760px) { .dashboard-stats, .dashboard-links { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .dashboard-stats div, .dashboard-links a { padding:14px; } .dashboard-details { grid-template-columns:1fr; } }
+
+/* Giữ phần nội dung và bảng trong chiều rộng màn hình nhỏ. */
+.admin-dashboard .admin-content, .dashboard-details section { min-width:0; }
