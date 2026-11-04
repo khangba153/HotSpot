@@ -12,6 +12,19 @@ use HotSpot\Models\User;
 
 final class AdminController extends Controller
 {
+    // Chỉ Admin được xem số liệu và lối tắt quản trị.
+    public function dashboard(): void
+    {
+        $admin = $this->requireAdmin();
+        $moderation = new PlaceModeration();
+        $this->render('admin/index', [
+            'title' => 'Tổng quan quản trị', 'userInformation' => $admin,
+            'counts' => $moderation->findDashboardCounts(),
+            'pendingPlaces' => $moderation->findRecentPendingPlaces(),
+            'isAdminPage' => true,
+        ]);
+    }
+
     public function places(): void
     {
         if (!isset($_SESSION['user_id'])) {

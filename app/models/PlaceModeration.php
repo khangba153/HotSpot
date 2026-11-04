@@ -102,6 +102,26 @@ final class PlaceModeration extends Model
         }
     }
 
+    // Lấy số liệu tổng quan từ dữ liệu hiện tại.
+    public function findDashboardCounts(): array
+    {
+        $statement = self::getConnection()->prepare("SELECT COUNT(*) AS total_places, COALESCE(SUM(status_code = 'PENDING'), 0) AS pending_places, COALESCE(SUM(status_code = 'APPROVED'), 0) AS approved_places, (SELECT COUNT(*) FROM reviews) AS total_reviews, (SELECT COUNT(*) FROM reviews WHERE status_code = 'HIDDEN') AS hidden_reviews, (SELECT COUNT(*) FROM categories) AS total_categories FROM places");
+        $statement->execute();
+        $counts = $statement->fetch(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $counts;
+    }
+
+    // Lấy tối đa ba bài mới nhất đang chờ duyệt.
+    public function findRecentPendingPlaces(): array
+    {
+        $statement = self::getConnection()->prepare("SELECT places.place_id, places.title, users.full_name AS owner_name, categories.name AS category_name, provinces.province_name FROM places INNER JOIN users ON users.user_id = places.owner_id INNER JOIN categories ON categories.category_id = places.category_id INNER JOIN provinces ON provinces.province_code = places.province_code WHERE places.status_code = 'PENDING' ORDER BY places.created_at DESC, places.place_id DESC LIMIT 3");
+        $statement->execute();
+        $places = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $places;
+    }
+
     // Lấy địa điểm đã duyệt và đang ẩn cho trang quản lý.
     public function findManagedPlaces(): array
     {

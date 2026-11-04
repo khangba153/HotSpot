@@ -30,6 +30,7 @@ $router->add('GET', 'places/show', $placeController, 'show');
 $router->add('GET', 'places/create', $placeController, 'create');
 $router->add('GET', 'places/mine', $placeController, 'mine');
 $router->add('GET', 'profile', $profileController, 'index');
+$router->add('GET', 'admin', $adminController, 'dashboard');
 $router->add('GET', 'admin/categories', $adminController, 'categories');
 $router->add('POST', 'admin/categories/store', $adminController, 'storeCategory');
 $router->add('POST', 'admin/categories/update', $adminController, 'updateCategory');
