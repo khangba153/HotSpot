@@ -7,10 +7,13 @@ use HotSpot\Core\Controller;
 use HotSpot\Models\Category;
 use HotSpot\Models\PlaceSearch;
 use HotSpot\Models\Province;
+use HotSpot\Models\Tag;
 use HotSpot\Models\User;
 
 final class HomeController extends Controller
 {
+    private const HOME_PAGE_SIZE = 12;
+
     public function index(): void
     {
         $rawKeyword = $_GET['keyword'] ?? '';
@@ -36,20 +39,46 @@ final class HomeController extends Controller
 
         $categoryModel = new Category();
         $provinceModel = new Province();
+        $tagModel = new Tag();
 
         $categoryList = $categoryModel->findActiveCategories();
         $provinceList = $provinceModel->findAllProvinces();
+        $tagList = $tagModel->findActiveTags();
 
         $categoryId = $this->readCategoryId($categoryList);
         $provinceCode = $this->readProvinceCode($provinceList);
+        $tagSlug = $this->readTagSlug($tagList);
+        $pageNumber = $this->readPageNumber();
 
         $placeSearchModel = new PlaceSearch();
 
         $searchResult = $placeSearchModel->searchApprovedForHome(
             $keyword !== '' ? $keyword : null,
             $categoryId,
-            $provinceCode
+            $provinceCode,
+            null,
+            $tagSlug,
+            $pageNumber,
+            self::HOME_PAGE_SIZE
         );
+
+        $totalPages = max(
+            1,
+            (int) ceil($searchResult['total_count'] / self::HOME_PAGE_SIZE)
+        );
+
+        if ($pageNumber > $totalPages) {
+            $pageNumber = $totalPages;
+            $searchResult = $placeSearchModel->searchApprovedForHome(
+                $keyword !== '' ? $keyword : null,
+                $categoryId,
+                $provinceCode,
+                null,
+                $tagSlug,
+                $pageNumber,
+                self::HOME_PAGE_SIZE
+            );
+        }
 
         $userInformation = null;
 
@@ -65,12 +94,72 @@ final class HomeController extends Controller
             'keyword' => $keyword,
             'categories' => $categoryList,
             'provinces' => $provinceList,
+            'tags' => $tagList,
             'selectedCategoryId' => $categoryId === null ? '' : (string) $categoryId,
             'selectedProvinceCode' => $provinceCode ?? '',
+            'selectedTagSlug' => $tagSlug ?? '',
+            'page' => $pageNumber,
+            'pageSize' => self::HOME_PAGE_SIZE,
+            'totalPages' => $totalPages,
             'userInformation' => $userInformation,
         ];
 
         $this->render('home/index', $viewData);
+    }
+
+    /**
+     * Chỉ chấp nhận slug thuộc danh sách nhãn đang hoạt động.
+     *
+     * @param array<int, array<string, mixed>> $tagList
+     */
+    private function readTagSlug(array $tagList): ?string
+    {
+        $rawTagSlug = $_GET['tag_slug'] ?? '';
+
+        if (is_string($rawTagSlug) === false) {
+            return null;
+        }
+
+        $requestedTagSlug = trim($rawTagSlug);
+
+        if ($requestedTagSlug === '' || strlen($requestedTagSlug) > 100) {
+            return null;
+        }
+
+        foreach ($tagList as $tagInformation) {
+            $availableTagSlug = (string) ($tagInformation['slug'] ?? '');
+
+            if ($availableTagSlug === $requestedTagSlug) {
+                return $requestedTagSlug;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Đọc số trang hợp lệ từ query string.
+     */
+    private function readPageNumber(): int
+    {
+        $rawPageNumber = $_GET['page'] ?? '1';
+
+        if (
+            is_string($rawPageNumber) === false
+            || $rawPageNumber === ''
+            || ctype_digit($rawPageNumber) === false
+            || strlen($rawPageNumber) > 9
+        ) {
+            return 1;
+        }
+
+        $pageNumber = (int) $rawPageNumber;
+
+        if ($pageNumber < 1) {
+            return 1;
+        }
+
+        return $pageNumber;
     }
 
     /**
