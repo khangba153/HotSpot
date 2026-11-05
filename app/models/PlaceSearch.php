@@ -9,6 +9,18 @@ use PDO;
 final class PlaceSearch extends Model
 {
     /**
+     * Adapter tạm thời giữ tương thích với caller cũ của TV3.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function findActiveCategories(): array
+    {
+        $categoryModel = new Category();
+
+        return $categoryModel->findActiveCategories();
+    }
+
+    /**
      * Giữ lại API hiện có cho các nơi đang cần danh sách địa điểm trang chủ.
      *
      * @return array<int, array<string, mixed>>
