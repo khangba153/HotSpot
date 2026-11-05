@@ -34,9 +34,7 @@ final class PlaceSearch extends Model
 
     /**
      * Tìm địa điểm APPROVED theo các bộ lọc và trang hiện tại.
-     * Routine trả danh sách ở result set đầu và total_count ở result set thứ hai.
-     *
-     * Stored procedure trả danh sách địa điểm ở result set đầu tiên
+     * Stored procedure trả danh sách ở result set đầu tiên
      * và total_count ở result set thứ hai.
      *
      * @return array{places: array<int, array<string, mixed>>, total_count: int}
