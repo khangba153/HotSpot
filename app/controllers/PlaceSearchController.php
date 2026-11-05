@@ -73,6 +73,7 @@ final class PlaceSearchController extends Controller
             }
 
             $pageNumber = $this->readPageNumber();
+            $requestedPageNumber = $pageNumber;
             $pageSize = 12;
             $placeSearchModel = new PlaceSearch();
             $searchResult = $placeSearchModel->searchApprovedForHome(
@@ -138,6 +139,7 @@ final class PlaceSearchController extends Controller
                     'province_code' => $provinceCode,
                     'tag_slug' => $tagSlug,
                     'page' => $pageNumber,
+                    'requested_page' => $requestedPageNumber,
                     'page_size' => $pageSize,
                     'total_pages' => $totalPages,
                     'pagination_html' => $paginationHtml,
