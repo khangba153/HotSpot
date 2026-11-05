@@ -896,6 +896,28 @@ body.hs-body {
   font-size: 11px;
 }
 
+.hs-pagination a {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.hs-pagination a:hover {
+  color: var(--hs-orange-dark);
+  border-color: var(--hs-orange);
+  background: #fff5f1;
+}
+
+.hs-pagination__number--active {
+  color: #fff;
+  border-color: var(--hs-orange);
+  background: var(--hs-orange);
+  font-weight: 800;
+}
+
+.hs-pagination__direction[aria-disabled="true"] {
+  opacity: 0.45;
+}
+
 /* Footer */
 .hs-site-footer {
   position: relative;
