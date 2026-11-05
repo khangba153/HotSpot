@@ -151,6 +151,7 @@ function handleSearchData(searchResponse) {
     const provinceCode = searchResponse.data.province_code || '';
     const tagSlug = searchResponse.data.tag_slug || '';
     const responsePage = Number(searchResponse.data.page) || 1;
+    const requestedPage = Number(searchResponse.data.requested_page) || 1;
     const currentKeyword = homeSearchState.input.value.trim().replace(/\s+/g, ' ');
 
     if (
@@ -158,9 +159,21 @@ function handleSearchData(searchResponse) {
         || categoryId !== homeSearchState.categorySelect.value
         || provinceCode !== homeSearchState.provinceSelect.value
         || tagSlug !== homeSearchState.tagSelect.value
-        || responsePage !== homeSearchState.currentPage
+        || requestedPage !== homeSearchState.currentPage
     ) {
         return;
+    }
+
+    homeSearchState.currentPage = responsePage;
+
+    if (responsePage !== requestedPage) {
+        updateBrowserSearchUrl(
+            keyword,
+            categoryId,
+            provinceCode,
+            tagSlug,
+            responsePage
+        );
     }
 
     const totalCount = Number(searchResponse.data.total_count) || 0;
