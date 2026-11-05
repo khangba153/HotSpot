@@ -3,6 +3,11 @@
 $places = $viewData['places'] ?? [];
 $categories = $viewData['categories'] ?? [];
 $provinces = $viewData['provinces'] ?? [];
+$tags = $viewData['tags'] ?? [];
+$selectedTagSlug = $viewData['selectedTagSlug'] ?? '';
+$page = $viewData['page'] ?? 1;
+$pageSize = $viewData['pageSize'] ?? 12;
+$totalPages = $viewData['totalPages'] ?? 1;
 $selectedCategoryId = $viewData['selectedCategoryId'] ?? '';
 $selectedProvinceCode = $viewData['selectedProvinceCode'] ?? '';
 $keyword = $viewData['keyword'] ?? '';
@@ -18,6 +23,32 @@ if (!is_array($categories)) {
 
 if (!is_array($provinces)) {
     $provinces = [];
+}
+
+if (!is_array($tags)) {
+    $tags = [];
+}
+
+if (is_string($selectedTagSlug) === false) {
+    $selectedTagSlug = '';
+}
+
+if (!is_numeric($page) || (int) $page < 1) {
+    $page = 1;
+} else {
+    $page = (int) $page;
+}
+
+if (!is_numeric($pageSize) || (int) $pageSize < 1) {
+    $pageSize = 12;
+} else {
+    $pageSize = (int) $pageSize;
+}
+
+if (!is_numeric($totalPages) || (int) $totalPages < 1) {
+    $totalPages = 1;
+} else {
+    $totalPages = (int) $totalPages;
 }
 
 if (is_string($selectedCategoryId) === false && is_int($selectedCategoryId) === false) {
@@ -56,7 +87,8 @@ $categoryVisuals = [
 $featuredPlaces = array_slice($places, 0, 12);
 $hasActiveFilters = $keyword !== ''
     || $selectedCategoryId !== ''
-    || $selectedProvinceCode !== '';
+    || $selectedProvinceCode !== ''
+    || $selectedTagSlug !== '';
 ?>
 
 <section class="hs-hero" aria-labelledby="home-hero-title">
@@ -131,6 +163,20 @@ $hasActiveFilters = $keyword !== ''
                                     value="<?php echo escapeHtml((string) $provinceInformation['province_code']); ?>"
                                     <?php if ($selectedProvinceCode === (string) $provinceInformation['province_code']) { ?>selected<?php } ?>>
                                     <?php echo escapeHtml((string) $provinceInformation['province_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+
+                    <label class="hs-filter-pill hs-filter-control">
+                        <span>Nhãn</span>
+                        <select class="hs-filter-select" name="tag_slug" aria-label="Lọc theo nhãn">
+                            <option value="">Tất cả nhãn</option>
+                            <?php foreach ($tags as $tagInformation) : ?>
+                                <option
+                                    value="<?php echo escapeHtml((string) $tagInformation['slug']); ?>"
+                                    <?php if ($selectedTagSlug === (string) $tagInformation['slug']) { ?>selected<?php } ?>>
+                                    <?php echo escapeHtml((string) $tagInformation['name']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -284,17 +330,10 @@ $hasActiveFilters = $keyword !== ''
             class="hs-pagination"
             id="home-pagination"
             aria-label="Phân trang địa điểm"
-            <?php echo $hasActiveFilters ? 'hidden' : ''; ?>>
-
-            <span class="hs-pagination__direction" aria-disabled="true">Trước</span>
-            <span class="hs-pagination__number hs-pagination__number--active" aria-current="page">1</span>
-            <span class="hs-pagination__number">2</span>
-            <span class="hs-pagination__number">3</span>
-            <span class="hs-pagination__number">4</span>
-            <span class="hs-pagination__number">5</span>
-            <span class="hs-pagination__direction" aria-disabled="true">Sau</span>
+            <?php echo $totalPages <= 1 ? 'hidden' : ''; ?>>
+            <?php require __DIR__ . '/_pagination.php'; ?>
         </nav>
     </section>
 </div>
 
-<script src="assets/js/search.js?v=4" defer></script>
+<script src="assets/js/search.js?v=5" defer></script>
