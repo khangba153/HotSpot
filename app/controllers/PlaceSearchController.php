@@ -135,7 +135,7 @@ final class PlaceSearchController extends Controller
                     'html' => $html,
                     'total_count' => $searchResult['total_count'],
                     'keyword' => $keyword,
-                    'category_id' => $selectedCategoryId,
+                    'category_id' => $categoryId,
                     'province_code' => $provinceCode,
                     'tag_slug' => $tagSlug,
                     'page' => $pageNumber,
