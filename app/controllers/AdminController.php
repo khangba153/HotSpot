@@ -6,11 +6,25 @@ namespace HotSpot\Controllers;
 use HotSpot\Core\Controller;
 use HotSpot\Core\HttpException;
 use HotSpot\Models\PlaceModeration;
+use HotSpot\Models\AdminCategory;
 use HotSpot\Models\Review;
 use HotSpot\Models\User;
 
 final class AdminController extends Controller
 {
+    // Chỉ Admin được xem số liệu và lối tắt quản trị.
+    public function dashboard(): void
+    {
+        $admin = $this->requireAdmin();
+        $moderation = new PlaceModeration();
+        $this->render('admin/index', [
+            'title' => 'Tổng quan quản trị', 'userInformation' => $admin,
+            'counts' => $moderation->findDashboardCounts(),
+            'pendingPlaces' => $moderation->findRecentPendingPlaces(),
+            'isAdminPage' => true,
+        ]);
+    }
+
     public function places(): void
     {
         if (!isset($_SESSION['user_id'])) {
@@ -226,6 +240,105 @@ final class AdminController extends Controller
             $_SESSION['review_admin_message_type'] = 'danger';
         }
         header('Location: ' . createRouteUrl('admin/reviews'));
+        exit;
+    }
+
+    // Danh sách và thống kê danh mục dành cho Admin.
+    public function categories(): void
+    {
+        $admin = $this->requireAdmin();
+        $message = $_SESSION['category_message'] ?? '';
+        $messageType = $_SESSION['category_message_type'] ?? 'success';
+        unset($_SESSION['category_message'], $_SESSION['category_message_type']);
+        $this->render('admin/categories', [
+            'title' => 'Quản lý danh mục', 'userInformation' => $admin,
+            'categories' => (new AdminCategory())->findAll(),
+            'csrfToken' => $_SESSION['csrf_token'] ?? '', 'isAdminPage' => true,
+            'message' => $message, 'messageType' => $messageType,
+        ]);
+    }
+
+    public function storeCategory(): void { $this->saveCategory(false); }
+    public function updateCategory(): void { $this->saveCategory(true); }
+
+    // Kiểm tra quyền, CSRF và dữ liệu trước khi ghi.
+    private function saveCategory(bool $editing): void
+    {
+        $this->requireAdmin();
+        $this->checkCategoryToken();
+        $id = $editing ? $this->categoryId() : 0;
+        $name = $_POST['name'] ?? '';
+        $description = $_POST['description'] ?? '';
+        if (!is_string($name) || !is_string($description)) {
+            throw new HttpException(400, 'Dữ liệu danh mục không hợp lệ.');
+        }
+        $name = trim($name);
+        $description = trim($description);
+        if ($name === '' || mb_strlen($name, 'UTF-8') > 100 || mb_strlen($description, 'UTF-8') > 300) {
+            $this->redirectCategory('Tên bắt buộc, tối đa 100 ký tự; mô tả tối đa 300 ký tự.', 'danger');
+        }
+        try {
+            $model = new AdminCategory();
+            if ($model->nameExists($name, $id)) {
+                $this->redirectCategory('Tên danh mục đã tồn tại.', 'danger');
+            }
+            if ($editing) {
+                if (!$model->update($id, $name, $description === '' ? null : $description)) {
+                    $this->redirectCategory('Không tìm thấy danh mục.', 'danger');
+                }
+            } else {
+                $model->create($name, $description === '' ? null : $description);
+            }
+        } catch (\PDOException $exception) {
+            if (($exception->errorInfo[1] ?? null) === 1062) {
+                $this->redirectCategory('Tên danh mục đã tồn tại.', 'danger');
+            }
+            $this->redirectCategory('Không thể lưu danh mục. Vui lòng thử lại.', 'danger');
+        }
+        $this->redirectCategory($editing ? 'Đã cập nhật danh mục.' : 'Đã thêm danh mục.', 'success');
+    }
+
+    public function updateCategoryStatus(): void
+    {
+        $this->requireAdmin();
+        $this->checkCategoryToken();
+        $id = $this->categoryId();
+        $active = $_POST['is_active'] ?? '';
+        if (!is_string($active) || !in_array($active, ['0', '1'], true)) {
+            throw new HttpException(400, 'Trạng thái không hợp lệ.');
+        }
+        try {
+            if (!(new AdminCategory())->setStatus($id, (int) $active)) {
+                $this->redirectCategory('Không tìm thấy danh mục.', 'danger');
+            }
+        } catch (\PDOException $exception) {
+            $this->redirectCategory('Không thể đổi trạng thái danh mục.', 'danger');
+        }
+        $this->redirectCategory($active === '1' ? 'Đã kích hoạt danh mục.' : 'Đã ngừng sử dụng danh mục.', 'success');
+    }
+
+    private function checkCategoryToken(): void
+    {
+        $token = $_POST['csrf_token'] ?? '';
+        if (!is_string($token) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            throw new HttpException(400, 'Phiên làm việc hết hạn. Hãy tải lại trang.');
+        }
+    }
+
+    private function categoryId(): int
+    {
+        $id = $_POST['category_id'] ?? '';
+        if (!is_string($id) || strlen($id) > 10 || !ctype_digit($id) || (int) $id <= 0 || (int) $id > 4294967295) {
+            throw new HttpException(400, 'Danh mục không hợp lệ.');
+        }
+        return (int) $id;
+    }
+
+    private function redirectCategory(string $message, string $type): void
+    {
+        $_SESSION['category_message'] = $message;
+        $_SESSION['category_message_type'] = $type;
+        header('Location: ' . createRouteUrl('admin/categories'));
         exit;
     }
 

@@ -21,11 +21,11 @@ sort($provinces);
 <div class="admin-shell admin-list-shell">
     <aside class="admin-sidebar">
         <small>QUẢN LÝ HỆ THỐNG</small>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">▦ &nbsp; Tổng quan</a>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">◷ &nbsp; Chờ duyệt địa điểm</a>
-        <a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places') . '&view=managed'); ?>">⌘ &nbsp; Quản lý địa điểm</a>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin/reviews')); ?>">☆ &nbsp; Quản lý đánh giá</a><a>▤ &nbsp; Quản lý danh mục</a>
-        <a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">↩ &nbsp; Quay về trang chủ</a>
+        <a href="<?php echo escapeHtml(createRouteUrl('admin')); ?>">Tổng quan</a>
+        <a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Chờ duyệt địa điểm</a>
+        <a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places') . '&view=managed'); ?>">Quản lý địa điểm</a>
+        <a href="<?php echo escapeHtml(createRouteUrl('admin/reviews')); ?>">Quản lý đánh giá</a><a href="<?php echo escapeHtml(createRouteUrl('admin/categories')); ?>">Quản lý danh mục</a>
+        <a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">Quay về trang chủ</a>
     </aside>
     <main class="admin-content">
         <div class="container-fluid px-0"><div class="row"><div class="col-12">
@@ -37,7 +37,7 @@ sort($provinces);
             <button type="button" data-status-filter="HIDDEN">Đã ẩn <?php echo $hiddenCount; ?></button>
         </div>
         <div class="admin-toolbar">
-            <label class="admin-search"><span aria-hidden="true">⌕</span><input id="managed-search" type="search" placeholder="Tìm theo tên địa điểm..." aria-label="Tìm theo tên địa điểm"></label>
+            <label class="admin-search"><input id="managed-search" type="search" placeholder="Tìm theo tên địa điểm..." aria-label="Tìm theo tên địa điểm"></label>
             <select id="managed-category" aria-label="Lọc danh mục"><option value="">Tất cả danh mục</option><?php foreach ($categories as $category) { ?><option value="<?php echo escapeHtml($category); ?>"><?php echo escapeHtml($category); ?></option><?php } ?></select>
             <select id="managed-province" aria-label="Lọc tỉnh thành"><option value="">Tất cả tỉnh/thành</option><?php foreach ($provinces as $province) { ?><option value="<?php echo escapeHtml($province); ?>"><?php echo escapeHtml($province); ?></option><?php } ?></select>
         </div>
