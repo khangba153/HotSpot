@@ -7,6 +7,7 @@ use HotSpot\Core\Controller;
 use HotSpot\Models\Category;
 use HotSpot\Models\PlaceSearch;
 use HotSpot\Models\Province;
+use HotSpot\Models\Tag;
 use InvalidArgumentException;
 use Throwable;
 
@@ -61,12 +62,43 @@ final class PlaceSearchController extends Controller
                 }
             }
 
+            $tagSlug = $this->readTagSlug();
+
+            if ($tagSlug !== null) {
+                $tagModel = new Tag();
+
+                if ($tagModel->isActiveSlug($tagSlug) === false) {
+                    throw new InvalidArgumentException('Nhãn không hợp lệ.');
+                }
+            }
+
+            $pageNumber = $this->readPageNumber();
+            $pageSize = 12;
             $placeSearchModel = new PlaceSearch();
             $searchResult = $placeSearchModel->searchApprovedForHome(
                 $keyword !== '' ? $keyword : null,
                 $categoryId,
-                $provinceCode
+                $provinceCode,
+                null,
+                $tagSlug,
+                $pageNumber,
+                $pageSize
             );
+
+            $totalPages = max(1, (int) ceil($searchResult['total_count'] / $pageSize));
+
+            if ($pageNumber > $totalPages) {
+                $pageNumber = $totalPages;
+                $searchResult = $placeSearchModel->searchApprovedForHome(
+                    $keyword !== '' ? $keyword : null,
+                    $categoryId,
+                    $provinceCode,
+                    null,
+                    $tagSlug,
+                    $pageNumber,
+                    $pageSize
+                );
+            }
 
             $places = $searchResult['places'];
             $selectedCategoryId = $categoryId;
@@ -81,6 +113,16 @@ final class PlaceSearchController extends Controller
                 throw $exception;
             }
 
+            ob_start();
+
+            try {
+                require dirname(__DIR__) . '/views/home/_pagination.php';
+                $paginationHtml = ob_get_clean();
+            } catch (Throwable $exception) {
+                ob_end_clean();
+                throw $exception;
+            }
+
             echo json_encode([
                 'success' => true,
                 'message' => 'Tìm kiếm thành công.',
@@ -90,6 +132,11 @@ final class PlaceSearchController extends Controller
                     'keyword' => $keyword,
                     'category_id' => $selectedCategoryId,
                     'province_code' => $provinceCode,
+                    'tag_slug' => $tagSlug,
+                    'page' => $pageNumber,
+                    'page_size' => $pageSize,
+                    'total_pages' => $totalPages,
+                    'pagination_html' => $paginationHtml,
                 ],
                 'errors' => [],
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -114,6 +161,59 @@ final class PlaceSearchController extends Controller
                 'errors' => [],
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
+    }
+
+    /**
+     * Chỉ nhận nhãn tồn tại và đang hoạt động.
+     */
+    private function readTagSlug(): ?string
+    {
+        $rawTagSlug = $_GET['tag_slug'] ?? '';
+
+        if ($rawTagSlug === '') {
+            return null;
+        }
+
+        if (is_string($rawTagSlug) === false) {
+            throw new InvalidArgumentException('Nhãn không hợp lệ.');
+        }
+
+        $tagSlug = trim($rawTagSlug);
+
+        if ($tagSlug === '') {
+            return null;
+        }
+
+        if (strlen($tagSlug) > 100) {
+            throw new InvalidArgumentException('Nhãn không hợp lệ.');
+        }
+
+        return $tagSlug;
+    }
+
+    /**
+     * Đọc số trang từ query string; giá trị sai quay về trang đầu.
+     */
+    private function readPageNumber(): int
+    {
+        $rawPageNumber = $_GET['page'] ?? '1';
+
+        if (
+            is_string($rawPageNumber) === false
+            || $rawPageNumber === ''
+            || ctype_digit($rawPageNumber) === false
+            || strlen($rawPageNumber) > 9
+        ) {
+            return 1;
+        }
+
+        $pageNumber = (int) $rawPageNumber;
+
+        if ($pageNumber < 1) {
+            return 1;
+        }
+
+        return $pageNumber;
     }
 
     private function readCategoryId(): ?int
