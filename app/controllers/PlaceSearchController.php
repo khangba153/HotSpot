@@ -102,6 +102,7 @@ final class PlaceSearchController extends Controller
             }
 
             $places = $searchResult['places'];
+            $selectedCategoryIdForResponse = $categoryId;
             $selectedCategoryId = $categoryId === null ? '' : (string) $categoryId;
 
             ob_start();
@@ -135,7 +136,7 @@ final class PlaceSearchController extends Controller
                     'html' => $html,
                     'total_count' => $searchResult['total_count'],
                     'keyword' => $keyword,
-                    'category_id' => $categoryId,
+                    'category_id' => $selectedCategoryIdForResponse,
                     'province_code' => $provinceCode,
                     'tag_slug' => $tagSlug,
                     'page' => $pageNumber,
