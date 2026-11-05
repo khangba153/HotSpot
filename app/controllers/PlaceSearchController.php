@@ -69,6 +69,7 @@ final class PlaceSearchController extends Controller
             );
 
             $places = $searchResult['places'];
+            $selectedCategoryId = $categoryId;
 
             ob_start();
 
@@ -87,7 +88,7 @@ final class PlaceSearchController extends Controller
                     'html' => $html,
                     'total_count' => $searchResult['total_count'],
                     'keyword' => $keyword,
-                    'category_id' => $categoryId,
+                    'category_id' => $selectedCategoryId,
                     'province_code' => $provinceCode,
                 ],
                 'errors' => [],
