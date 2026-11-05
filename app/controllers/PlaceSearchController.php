@@ -113,6 +113,10 @@ final class PlaceSearchController extends Controller
                 throw $exception;
             }
 
+            $page = $pageNumber;
+            $selectedProvinceCode = $provinceCode;
+            $selectedTagSlug = $tagSlug;
+
             ob_start();
 
             try {
