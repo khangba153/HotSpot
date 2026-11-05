@@ -101,7 +101,7 @@ final class PlaceSearchController extends Controller
             }
 
             $places = $searchResult['places'];
-            $selectedCategoryId = $categoryId;
+            $selectedCategoryId = $categoryId === null ? '' : (string) $categoryId;
 
             ob_start();
 
