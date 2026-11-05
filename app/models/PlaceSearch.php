@@ -33,7 +33,8 @@ final class PlaceSearch extends Model
     }
 
     /**
-     * Tìm địa điểm APPROVED theo keyword, danh mục và tỉnh/thành.
+     * Tìm địa điểm APPROVED theo các bộ lọc và trang hiện tại.
+     * Routine trả danh sách ở result set đầu và total_count ở result set thứ hai.
      *
      * Stored procedure trả danh sách địa điểm ở result set đầu tiên
      * và total_count ở result set thứ hai.
@@ -43,7 +44,11 @@ final class PlaceSearch extends Model
     public function searchApprovedForHome(
         ?string $keyword = null,
         ?int $categoryId = null,
-        ?string $provinceCode = null
+        ?string $provinceCode = null,
+        ?string $wardCode = null,
+        ?string $tagSlug = null,
+        int $page = 1,
+        int $pageSize = 12
     ): array {
         if ($keyword !== null) {
             $keyword = trim($keyword);
@@ -65,12 +70,28 @@ final class PlaceSearch extends Model
             $provinceCode = null;
         }
 
+        if ($wardCode !== null) {
+            $wardCode = trim($wardCode);
+        }
+
+        if ($wardCode === '') {
+            $wardCode = null;
+        }
+
+        if ($tagSlug !== null) {
+            $tagSlug = trim($tagSlug);
+        }
+
+        if ($tagSlug === '') {
+            $tagSlug = null;
+        }
+
+        $pageNumber = max(1, $page);
+        $normalizedPageSize = min(max(1, $pageSize), 30);
+
         $databaseConnection = self::getConnection();
         $sqlQuery = 'CALL PTH_SEARCH_APPROVED_PLACES(?, ?, ?, ?, ?, ?, ?)';
         $preparedStatement = $databaseConnection->prepare($sqlQuery);
-
-        $pageNumber = 1;
-        $pageSize = 12;
 
         try {
             $preparedStatement->bindValue(
@@ -88,10 +109,18 @@ final class PlaceSearch extends Model
                 $provinceCode,
                 $provinceCode === null ? PDO::PARAM_NULL : PDO::PARAM_STR
             );
-            $preparedStatement->bindValue(4, null, PDO::PARAM_NULL);
-            $preparedStatement->bindValue(5, null, PDO::PARAM_NULL);
+            $preparedStatement->bindValue(
+                4,
+                $wardCode,
+                $wardCode === null ? PDO::PARAM_NULL : PDO::PARAM_STR
+            );
+            $preparedStatement->bindValue(
+                5,
+                $tagSlug,
+                $tagSlug === null ? PDO::PARAM_NULL : PDO::PARAM_STR
+            );
             $preparedStatement->bindValue(6, $pageNumber, PDO::PARAM_INT);
-            $preparedStatement->bindValue(7, $pageSize, PDO::PARAM_INT);
+            $preparedStatement->bindValue(7, $normalizedPageSize, PDO::PARAM_INT);
 
             $preparedStatement->execute();
 
