@@ -61,7 +61,7 @@
             requestUrl = new URL(wardState.apiUrl, window.location.href);
             requestUrl.searchParams.set('province_code', provinceCode);
         } catch (error) {
-            showWardLoadError(wardState);
+            showWardLoadError(wardState, error);
             return;
         }
 
@@ -83,7 +83,7 @@
 
         var requestTimedOut = false;
         var timeoutId = null;
-        var timeoutPromise = new Promise(function (resolve, reject) {
+        var timeoutPromise = new Promise(function (_, reject) {
             timeoutId = window.setTimeout(function () {
                 requestTimedOut = true;
 
@@ -141,12 +141,18 @@
             });
     }
 
-    function showWardLoadError(wardState) {
+    function showWardLoadError(wardState, error) {
         wardState.requestController = null;
         resetWardSelect(wardState, 'Chưa tải được phường/xã (không bắt buộc)');
 
         if (wardState.wardHint) {
-            wardState.wardHint.textContent = 'Chưa tải được danh sách phường/xã. Bạn vẫn có thể tiếp tục và để trống trường này.';
+            var errorMessage = 'Chưa tải được danh sách phường/xã. Bạn vẫn có thể tiếp tục và để trống trường này.';
+
+            if (error && error.name === 'TimeoutError') {
+                errorMessage = 'Yêu cầu tải danh sách phường/xã đã hết thời gian chờ. Bạn có thể thử lại hoặc để trống trường này.';
+            }
+
+            wardState.wardHint.textContent = errorMessage;
         }
     }
 
