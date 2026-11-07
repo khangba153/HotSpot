@@ -832,9 +832,11 @@
             geocodeResults.hidden = geocodeResults.children.length === 0;
         } catch (error) {
             if (sequence === geocodeSequence) {
-                geocodeStatus.textContent = error.name === 'AbortError'
-                    ? 'Tìm vị trí mất quá lâu. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ để lưu bài.'
-                    : (error.message || 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.');
+                var errorMessage = error.message || 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.';
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Tìm vị trí mất quá lâu. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ để lưu bài.';
+                }
+                geocodeStatus.textContent = errorMessage;
             }
         } finally {
             window.clearTimeout(timer);
