@@ -79,14 +79,9 @@ if (isset($viewData['formMessageType']) && is_string($viewData['formMessageType'
     }
 }
 
-$missingDependencies = [];
-if (isset($viewData['missingDependencies']) && is_array($viewData['missingDependencies'])) {
-    $missingDependencies = $viewData['missingDependencies'];
-}
-
-$isPreviewSample = false;
-if (isset($viewData['isPreviewSample']) && $viewData['isPreviewSample'] === true) {
-    $isPreviewSample = true;
+$dataLoadErrors = [];
+if (isset($viewData['dataLoadErrors']) && is_array($viewData['dataLoadErrors'])) {
+    $dataLoadErrors = $viewData['dataLoadErrors'];
 }
 
 $isStoreReady = false;
@@ -96,7 +91,6 @@ if (isset($viewData['isStoreReady']) && $viewData['isStoreReady'] === true) {
 
 $homePageUrl = createRouteUrl('home');
 $createPageUrl = createRouteUrl('places/create');
-$previewSampleUrl = $createPageUrl . '&preview=1';
 $formActionUrl = $createPageUrl;
 $storeReadyAttribute = 'false';
 if ($isStoreReady) {
@@ -144,29 +138,10 @@ if (function_exists('mb_strlen')) {
 
 <section class="hs-place-form-page">
     <div class="container">
-        <?php if ($isPreviewSample) { ?>
+        <?php if (count($dataLoadErrors) > 0) { ?>
             <div class="alert alert-warning hs-place-form-banner" role="status">
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    <div>
-                        <strong>Chế độ xem thử giao diện (Dữ liệu mẫu):</strong>
-                        Danh mục, tỉnh/thành phố và nhãn đang hiển thị bên dưới là dữ liệu mẫu phục vụ kiểm tra biểu mẫu, <strong>không phải dữ liệu thật từ hệ thống</strong>.
-                    </div>
-                    <a class="btn btn-sm btn-outline-dark" href="<?php echo escapeHtml($createPageUrl); ?>">
-                        Tắt dữ liệu mẫu
-                    </a>
-                </div>
-            </div>
-        <?php } elseif (count($missingDependencies) > 0) { ?>
-            <div class="alert alert-info hs-place-form-banner" role="status">
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    <div>
-                        <strong>Thông báo dữ liệu:</strong>
-                        <?php echo escapeHtml(implode(' ', $missingDependencies)); ?>
-                    </div>
-                    <a class="btn btn-sm btn-outline-primary" href="<?php echo escapeHtml($previewSampleUrl); ?>">
-                        Xem thử với dữ liệu mẫu
-                    </a>
-                </div>
+                <strong>Thông báo dữ liệu:</strong>
+                <?php echo escapeHtml(implode(' ', $dataLoadErrors)); ?>
             </div>
         <?php } ?>
 
@@ -453,8 +428,9 @@ if (function_exists('mb_strlen')) {
                                     name="ward_code"
                                     class="form-select hs-place-form__control"
                                     data-initial-ward="<?php echo escapeHtml($formValues['ward_code']); ?>"
+                                    <?php if (count($wards) === 0) { echo 'disabled'; } ?>
                                     aria-describedby="place-ward-hint">
-                                    <option value="">Chọn phường/xã</option>
+                                    <option value="">Chọn tỉnh/thành trước (không bắt buộc)</option>
                                     <?php foreach ($wards as $wardItem) {
                                         if (is_array($wardItem) === false) {
                                             continue;
@@ -473,8 +449,8 @@ if (function_exists('mb_strlen')) {
                                         </option>
                                     <?php } ?>
                                 </select>
-                                <small id="place-ward-hint" class="hs-place-form__hint">
-                                    Tùy chọn; tự động làm mới khi đổi tỉnh/thành.
+                                <small id="place-ward-hint" class="hs-place-form__hint" aria-live="polite">
+                                    Phường/xã là tùy chọn. Bạn có thể để trống nếu chưa tải được danh sách.
                                 </small>
                             </div>
 
@@ -635,7 +611,7 @@ if (function_exists('mb_strlen')) {
                                     <span class="hs-place-form__dropzone-text">
                                         <strong>Kéo thả hình ảnh vào đây hoặc nhấp để chọn</strong>
                                         <small id="place-images-help">
-                                            Hỗ trợ định dạng: JPG, PNG, WebP. Tối đa 3 hình ảnh (bắt buộc 1–3 ảnh).
+                                            JPG, PNG, WebP; tối đa 5MB mỗi ảnh. Chọn từ 1 đến 3 ảnh.
                                         </small>
                                     </span>
                                 </label>
@@ -742,4 +718,4 @@ if (function_exists('mb_strlen')) {
         </div>
     </div>
 </section>
-<script src="assets/js/place-form.js" defer></script>
+<script src="assets/js/place-form.js?v=20261107" defer></script>

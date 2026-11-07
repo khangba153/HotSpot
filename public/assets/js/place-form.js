@@ -18,6 +18,7 @@
     var categorySelect = document.getElementById('place-category');
     var provinceSelect = document.getElementById('place-province');
     var wardSelect = document.getElementById('place-ward');
+    var wardHint = document.getElementById('place-ward-hint');
     var addressInput = document.getElementById('place-address');
     var latitudeInput = document.getElementById('place-latitude');
     var longitudeInput = document.getElementById('place-longitude');
@@ -216,6 +217,8 @@
         defaultOption.textContent = placeholderText || 'Chọn phường/xã';
         wardSelect.appendChild(defaultOption);
         wardSelect.value = '';
+        wardSelect.disabled = true;
+        wardSelect.setAttribute('aria-busy', 'false');
     }
 
     // Gọi API phường/xã của TV2 theo mã tỉnh (hợp đồng C03).
@@ -233,7 +236,11 @@
         var currentSequence = wardRequestSequence;
 
         // Luôn xóa lựa chọn phường cũ ngay khi đổi tỉnh.
-        resetWardOptions('Chọn phường/xã');
+        resetWardOptions('Chọn tỉnh/thành trước (không bắt buộc)');
+
+        if (wardHint) {
+            wardHint.textContent = 'Phường/xã là tùy chọn. Bạn có thể để trống nếu chưa tải được danh sách.';
+        }
 
         if (!provinceCode || provinceCode.trim() === '') {
             return;
@@ -241,8 +248,12 @@
 
         var wardsBaseUrl = formElement.getAttribute('data-wards-url') || '';
         if (wardsBaseUrl === '') {
+            resetWardOptions('Chưa tải được phường/xã (không bắt buộc)');
             return;
         }
+
+        resetWardOptions('Đang tải phường/xã...');
+        wardSelect.setAttribute('aria-busy', 'true');
 
         var separator = '&';
         if (wardsBaseUrl.indexOf('?') === -1) {
@@ -281,12 +292,18 @@
                 resetWardOptions('Chọn phường/xã');
 
                 var wardItems = [];
+                if (payload && payload.success === false) {
+                    throw new Error('Không tải được danh sách phường/xã.');
+                }
+
                 if (payload && payload.data && Array.isArray(payload.data.wards)) {
                     wardItems = payload.data.wards;
                 } else if (payload && Array.isArray(payload.data)) {
                     wardItems = payload.data;
                 } else if (Array.isArray(payload)) {
                     wardItems = payload;
+                } else {
+                    throw new Error('Dữ liệu phường/xã không hợp lệ.');
                 }
 
                 for (var index = 0; index < wardItems.length; index++) {
@@ -294,7 +311,14 @@
                     if (!wardItem || typeof wardItem !== 'object') {
                         continue;
                     }
-                    var wardCode = String(wardItem.ward_code || '').trim();
+                    // Mã địa giới phải là chuỗi để giữ số 0 ở đầu.
+                    if (typeof wardItem.ward_code !== 'string') {
+                        continue;
+                    }
+                    if (wardItem.province_code !== undefined && wardItem.province_code !== provinceCode) {
+                        continue;
+                    }
+                    var wardCode = wardItem.ward_code.trim();
                     var wardName = String(wardItem.ward_name || wardItem.name || '').trim();
                     if (wardCode === '' || wardName === '') {
                         continue;
@@ -308,6 +332,14 @@
                     }
                     wardSelect.appendChild(option);
                 }
+
+                wardSelect.disabled = wardSelect.options.length <= 1;
+                if (wardSelect.disabled) {
+                    resetWardOptions('Không có phường/xã để chọn (không bắt buộc)');
+                }
+                if (wardHint && !wardSelect.disabled) {
+                    wardHint.textContent = 'Bạn có thể chọn phường/xã hoặc để trống. Danh sách sẽ làm mới khi đổi tỉnh/thành.';
+                }
             })
             .catch(function (error) {
                 if (error && error.name === 'AbortError') {
@@ -315,7 +347,10 @@
                 }
                 // Lỗi API hoặc chưa nối C03 không chặn form vì phường/xã là tùy chọn.
                 if (currentSequence === wardRequestSequence) {
-                    resetWardOptions('Chọn phường/xã (tùy chọn)');
+                    resetWardOptions('Chưa tải được phường/xã (không bắt buộc)');
+                    if (wardHint) {
+                        wardHint.textContent = 'Chưa tải được danh sách phường/xã. Bạn vẫn có thể tiếp tục và để trống trường này.';
+                    }
                 }
             });
     }
@@ -733,10 +768,14 @@
     // Đăng ký sự kiện chọn file ảnh và kéo thả ảnh.
     if (imageInput) {
         imageInput.addEventListener('change', function () {
+            selectedImageFiles = [];
+            setFieldError('place-images-feedback', '');
             if (imageInput.files && imageInput.files.length > 0) {
                 // Khi chọn lại qua hộp thoại file, thay thế danh sách hiện tại để dễ kiểm soát.
-                selectedImageFiles = [];
                 handleIncomingFiles(imageInput.files);
+            } else {
+                syncFilesToInput();
+                renderImagePreviews();
             }
         });
     }

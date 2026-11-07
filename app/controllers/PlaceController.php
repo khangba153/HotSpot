@@ -7,7 +7,9 @@ use HotSpot\Core\Controller;
 use HotSpot\Core\HttpException;
 use HotSpot\Models\Place;
 use HotSpot\Models\PlaceImage;
-use HotSpot\Models\PlaceSearch;
+use HotSpot\Models\Category;
+use HotSpot\Models\Province;
+use HotSpot\Models\Tag;
 use HotSpot\Models\Review;
 use HotSpot\Models\User;
 use HotSpot\Models\Favorite;
@@ -164,33 +166,35 @@ final class PlaceController extends Controller
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
 
-        // Hợp đồng C02/C03: dùng PlaceSearch::findActiveCategories() đã có của TV2;
-        // TV2 chưa bàn giao Model đọc tỉnh/nhãn và API phường/xã nên không tự tạo bản trùng.
+        // C02: tái sử dụng nguồn dữ liệu thật của TV2, chỉ chọn danh mục/nhãn đang hoạt động.
         $categories = [];
         $provinces = [];
         $wards = [];
         $tags = [];
-        $missingDependencies = [];
+        $dataLoadErrors = [];
 
         try {
-            $placeSearchModel = new PlaceSearch();
-            $categories = $placeSearchModel->findActiveCategories();
+            $categoryModel = new Category();
+            $categories = $categoryModel->findActiveCategories();
         } catch (\Throwable $exception) {
             error_log('PlaceController::create categories load error: ' . $exception->getMessage());
-            $missingDependencies[] = 'Danh mục địa điểm hiện chưa tải được. Vui lòng thử lại sau.';
+            $dataLoadErrors[] = 'Chưa tải được danh mục địa điểm. Vui lòng tải lại trang để thử lại.';
         }
 
-        $missingDependencies[] = 'Dữ liệu tỉnh/thành phố, phường/xã và nhãn hiện chưa sẵn sàng. Bạn có thể bật chế độ xem thử với dữ liệu mẫu để kiểm tra biểu mẫu.';
+        try {
+            $provinceModel = new Province();
+            $provinces = $provinceModel->findAllProvinces();
+        } catch (\Throwable $exception) {
+            error_log('PlaceController::create provinces load error: ' . $exception->getMessage());
+            $dataLoadErrors[] = 'Chưa tải được tỉnh/thành phố. Vui lòng tải lại trang để thử lại.';
+        }
 
-        $isPreviewSample = false;
-        if (isset($_GET['preview']) && is_string($_GET['preview']) && $_GET['preview'] === '1') {
-            $isPreviewSample = true;
-            $sampleData = $this->getPreviewSampleData();
-            if (count($categories) === 0) {
-                $categories = $sampleData['categories'];
-            }
-            $provinces = $sampleData['provinces'];
-            $tags = $sampleData['tags'];
+        try {
+            $tagModel = new Tag();
+            $tags = $tagModel->findActiveTags();
+        } catch (\Throwable $exception) {
+            error_log('PlaceController::create tags load error: ' . $exception->getMessage());
+            $dataLoadErrors[] = 'Chưa tải được danh sách nhãn. Bạn có thể để trống nhãn hoặc tải lại trang.';
         }
 
         $viewData = [
@@ -201,8 +205,7 @@ final class PlaceController extends Controller
             'provinces' => $provinces,
             'wards' => $wards,
             'tags' => $tags,
-            'missingDependencies' => $missingDependencies,
-            'isPreviewSample' => $isPreviewSample,
+            'dataLoadErrors' => $dataLoadErrors,
             'isStoreReady' => false,
         ];
 
@@ -289,36 +292,6 @@ final class PlaceController extends Controller
         ];
 
         $this->render('places/mine', $viewData);
-    }
-
-    // Dữ liệu mẫu chỉ dùng riêng khi bật chế độ preview giao diện (?preview=1), không thay dữ liệu thật.
-    private function getPreviewSampleData(): array
-    {
-        return [
-            'categories' => [
-                ['category_id' => 1, 'name' => 'Ẩm thực'],
-                ['category_id' => 2, 'name' => 'Cà phê'],
-                ['category_id' => 3, 'name' => 'Du lịch'],
-                ['category_id' => 4, 'name' => 'Vui chơi'],
-                ['category_id' => 5, 'name' => 'Thiên nhiên'],
-                ['category_id' => 6, 'name' => 'Văn hóa'],
-            ],
-            'provinces' => [
-                ['province_code' => '01', 'province_name' => 'Thành phố Hà Nội'],
-                ['province_code' => '48', 'province_name' => 'Thành phố Đà Nẵng'],
-                ['province_code' => '68', 'province_name' => 'Tỉnh Lâm Đồng'],
-                ['province_code' => '79', 'province_name' => 'Thành phố Hồ Chí Minh'],
-            ],
-            'tags' => [
-                ['tag_id' => 1, 'name' => 'Cà phê'],
-                ['tag_id' => 2, 'name' => 'View đẹp'],
-                ['tag_id' => 3, 'name' => 'Đà Lạt'],
-                ['tag_id' => 4, 'name' => 'Yên tĩnh'],
-                ['tag_id' => 5, 'name' => 'Check-in'],
-                ['tag_id' => 6, 'name' => 'Gia đình'],
-                ['tag_id' => 7, 'name' => 'Giá hợp lý'],
-            ],
-        ];
     }
 
     // Đọc id từ query string; trả về 0 nếu không phải số nguyên dương.
