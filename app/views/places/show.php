@@ -117,10 +117,6 @@ $homePageUrl = createRouteUrl('home');
                     <div class="hs-place-heading__meta">
                         <span class="hs-place-chip"><?php echo escapeHtml($categoryName); ?></span>
                         <span class="hs-place-heading__location">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M19 10.2c0 5-7 10.3-7 10.3S5 15.2 5 10.2a7 7 0 1 1 14 0Z"></path>
-                                <circle cx="12" cy="10" r="2.2"></circle>
-                            </svg>
                             <?php echo escapeHtml($provinceName); ?>
                         </span>
                     </div>

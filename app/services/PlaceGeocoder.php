@@ -17,10 +17,13 @@ final class PlaceGeocoder
     // Cache chung cho mọi thành viên; khóa toàn ứng dụng để không vượt 1 request/giây.
     public function search(string $query): array
     {
-        $endpoint = getenv('HOTSPOT_GEOCODE_ENDPOINT') ?: 'https://nominatim.openstreetmap.org/search';
-        $parts = parse_url($endpoint);
-        if (filter_var($endpoint, FILTER_VALIDATE_URL) === false || ($parts['scheme'] ?? '') !== 'https'
-            || isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) {
+        $endpoint = getenv('HOTSPOT_GEOCODE_ENDPOINT');
+        if ($endpoint === false || $endpoint === '' || $endpoint === '0') {
+            $endpoint = 'https://nominatim.openstreetmap.org/search';
+        }
+        $endpointParts = parse_url($endpoint);
+        if (filter_var($endpoint, FILTER_VALIDATE_URL) === false || ($endpointParts['scheme'] ?? '') !== 'https'
+            || isset($endpointParts['user']) || isset($endpointParts['pass']) || isset($endpointParts['query']) || isset($endpointParts['fragment'])) {
             throw new HttpException(503, 'Dịch vụ tìm vị trí chưa được cấu hình hợp lệ. Bạn có thể nhập hoặc bỏ trống tọa độ.');
         }
         if (!is_dir($this->cacheDirectory) && !@mkdir($this->cacheDirectory, 0700, true) && !is_dir($this->cacheDirectory)) {
@@ -56,8 +59,11 @@ final class PlaceGeocoder
                 throw new HttpException(503, 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.');
             }
             $results = $this->requestResults($endpoint, $query);
-            $ttl = count($results) > 0 ? 86400 : 3600;
-            @file_put_contents($cachePath, json_encode(['expires' => time() + $ttl, 'results' => $results], JSON_UNESCAPED_UNICODE), LOCK_EX);
+            $cacheLifetimeSeconds = 3600;
+            if (count($results) > 0) {
+                $cacheLifetimeSeconds = 86400;
+            }
+            @file_put_contents($cachePath, json_encode(['expires' => time() + $cacheLifetimeSeconds, 'results' => $results], JSON_UNESCAPED_UNICODE), LOCK_EX);
             $this->pruneCache();
             return $results;
         } finally {
@@ -66,6 +72,7 @@ final class PlaceGeocoder
         }
     }
 
+    // Đọc kết quả còn hạn; cache hỏng được coi như chưa có kết quả.
     private function readCache(string $path): ?array
     {
         if (!is_file($path)) {
@@ -135,7 +142,10 @@ final class PlaceGeocoder
     // Giới hạn 200 kết quả cache; xóa mục hết hạn trước rồi mục cũ nhất.
     private function pruneCache(): void
     {
-        $paths = glob($this->cacheDirectory . '/*.json') ?: [];
+        $paths = glob($this->cacheDirectory . '/*.json');
+        if ($paths === false) {
+            $paths = [];
+        }
         $active = [];
         foreach ($paths as $path) {
             if ($this->readCache($path) === null) {

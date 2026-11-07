@@ -300,7 +300,11 @@ final class PlaceController extends Controller
             // Nhả khóa session trước khi gọi mạng để lưu bài không phải chờ tìm vị trí.
             session_write_close();
             $results = (new PlaceGeocoder())->search($address . ', ' . $provinceName . ', Việt Nam');
-            echo json_encode(['success' => true, 'message' => count($results) > 0 ? 'Chọn kết quả phù hợp.' : 'Không tìm thấy vị trí phù hợp.',
+            $message = 'Không tìm thấy vị trí phù hợp.';
+            if (count($results) > 0) {
+                $message = 'Chọn kết quả phù hợp.';
+            }
+            echo json_encode(['success' => true, 'message' => $message,
                 'data' => ['results' => $results]], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
         } catch (\Throwable $exception) {
             $status = 503;

@@ -369,7 +369,10 @@ if (function_exists('mb_strlen')) {
                                             if (is_array($tagItem) === false) {
                                                 continue;
                                             }
-                                            $tagId = isset($tagItem['tag_id']) ? (int) $tagItem['tag_id'] : 0;
+                                            $tagId = 0;
+                                            if (isset($tagItem['tag_id'])) {
+                                                $tagId = (int) $tagItem['tag_id'];
+                                            }
                                             $tagName = trim((string) ($tagItem['name'] ?? ''));
                                             if ($tagId <= 0 || $tagName === '') {
                                                 continue;
@@ -597,7 +600,6 @@ if (function_exists('mb_strlen')) {
                                         hidden></p>
 
                                     <div class="hs-place-form__geo-note" role="note">
-                                        <span class="hs-place-form__geo-note-icon" aria-hidden="true">i</span>
                                         <p class="mb-0">
                                             <strong>Lưu ý:</strong> Chỉ khi bấm tìm, địa chỉ địa điểm được gửi tới Nominatim. Không nhập thông tin cá nhân hoặc bí mật. Dịch vụ có thể không tìm thấy vị trí; bạn vẫn có thể lưu bài không có tọa độ.
                                             Dữ liệu © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>.
@@ -647,13 +649,6 @@ if (function_exists('mb_strlen')) {
                                     tabindex="0"
                                     role="button"
                                     aria-label="Kéo thả hình ảnh vào đây hoặc nhấp để chọn từ 1 đến 3 ảnh">
-                                    <span class="hs-place-form__dropzone-icon" aria-hidden="true">
-                                        <svg viewBox="0 0 24 24">
-                                            <path d="M16 16l-4-4-4 4"></path>
-                                            <path d="M12 12v9"></path>
-                                            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
-                                        </svg>
-                                    </span>
                                     <span class="hs-place-form__dropzone-text">
                                         <strong>Kéo thả hình ảnh vào đây hoặc nhấp để chọn</strong>
                                         <small id="place-images-help">
