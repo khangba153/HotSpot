@@ -288,7 +288,9 @@ final class PlaceController extends Controller
                 throw new HttpException(422, 'Vui lòng nhập địa chỉ từ 3 đến 300 ký tự và chọn tỉnh/thành.');
             }
             $provinceName = '';
-            foreach ((new Province())->findAllProvinces() as $province) {
+            $provinceModel = new Province();
+            $provinces = $provinceModel->findAllProvinces();
+            foreach ($provinces as $province) {
                 if ((string) $province['province_code'] === $provinceCode) {
                     $provinceName = (string) $province['province_name'];
                     break;
@@ -299,7 +301,9 @@ final class PlaceController extends Controller
             }
             // Nhả khóa session trước khi gọi mạng để lưu bài không phải chờ tìm vị trí.
             session_write_close();
-            $results = (new PlaceGeocoder())->search($address . ', ' . $provinceName . ', Việt Nam');
+            $geocoder = new PlaceGeocoder();
+            $searchAddress = $address . ', ' . $provinceName . ', Việt Nam';
+            $results = $geocoder->search($searchAddress);
             $message = 'Không tìm thấy vị trí phù hợp.';
             if (count($results) > 0) {
                 $message = 'Chọn kết quả phù hợp.';
@@ -328,7 +332,8 @@ final class PlaceController extends Controller
     {
         $userInformation = $this->requirePlaceAuthor();
         $place = $this->requireEditablePlace($userInformation, $this->readPlaceIdFromQuery());
-        $tags = (new Place())->findTagsByPlaceId((int) $place['place_id']);
+        $placeModel = new Place();
+        $tags = $placeModel->findTagsByPlaceId((int) $place['place_id']);
         $selectedTagIds = [];
         foreach ($tags as $tag) {
             $selectedTagIds[] = (int) $tag['tag_id'];
@@ -336,11 +341,13 @@ final class PlaceController extends Controller
         $this->renderPlaceForm($userInformation, $place, $selectedTagIds, [], $place);
     }
 
+    // Lưu nội dung chỉnh sửa và giữ nguyên trạng thái bài.
     public function update(): void
     {
         $this->saveEditedPlace(false);
     }
 
+    // Lưu nội dung rồi gửi lại bài bị từ chối về trạng thái chờ duyệt.
     public function resubmit(): void
     {
         $this->saveEditedPlace(true);
@@ -374,36 +381,13 @@ final class PlaceController extends Controller
     private function saveEditedPlace(bool $resubmit): void
     {
         $userInformation = $this->requirePlaceAuthor();
-        $token = $_POST['csrf_token'] ?? null;
-        if (is_string($token) === false || is_string($_SESSION['csrf_token'] ?? null) === false
-            || hash_equals($_SESSION['csrf_token'], $token) === false) {
-            throw new HttpException(403, 'Phiên biểu mẫu không hợp lệ. Vui lòng tải lại trang.');
-        }
-        $allowedFields = ['csrf_token', 'place_id', 'title', 'description', 'category_id',
-            'province_code', 'ward_code', 'address', 'latitude', 'longitude', 'tag_ids'];
-        foreach (array_keys($_POST) as $fieldName) {
-            if (in_array($fieldName, $allowedFields, true) === false) {
-                throw new HttpException(400, 'Biểu mẫu có trường không được hỗ trợ.');
-            }
-        }
-        foreach (array_keys($_FILES) as $fieldName) {
-            if ($fieldName !== 'images') {
-                throw new HttpException(400, 'Trường tải ảnh không hợp lệ.');
-            }
-        }
-        $rawId = $_POST['place_id'] ?? null;
-        if (is_string($rawId) === false) {
-            throw new HttpException(404, 'Không tìm thấy địa điểm.');
-        }
-        $placeId = filter_var($rawId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($placeId === false) {
-            throw new HttpException(404, 'Không tìm thấy địa điểm.');
-        }
+        $placeId = $this->readEditedPlaceId();
         $place = $this->requireEditablePlace($userInformation, $placeId);
         if ($resubmit && $place['status_code'] !== 'REJECTED') {
             throw new HttpException(409, 'Chỉ bài bị từ chối mới cần gửi duyệt lại.');
         }
 
+        // Bước 1: kiểm tra nội dung, ảnh và nhãn trước khi mở giao dịch.
         $formErrors = [];
         $formValues = $this->readPlaceFormValues($formErrors);
         $placeData = $this->validatePlaceFormValues($formValues, $formErrors);
@@ -422,11 +406,12 @@ final class PlaceController extends Controller
             return;
         }
 
-        $connection = Database::getConnection();
+        // Bước 2: khóa và kiểm quyền lại; lưu nội dung, ảnh, nhãn trong cùng giao dịch.
+        $databaseConnection = Database::getConnection();
         $newFiles = [];
         $oldImagesToDelete = [];
         try {
-            $connection->beginTransaction();
+            $databaseConnection->beginTransaction();
             $lockedPlace = $this->requireEditablePlace($userInformation, $placeId, true);
             if ($resubmit && $lockedPlace['status_code'] !== 'REJECTED') {
                 throw new HttpException(409, 'Trạng thái bài đã thay đổi. Vui lòng tải lại trang.');
@@ -435,7 +420,8 @@ final class PlaceController extends Controller
             if (count($imageValidation['files']) === 0 && (count($oldImages) < 1 || count($oldImages) > 3)) {
                 throw new \InvalidArgumentException('Vui lòng chọn từ 1 đến 3 ảnh để thay bộ ảnh hiện tại.');
             }
-            (new Place())->updateOwnedPlace((int) $userInformation['user_id'], $lockedPlace, $placeData, $resubmit);
+            $placeModel = new Place();
+            $placeModel->updateOwnedPlace((int) $userInformation['user_id'], $lockedPlace, $placeData, $resubmit);
             if (count($imageValidation['files']) > 0) {
                 $imageModel->removeRecordsForPlace($placeId);
                 $newFiles = $imageModel->saveValidatedFiles($imageValidation['files']);
@@ -445,11 +431,12 @@ final class PlaceController extends Controller
                 $oldImagesToDelete = $oldImages;
             }
             $tagModel->replaceTagsForPlace($placeId, $tagValidation['tag_ids']);
-            $connection->commit();
+            $databaseConnection->commit();
         } catch (\Throwable $exception) {
+            // Có lỗi thì rollback dữ liệu và chỉ dọn các file mới của lần lưu này.
             try {
-                if ($connection->inTransaction()) {
-                    $connection->rollBack();
+                if ($databaseConnection->inTransaction()) {
+                    $databaseConnection->rollBack();
                 }
             } catch (\Throwable $rollbackException) {
                 error_log('PlaceController::saveEditedPlace rollback failed: ' . $rollbackException->getMessage());
@@ -476,7 +463,7 @@ final class PlaceController extends Controller
             return;
         }
 
-        // Chỉ dọn file cũ sau commit; helper bỏ qua ảnh seed hoặc đường dẫn bên ngoài uploads/places.
+        // Bước 3: chỉ dọn ảnh cũ sau commit; không xóa ảnh seed hoặc file ngoài uploads/places.
         $undeleted = $imageModel->cleanupSavedFiles($oldImagesToDelete);
         if (count($undeleted) > 0) {
             error_log('PlaceController::saveEditedPlace old file cleanup incomplete: ' . implode(', ', $undeleted));
@@ -486,6 +473,37 @@ final class PlaceController extends Controller
             $_SESSION['place_success_message'] = 'Địa điểm đã được gửi duyệt lại và đang chờ duyệt.';
         }
         header('Location: ' . createRouteUrl('places/mine'), true, 303);
+    }
+
+    // Kiểm tra CSRF, danh sách trường được nhận và mã bài trước khi xử lý chỉnh sửa.
+    private function readEditedPlaceId(): int
+    {
+        $token = $_POST['csrf_token'] ?? null;
+        if (is_string($token) === false || is_string($_SESSION['csrf_token'] ?? null) === false
+            || hash_equals($_SESSION['csrf_token'], $token) === false) {
+            throw new HttpException(403, 'Phiên biểu mẫu không hợp lệ. Vui lòng tải lại trang.');
+        }
+        $allowedFields = ['csrf_token', 'place_id', 'title', 'description', 'category_id',
+            'province_code', 'ward_code', 'address', 'latitude', 'longitude', 'tag_ids'];
+        foreach (array_keys($_POST) as $fieldName) {
+            if (in_array($fieldName, $allowedFields, true) === false) {
+                throw new HttpException(400, 'Biểu mẫu có trường không được hỗ trợ.');
+            }
+        }
+        foreach (array_keys($_FILES) as $fieldName) {
+            if ($fieldName !== 'images') {
+                throw new HttpException(400, 'Trường tải ảnh không hợp lệ.');
+            }
+        }
+        $rawId = $_POST['place_id'] ?? null;
+        if (is_string($rawId) === false) {
+            throw new HttpException(404, 'Không tìm thấy địa điểm.');
+        }
+        $placeId = filter_var($rawId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($placeId === false) {
+            throw new HttpException(404, 'Không tìm thấy địa điểm.');
+        }
+        return $placeId;
     }
 
     // Lấy người đăng từ session; không nhận owner/status hay cờ bỏ qua kiểm tra từ request.
@@ -571,7 +589,8 @@ final class PlaceController extends Controller
             $placeId = (int) $editingPlace['place_id'];
             $isRejected = $editingPlace['status_code'] === 'REJECTED';
             $pageTitle = 'Chỉnh sửa địa điểm';
-            $existingImages = (new PlaceImage())->findByPlaceId($placeId);
+            $imageModel = new PlaceImage();
+            $existingImages = $imageModel->findByPlaceId($placeId);
             if (count($existingImages) > 0) {
                 $existingImageUrls = $this->buildImageUrlList($existingImages, (int) $editingPlace['category_id']);
             }
