@@ -119,8 +119,8 @@
             tagCountElement.textContent = String(checkedList.length);
         }
 
-        for (var i = 0; i < tagCheckboxes.length; i++) {
-            var checkbox = tagCheckboxes[i];
+        for (var checkboxIndex = 0; checkboxIndex < tagCheckboxes.length; checkboxIndex++) {
+            var checkbox = tagCheckboxes[checkboxIndex];
             var parentLabel = checkbox.closest('.hs-place-tag-choice');
             if (parentLabel) {
                 if (checkbox.checked) {
@@ -143,31 +143,34 @@
 
         selectedTagsContainer.innerHTML = '';
 
-        for (var j = 0; j < checkedList.length; j++) {
-            (function (checkedBox) {
-                var tagName = checkedBox.getAttribute('data-tag-name') || checkedBox.value;
-                var chip = document.createElement('span');
-                chip.className = 'hs-place-selected-tag';
-
-                var textSpan = document.createElement('span');
-                textSpan.textContent = tagName;
-
-                var removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'hs-place-selected-tag__remove';
-                removeButton.setAttribute('aria-label', 'Bỏ nhãn ' + tagName);
-                removeButton.textContent = '×';
-                removeButton.addEventListener('click', function () {
-                    checkedBox.checked = false;
-                    setFieldError('place-tags-feedback', '');
-                    renderSelectedTags();
-                });
-
-                chip.appendChild(textSpan);
-                chip.appendChild(removeButton);
-                selectedTagsContainer.appendChild(chip);
-            })(checkedList[j]);
+        for (var selectedTagIndex = 0; selectedTagIndex < checkedList.length; selectedTagIndex++) {
+            appendSelectedTag(checkedList[selectedTagIndex]);
         }
+    }
+
+    // Mỗi lần gọi giữ riêng checkbox cho nút bỏ nhãn, không cần hàm tự gọi trong vòng lặp.
+    function appendSelectedTag(checkedBox) {
+        var tagName = checkedBox.getAttribute('data-tag-name') || checkedBox.value;
+        var chip = document.createElement('span');
+        chip.className = 'hs-place-selected-tag';
+
+        var textSpan = document.createElement('span');
+        textSpan.textContent = tagName;
+
+        var removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'hs-place-selected-tag__remove';
+        removeButton.setAttribute('aria-label', 'Bỏ nhãn ' + tagName);
+        removeButton.textContent = '×';
+        removeButton.addEventListener('click', function () {
+            checkedBox.checked = false;
+            setFieldError('place-tags-feedback', '');
+            renderSelectedTags();
+        });
+
+        chip.appendChild(textSpan);
+        chip.appendChild(removeButton);
+        selectedTagsContainer.appendChild(chip);
     }
 
     // Xử lý khi người dùng chọn hoặc bỏ chọn một nhãn.
@@ -197,12 +200,12 @@
 
         var keyword = tagFilterInput.value.trim().toLowerCase();
 
-        for (var i = 0; i < tagCheckboxes.length; i++) {
-            var parentLabel = tagCheckboxes[i].closest('.hs-place-tag-choice');
+        for (var checkboxIndex = 0; checkboxIndex < tagCheckboxes.length; checkboxIndex++) {
+            var parentLabel = tagCheckboxes[checkboxIndex].closest('.hs-place-tag-choice');
             if (!parentLabel) {
                 continue;
             }
-            var tagName = (tagCheckboxes[i].getAttribute('data-tag-name') || '').toLowerCase();
+            var tagName = (tagCheckboxes[checkboxIndex].getAttribute('data-tag-name') || '').toLowerCase();
             if (keyword === '' || tagName.indexOf(keyword) !== -1) {
                 parentLabel.hidden = false;
             } else {
@@ -419,8 +422,8 @@
 
     // Giải phóng các URL xem trước ảnh cũ trong bộ nhớ trình duyệt.
     function revokePreviewUrls() {
-        for (var i = 0; i < activeObjectUrls.length; i++) {
-            URL.revokeObjectURL(activeObjectUrls[i]);
+        for (var previewUrlIndex = 0; previewUrlIndex < activeObjectUrls.length; previewUrlIndex++) {
+            URL.revokeObjectURL(activeObjectUrls[previewUrlIndex]);
         }
         activeObjectUrls = [];
     }
@@ -433,11 +436,11 @@
 
         try {
             var dataTransfer = new DataTransfer();
-            for (var i = 0; i < selectedImageFiles.length; i++) {
-                dataTransfer.items.add(selectedImageFiles[i]);
+            for (var imageIndex = 0; imageIndex < selectedImageFiles.length; imageIndex++) {
+                dataTransfer.items.add(selectedImageFiles[imageIndex]);
             }
             imageInput.files = dataTransfer.files;
-        } catch (err) {
+        } catch (error) {
             // Một số trình duyệt cũ không cho gán lại input.files.
         }
     }
@@ -471,46 +474,49 @@
             return;
         }
 
-        for (var index = 0; index < selectedImageFiles.length; index++) {
-            (function (fileIndex) {
-                var file = selectedImageFiles[fileIndex];
-                var objectUrl = URL.createObjectURL(file);
-                activeObjectUrls.push(objectUrl);
-
-                var itemCard = document.createElement('div');
-                itemCard.className = 'hs-place-form__preview-item';
-
-                var imageElement = document.createElement('img');
-                imageElement.className = 'hs-place-form__preview-img';
-                imageElement.src = objectUrl;
-                imageElement.alt = 'Ảnh xem trước ' + (fileIndex + 1) + ': ' + file.name;
-
-                var badgeElement = document.createElement('span');
-                badgeElement.className = 'hs-place-form__preview-badge';
-                if (fileIndex === 0) {
-                    badgeElement.textContent = 'Ảnh bìa';
-                } else {
-                    badgeElement.textContent = 'Ảnh ' + (fileIndex + 1);
-                }
-
-                var removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'hs-place-form__preview-remove';
-                removeButton.setAttribute('aria-label', 'Xóa ảnh ' + file.name);
-                removeButton.textContent = '×';
-                removeButton.addEventListener('click', function () {
-                    selectedImageFiles.splice(fileIndex, 1);
-                    syncFilesToInput();
-                    setFieldError('place-images-feedback', '');
-                    renderImagePreviews();
-                });
-
-                itemCard.appendChild(imageElement);
-                itemCard.appendChild(badgeElement);
-                itemCard.appendChild(removeButton);
-                imagePreviewsContainer.appendChild(itemCard);
-            })(index);
+        for (var imageIndex = 0; imageIndex < selectedImageFiles.length; imageIndex++) {
+            appendImagePreview(imageIndex);
         }
+    }
+
+    // Mỗi thẻ ảnh giữ chỉ số riêng; khi xóa sẽ dựng lại danh sách và gán lại chỉ số.
+    function appendImagePreview(fileIndex) {
+        var file = selectedImageFiles[fileIndex];
+        var objectUrl = URL.createObjectURL(file);
+        activeObjectUrls.push(objectUrl);
+
+        var itemCard = document.createElement('div');
+        itemCard.className = 'hs-place-form__preview-item';
+
+        var imageElement = document.createElement('img');
+        imageElement.className = 'hs-place-form__preview-img';
+        imageElement.src = objectUrl;
+        imageElement.alt = 'Ảnh xem trước ' + (fileIndex + 1) + ': ' + file.name;
+
+        var badgeElement = document.createElement('span');
+        badgeElement.className = 'hs-place-form__preview-badge';
+        if (fileIndex === 0) {
+            badgeElement.textContent = 'Ảnh bìa';
+        } else {
+            badgeElement.textContent = 'Ảnh ' + (fileIndex + 1);
+        }
+
+        var removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'hs-place-form__preview-remove';
+        removeButton.setAttribute('aria-label', 'Xóa ảnh ' + file.name);
+        removeButton.textContent = '×';
+        removeButton.addEventListener('click', function () {
+            selectedImageFiles.splice(fileIndex, 1);
+            syncFilesToInput();
+            setFieldError('place-images-feedback', '');
+            renderImagePreviews();
+        });
+
+        itemCard.appendChild(imageElement);
+        itemCard.appendChild(badgeElement);
+        itemCard.appendChild(removeButton);
+        imagePreviewsContainer.appendChild(itemCard);
     }
 
     // Kiểm tra và tiếp nhận danh sách file người dùng chọn hoặc kéo thả.
@@ -523,8 +529,8 @@
         var invalidTypeMessages = [];
         var validIncoming = [];
 
-        for (var i = 0; i < incomingArray.length; i++) {
-            var currentFile = incomingArray[i];
+        for (var incomingFileIndex = 0; incomingFileIndex < incomingArray.length; incomingFileIndex++) {
+            var currentFile = incomingArray[incomingFileIndex];
             if (ALLOWED_IMAGE_TYPES.indexOf(currentFile.type) === -1) {
                 invalidTypeMessages.push('File "' + currentFile.name + '" không đúng định dạng JPG, PNG hoặc WebP.');
                 continue;
@@ -540,8 +546,8 @@
 
         if (combinedCount > MAX_IMAGES) {
             var allowedSlots = Math.max(0, MAX_IMAGES - selectedImageFiles.length);
-            for (var j = 0; j < allowedSlots; j++) {
-                selectedImageFiles.push(validIncoming[j]);
+            for (var acceptedFileIndex = 0; acceptedFileIndex < allowedSlots; acceptedFileIndex++) {
+                selectedImageFiles.push(validIncoming[acceptedFileIndex]);
             }
             syncFilesToInput();
             renderImagePreviews();
@@ -552,8 +558,8 @@
             return;
         }
 
-        for (var k = 0; k < validIncoming.length; k++) {
-            selectedImageFiles.push(validIncoming[k]);
+        for (var validFileIndex = 0; validFileIndex < validIncoming.length; validFileIndex++) {
+            selectedImageFiles.push(validIncoming[validFileIndex]);
         }
 
         syncFilesToInput();
@@ -717,13 +723,13 @@
                 if (keyword === '') {
                     return;
                 }
-                for (var idx = 0; idx < tagCheckboxes.length; idx++) {
-                    var box = tagCheckboxes[idx];
-                    var name = (box.getAttribute('data-tag-name') || '').trim().toLowerCase();
-                    if (name === keyword) {
-                        if (!box.checked) {
-                            box.checked = true;
-                            handleTagCheckboxChange({ target: box });
+                for (var checkboxIndex = 0; checkboxIndex < tagCheckboxes.length; checkboxIndex++) {
+                    var checkbox = tagCheckboxes[checkboxIndex];
+                    var tagName = (checkbox.getAttribute('data-tag-name') || '').trim().toLowerCase();
+                    if (tagName === keyword) {
+                        if (!checkbox.checked) {
+                            checkbox.checked = true;
+                            handleTagCheckboxChange({ target: checkbox });
                         }
                         return;
                     }
@@ -832,9 +838,11 @@
             geocodeResults.hidden = geocodeResults.children.length === 0;
         } catch (error) {
             if (sequence === geocodeSequence) {
-                geocodeStatus.textContent = error.name === 'AbortError'
-                    ? 'Tìm vị trí mất quá lâu. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ để lưu bài.'
-                    : (error.message || 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.');
+                var errorMessage = error.message || 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.';
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Tìm vị trí mất quá lâu. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ để lưu bài.';
+                }
+                geocodeStatus.textContent = errorMessage;
             }
         } finally {
             window.clearTimeout(timer);

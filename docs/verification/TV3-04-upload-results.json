@@ -1,0 +1,230 @@
+{
+  "checkedDate": "2026-11-07",
+  "task": "TV3-04",
+  "sourceCommit": "ff2a536d1a3ebbed319f51c866a089fef69ea6b3",
+  "equivalentPlaceCodeOnMain": "476343a6de71b6bc5635702f64ff8f66573d8450",
+  "php": "8.4.27",
+  "passed": 30,
+  "total": 30,
+  "sourceHashNormalization": "UTF-8 text with CRLF normalized to LF",
+  "sourceHashes": {
+    "app/controllers/PlaceController.php": "235291c9535228ffb8fcbeddce10202cabf284b21247dc434dcd80b483d6bad9",
+    "app/models/Place.php": "905a02dbcaaf9f41d26540128173dd3d8273d5c74c9c0731491cb924406436f9",
+    "app/models/PlaceImage.php": "932ef50fefaad370d1ebd5c3605c3ba7fbaad9b2bdcd562d07fb52c67306a885",
+    "app/models/PlaceTag.php": "6b6d9a175955f0cc25c2b25a4861b91560fda558ce2db7a2c28f3178edc39d04",
+    "app/routes.php": "e7b88c5773ca20f50c556c78960484a86254aea46800906c76dcec5fc2d9769a",
+    "app/views/places/form.php": "cc13e8207598fc3300f876b3bab4dc4949e67be1658991e63c64b45fa23accb2",
+    "app/views/places/show.php": "496f83aecbd97baab9d5dcd6e6272b880b90b7802bdffbddf1d8b2ca26736134",
+    "app/views/places/_gallery.php": "66b06d0105e9d2ba35d6f6fd91d0dcb7b716aecb00de5e7bc7601ec0b68581c4",
+    "public/assets/js/place-form.js": "d0ef04d0836ded4609fe4a4e3783d629773d38906f01570373e0cf59ebdbba83",
+    "public/assets/js/gallery.js": "bad370c18083b36af3440f6ad86059e926511f919361d7d04f65a3cd044b2ace",
+    "public/index.php": "c2082c023fb063046891ed7c60516fab160f886c0727646672cd3761655b4335"
+  },
+  "results": [
+    {
+      "name": "CREATE 1 real HTTP image(s), 0 active tags",
+      "passed": true,
+      "httpStatus": 303,
+      "images": 1,
+      "tags": 0
+    },
+    {
+      "name": "CREATE 1 real HTTP image(s), 5 active tags",
+      "passed": true,
+      "httpStatus": 303,
+      "images": 1,
+      "tags": 5
+    },
+    {
+      "name": "CREATE 3 real HTTP image(s), 0 active tags",
+      "passed": true,
+      "httpStatus": 303,
+      "images": 3,
+      "tags": 0
+    },
+    {
+      "name": "CREATE 3 real HTTP image(s), 5 active tags",
+      "passed": true,
+      "httpStatus": 303,
+      "images": 3,
+      "tags": 5
+    },
+    {
+      "name": "CREATE duplicate tags normalize to five distinct relations",
+      "passed": true
+    },
+    {
+      "name": "Guest rejected without partial DB/files",
+      "passed": true
+    },
+    {
+      "name": "Admin rejected without partial DB/files",
+      "passed": true
+    },
+    {
+      "name": "Wrong CSRF rejected without partial DB/files",
+      "passed": true
+    },
+    {
+      "name": "No images rejected without partial DB/files",
+      "passed": true
+    },
+    {
+      "name": "Four images rejected without partial DB/files",
+      "passed": true
+    },
+    {
+      "name": "Six distinct tags rejected without partial DB/files",
+      "passed": true
+    },
+    {
+      "name": "Forged MIME rejected without partial DB/files",
+      "passed": true
+    },
+    {
+      "name": "Spoof/bypass user_id rejected",
+      "passed": true
+    },
+    {
+      "name": "Spoof/bypass owner_id rejected",
+      "passed": true
+    },
+    {
+      "name": "Spoof/bypass status_code rejected",
+      "passed": true
+    },
+    {
+      "name": "Spoof/bypass requireHttpUploadedFile rejected",
+      "passed": true
+    },
+    {
+      "name": "Spoof/bypass verifyDatabase rejected",
+      "passed": true
+    },
+    {
+      "name": "Inactive tag rejected before any file move",
+      "passed": true
+    },
+    {
+      "name": "EDIT replaces with 1 image(s); old files removed only after commit",
+      "passed": true,
+      "httpStatus": 303,
+      "newImageCount": 1,
+      "oldFilesPresentDuringMoves": true,
+      "oldFilesRemovedAfterCommit": true
+    },
+    {
+      "name": "EDIT replaces with 3 image(s); old files removed only after commit",
+      "passed": true,
+      "httpStatus": 303,
+      "newImageCount": 3,
+      "oldFilesPresentDuringMoves": true,
+      "oldFilesRemovedAfterCommit": true
+    },
+    {
+      "name": "CREATE actual second temporary file lost mid-upload: first file and all DB rows rollback",
+      "passed": true,
+      "httpStatus": 500,
+      "httpMultipart": true,
+      "firstFileMoved": true,
+      "secondNativeMoveFailed": true,
+      "firstNewFileRemoved": true,
+      "originalFilesPreserved": true
+    },
+    {
+      "name": "EDIT actual second temporary file lost mid-upload: original record/images/tags unchanged",
+      "passed": true,
+      "httpStatus": 500,
+      "httpMultipart": true,
+      "firstFileMoved": true,
+      "secondNativeMoveFailed": true,
+      "firstNewFileRemoved": true,
+      "originalFilesPreserved": true
+    },
+    {
+      "name": "DB second-image failure during places/store: rollback DB and clean all new files",
+      "passed": true,
+      "httpStatus": 422,
+      "newFilesCleaned": 3,
+      "oldDataPreserved": true
+    },
+    {
+      "name": "DB second-image failure during places/update: rollback DB and clean all new files",
+      "passed": true,
+      "httpStatus": 422,
+      "newFilesCleaned": 3,
+      "oldDataPreserved": true
+    },
+    {
+      "name": "DB tag failure during places/store: rollback DB and clean all new files",
+      "passed": true,
+      "httpStatus": 422,
+      "newFilesCleaned": 3,
+      "oldDataPreserved": true
+    },
+    {
+      "name": "DB tag failure during places/update: rollback DB and clean all new files",
+      "passed": true,
+      "httpStatus": 422,
+      "newFilesCleaned": 3,
+      "oldDataPreserved": true
+    },
+    {
+      "name": "Approved detail renders and serves newly uploaded photos to Guest",
+      "passed": true
+    },
+    {
+      "name": "Browser submits form with three real photos and five tags through places/store",
+      "passed": true
+    },
+    {
+      "name": "Browser edit second-file failure shows error and preserves old images; retry succeeds",
+      "passed": true,
+      "httpStatus": 500,
+      "retryHttpStatus": 303,
+      "httpMultipart": true,
+      "firstFileMoved": true,
+      "secondNativeMoveFailed": true,
+      "firstNewFileRemoved": true,
+      "originalFilesPreserved": true
+    },
+    {
+      "name": "Main table hashes unchanged; QA DB/sessions removed",
+      "passed": true
+    }
+  ],
+  "secondFileFailureEvents": [
+    {
+      "event": "move",
+      "attempt": 1,
+      "wasHttpUploadedFile": true,
+      "tempRemovedForFault": false,
+      "success": true,
+      "inTransaction": true,
+      "destinationExists": true
+    },
+    {
+      "event": "move",
+      "attempt": 2,
+      "wasHttpUploadedFile": true,
+      "tempRemovedForFault": true,
+      "success": false,
+      "inTransaction": true,
+      "destinationExists": false
+    },
+    {
+      "event": "cleanup",
+      "attempt": null,
+      "wasHttpUploadedFile": null,
+      "tempRemovedForFault": null,
+      "success": true,
+      "inTransaction": true,
+      "destinationExists": null
+    }
+  ],
+  "cleanup": {
+    "mainDataHashesUnchanged": true,
+    "qaDatabaseRemoved": true,
+    "sessionsDestroyed": true
+  }
+}

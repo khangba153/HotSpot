@@ -26,36 +26,45 @@ final class PlaceGeocoder
             || isset($endpointParts['user']) || isset($endpointParts['pass']) || isset($endpointParts['query']) || isset($endpointParts['fragment'])) {
             throw new HttpException(503, 'Dịch vụ tìm vị trí chưa được cấu hình hợp lệ. Bạn có thể nhập hoặc bỏ trống tọa độ.');
         }
-        if (!is_dir($this->cacheDirectory) && !@mkdir($this->cacheDirectory, 0700, true) && !is_dir($this->cacheDirectory)) {
-            throw new HttpException(503, 'Chưa thể tìm vị trí. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ.');
+        if (!is_dir($this->cacheDirectory)) {
+            $createdDirectory = @mkdir($this->cacheDirectory, 0700, true);
+            // Tiến trình khác có thể vừa tạo thư mục trong lúc mình đang kiểm tra.
+            if ($createdDirectory === false && !is_dir($this->cacheDirectory)) {
+                throw new HttpException(503, 'Chưa thể tìm vị trí. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ.');
+            }
         }
         $cachePath = $this->cacheDirectory . '/' . hash('sha256', $endpoint . '|vi|vn|' . mb_strtolower($query, 'UTF-8')) . '.json';
-        $cached = $this->readCache($cachePath);
-        if ($cached !== null) {
-            return $cached;
+        $cachedResults = $this->readCache($cachePath);
+        if ($cachedResults !== null) {
+            return $cachedResults;
         }
 
-        $lock = @fopen($this->cacheDirectory . '/requests.lock', 'c+');
-        if ($lock === false) {
+        $requestLockHandle = @fopen($this->cacheDirectory . '/requests.lock', 'c+');
+        if ($requestLockHandle === false) {
             throw new HttpException(503, 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.');
         }
-        if (!flock($lock, LOCK_EX | LOCK_NB)) {
-            fclose($lock);
+        if (!flock($requestLockHandle, LOCK_EX | LOCK_NB)) {
+            fclose($requestLockHandle);
             throw new HttpException(429, 'Đang có lượt tìm vị trí khác. Vui lòng thử lại sau vài giây.');
         }
         try {
-            $cached = $this->readCache($cachePath);
-            if ($cached !== null) {
-                return $cached;
+            $cachedResults = $this->readCache($cachePath);
+            if ($cachedResults !== null) {
+                return $cachedResults;
             }
-            rewind($lock);
-            $lastRequest = (float) stream_get_contents($lock);
+            rewind($requestLockHandle);
+            $lastRequest = (float) stream_get_contents($requestLockHandle);
             if (microtime(true) - $lastRequest < 1.1) {
                 throw new HttpException(429, 'Vui lòng chờ vài giây trước khi tìm vị trí tiếp.');
             }
-            rewind($lock);
-            ftruncate($lock, 0);
-            if (fwrite($lock, (string) microtime(true)) === false || !fflush($lock)) {
+            rewind($requestLockHandle);
+            ftruncate($requestLockHandle, 0);
+            $writtenBytes = fwrite($requestLockHandle, (string) microtime(true));
+            if ($writtenBytes === false) {
+                throw new HttpException(503, 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.');
+            }
+            $flushedSuccessfully = fflush($requestLockHandle);
+            if ($flushedSuccessfully === false) {
                 throw new HttpException(503, 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.');
             }
             $results = $this->requestResults($endpoint, $query);
@@ -67,23 +76,23 @@ final class PlaceGeocoder
             $this->pruneCache();
             return $results;
         } finally {
-            flock($lock, LOCK_UN);
-            fclose($lock);
+            flock($requestLockHandle, LOCK_UN);
+            fclose($requestLockHandle);
         }
     }
 
     // Đọc kết quả còn hạn; cache hỏng được coi như chưa có kết quả.
-    private function readCache(string $path): ?array
+    private function readCache(string $cachePath): ?array
     {
-        if (!is_file($path)) {
+        if (!is_file($cachePath)) {
             return null;
         }
-        $value = json_decode((string) @file_get_contents($path), true);
-        if (!is_array($value) || !is_int($value['expires'] ?? null) || $value['expires'] <= time()
-            || !is_array($value['results'] ?? null)) {
+        $cacheData = json_decode((string) @file_get_contents($cachePath), true);
+        if (!is_array($cacheData) || !is_int($cacheData['expires'] ?? null) || $cacheData['expires'] <= time()
+            || !is_array($cacheData['results'] ?? null)) {
             return null;
         }
-        return $value['results'];
+        return $cacheData['results'];
     }
 
     // HTTPS giữ kiểm tra chứng chỉ; không theo redirect hoặc nhận URL từ request của người dùng.
@@ -111,26 +120,26 @@ final class PlaceGeocoder
             if ($status === 429) {
                 throw new HttpException(429, 'Dịch vụ tìm vị trí đang bận. Vui lòng thử lại sau; bạn vẫn có thể lưu bài.');
             }
-            $rows = json_decode($body, true);
-            if ($status !== 200 || strlen($body) > 262144 || !is_array($rows) || !array_is_list($rows)) {
+            $responseRows = json_decode($body, true);
+            if ($status !== 200 || strlen($body) > 262144 || !is_array($responseRows) || !array_is_list($responseRows)) {
                 throw new HttpException(502, 'Dịch vụ tìm vị trí chưa trả kết quả hợp lệ. Bạn vẫn có thể lưu bài không có tọa độ.');
             }
             $results = [];
-            foreach (array_slice($rows, 0, 3) as $row) {
-                if (!is_array($row) || !is_numeric($row['lat'] ?? null) || !is_numeric($row['lon'] ?? null)
-                    || !is_string($row['display_name'] ?? null)) {
+            foreach (array_slice($responseRows, 0, 3) as $responseRow) {
+                if (!is_array($responseRow) || !is_numeric($responseRow['lat'] ?? null) || !is_numeric($responseRow['lon'] ?? null)
+                    || !is_string($responseRow['display_name'] ?? null)) {
                     continue;
                 }
-                $latitude = round((float) $row['lat'], 7);
-                $longitude = round((float) $row['lon'], 7);
+                $latitude = round((float) $responseRow['lat'], 7);
+                $longitude = round((float) $responseRow['lon'], 7);
                 if (!is_finite($latitude) || !is_finite($longitude) || $latitude < -90 || $latitude > 90
                     || $longitude < -180 || $longitude > 180 || ($latitude == 0 && $longitude == 0)) {
                     continue;
                 }
                 $results[] = ['latitude' => $latitude, 'longitude' => $longitude,
-                    'label' => mb_substr($row['display_name'], 0, 500, 'UTF-8')];
+                    'label' => mb_substr($responseRow['display_name'], 0, 500, 'UTF-8')];
             }
-            if (count($rows) > 0 && count($results) === 0) {
+            if (count($responseRows) > 0 && count($results) === 0) {
                 throw new HttpException(502, 'Kết quả tìm kiếm không có tọa độ hợp lệ. Bạn có thể nhập hoặc bỏ trống tọa độ.');
             }
             return $results;
@@ -142,23 +151,23 @@ final class PlaceGeocoder
     // Giới hạn 200 kết quả cache; xóa mục hết hạn trước rồi mục cũ nhất.
     private function pruneCache(): void
     {
-        $paths = glob($this->cacheDirectory . '/*.json');
-        if ($paths === false) {
-            $paths = [];
+        $cachePaths = glob($this->cacheDirectory . '/*.json');
+        if ($cachePaths === false) {
+            $cachePaths = [];
         }
-        $active = [];
-        foreach ($paths as $path) {
-            if ($this->readCache($path) === null) {
-                @unlink($path);
+        $activeCacheFiles = [];
+        foreach ($cachePaths as $cachePath) {
+            if ($this->readCache($cachePath) === null) {
+                @unlink($cachePath);
             } else {
-                $active[$path] = (int) filemtime($path);
+                $activeCacheFiles[$cachePath] = (int) filemtime($cachePath);
             }
         }
-        asort($active);
-        while (count($active) > 200) {
-            $path = array_key_first($active);
-            @unlink($path);
-            unset($active[$path]);
+        asort($activeCacheFiles);
+        while (count($activeCacheFiles) > 200) {
+            $cachePath = array_key_first($activeCacheFiles);
+            @unlink($cachePath);
+            unset($activeCacheFiles[$cachePath]);
         }
     }
 }
