@@ -63,10 +63,11 @@ if ($isLoginPage) {
     <link rel="stylesheet" href="assets/css/app.css?v=5">
     <link rel="stylesheet" href="assets/css/profile.css?v=3">
     <link rel="stylesheet" href="assets/css/auth.css?v=5">
-    <link rel="stylesheet" href="assets/css/places.css?v=2">
+    <link rel="stylesheet" href="assets/css/places.css?v=20261107-style">
     <link rel="stylesheet" href="assets/css/reviews.css?v=1">
     <link rel="stylesheet" href="assets/css/admin.css?v=2">
     <link rel="stylesheet" href="assets/css/favorites.css?v=4">
+    <link rel="stylesheet" href="assets/css/ai.css?v=1">
 </head>
 
 <body class="hs-body d-flex flex-column min-vh-100<?php echo $isAdminPage ? ' admin-layout' : ''; ?>">

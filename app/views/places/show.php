@@ -138,6 +138,7 @@ $homePageUrl = createRouteUrl('home');
                 <?php if ($isApproved) { ?>
                     <section class="hs-place-card-block" aria-labelledby="place-reviews-heading">
                         <h2 id="place-reviews-heading" class="hs-place-card-block__title">Đánh giá</h2>
+                        <?php require dirname(__DIR__) . '/ai/_review_summary.php'; ?>
                         <div id="place-reviews-slot" class="hs-place-reviews-slot">
                             <?php
                             $viewData = $reviewPartialData;
@@ -220,3 +221,4 @@ $homePageUrl = createRouteUrl('home');
     <script src="assets/vendor/leaflet-1.9.4/leaflet.js" defer></script>
     <script src="assets/js/map.js?v=20261107-08" defer></script>
 <?php } ?>
+<script src="assets/js/ai-summary.js?v=1" defer></script>

@@ -1340,7 +1340,7 @@
   overflow: hidden;
 }
 
-/* Nhãn danh mục kèm SVG icon */
+/* Nhãn danh mục theo màu phân loại */
 .hs-place-mine-cat {
   display: inline-flex;
   align-items: center;

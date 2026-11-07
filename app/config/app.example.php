@@ -14,5 +14,12 @@ return [
         'from_name' => 'Hot Spot',
     ],
 
+    // Điền API key riêng trong app.php.
+    'claude' => [
+        'api_key' => '',
+        'max_output_tokens' => 250,
+        'timeout_seconds' => 20,
+    ],
+
     'app_url' => 'http://127.0.0.1:8000',
 ];
