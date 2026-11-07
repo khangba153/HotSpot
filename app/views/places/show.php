@@ -2,8 +2,6 @@
 /** @var array<string, mixed> $viewData Dữ liệu từ Controller. */
 $place = $viewData['place'];
 $placeViewData = $viewData;
-$imageUrls = $viewData['imageUrls'];
-$fallbackImageUrl = $viewData['fallbackImageUrl'];
 $tags = $viewData['tags'];
 $hasLocation = $viewData['hasLocation'];
 $isApproved = $viewData['isApproved'];
@@ -43,14 +41,6 @@ if ($wardName !== '') {
 $fullAddressParts[] = $provinceName;
 $fullAddress = implode(', ', $fullAddressParts);
 
-// Ảnh đầu tiên là ảnh chính, các ảnh còn lại hiển thị nhỏ bên cạnh.
-$mainImageUrl = $imageUrls[0];
-$sideImageUrls = [];
-
-for ($imageIndex = 1; $imageIndex < count($imageUrls); $imageIndex++) {
-    $sideImageUrls[] = $imageUrls[$imageIndex];
-}
-
 $latitudeText = '';
 $longitudeText = '';
 $mapLinkUrl = '';
@@ -71,8 +61,11 @@ if ($createdTimestamp !== false) {
 }
 
 $homePageUrl = createRouteUrl('home');
-$fallbackImageScript = "this.onerror=null;this.src='" . $fallbackImageUrl . "';";
 ?>
+<link rel="stylesheet" href="assets/css/place-detail.css?v=20261107">
+<?php if ($hasLocation) { ?>
+    <link rel="stylesheet" href="assets/vendor/leaflet-1.9.4/leaflet.css">
+<?php } ?>
 <section class="hs-place-detail">
     <div class="container">
         <nav class="hs-place-breadcrumb" aria-label="Đường dẫn">
@@ -108,42 +101,7 @@ $fallbackImageScript = "this.onerror=null;this.src='" . $fallbackImageUrl . "';"
 
         <div class="row g-4">
             <div class="col-12 col-lg-8">
-                <div class="hs-place-media">
-                    <div class="row g-2">
-                        <?php if (count($sideImageUrls) > 0) { ?>
-                            <div class="col-12 col-md-8">
-                                <img
-                                    class="hs-place-media__main"
-                                    src="<?php echo escapeHtml($mainImageUrl); ?>"
-                                    alt="Ảnh <?php echo escapeHtml($placeTitle); ?>"
-                                    decoding="async"
-                                    onerror="<?php echo escapeHtml($fallbackImageScript); ?>">
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="hs-place-media__side">
-                                    <?php foreach ($sideImageUrls as $sideImageUrl) { ?>
-                                        <img
-                                            class="hs-place-media__thumb"
-                                            src="<?php echo escapeHtml($sideImageUrl); ?>"
-                                            alt="Ảnh thêm của <?php echo escapeHtml($placeTitle); ?>"
-                                            loading="lazy"
-                                            decoding="async"
-                                            onerror="<?php echo escapeHtml($fallbackImageScript); ?>">
-                                    <?php } ?>
-                                </div>
-                            </div>
-                        <?php } else { ?>
-                            <div class="col-12">
-                                <img
-                                    class="hs-place-media__main"
-                                    src="<?php echo escapeHtml($mainImageUrl); ?>"
-                                    alt="Ảnh <?php echo escapeHtml($placeTitle); ?>"
-                                    decoding="async"
-                                    onerror="<?php echo escapeHtml($fallbackImageScript); ?>">
-                            </div>
-                        <?php } ?>
-                    </div>
-                </div>
+                <?php require __DIR__ . '/_gallery.php'; ?>
 
                 <header class="hs-place-heading">
                     <div class="d-flex align-items-start justify-content-between gap-3">
@@ -159,10 +117,6 @@ $fallbackImageScript = "this.onerror=null;this.src='" . $fallbackImageUrl . "';"
                     <div class="hs-place-heading__meta">
                         <span class="hs-place-chip"><?php echo escapeHtml($categoryName); ?></span>
                         <span class="hs-place-heading__location">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M19 10.2c0 5-7 10.3-7 10.3S5 15.2 5 10.2a7 7 0 1 1 14 0Z"></path>
-                                <circle cx="12" cy="10" r="2.2"></circle>
-                            </svg>
                             <?php echo escapeHtml($provinceName); ?>
                         </span>
                     </div>
@@ -233,6 +187,15 @@ $fallbackImageScript = "this.onerror=null;this.src='" . $fallbackImageUrl . "';"
                     <h2 id="place-location-heading" class="hs-place-card-block__title">Vị trí</h2>
 
                     <?php if ($hasLocation) { ?>
+                        <div id="place-map" class="hs-place-map" data-place-map
+                            data-latitude="<?php echo escapeHtml($latitudeText); ?>"
+                            data-longitude="<?php echo escapeHtml($longitudeText); ?>"
+                            data-place-title="<?php echo escapeHtml($placeTitle); ?>"
+                            data-tile-url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            role="region" aria-label="Bản đồ vị trí địa điểm"></div>
+                        <p id="place-map-status" class="small text-muted mt-2" role="status" aria-live="polite">
+                            Nếu bản đồ chưa tải được, bạn có thể xem vị trí bằng đường dẫn OpenStreetMap bên dưới.
+                        </p>
                         <p class="hs-place-location__coords">
                             <?php echo escapeHtml($latitudeText); ?>, <?php echo escapeHtml($longitudeText); ?>
                         </p>
@@ -253,4 +216,9 @@ $fallbackImageScript = "this.onerror=null;this.src='" . $fallbackImageUrl . "';"
     </div>
 </section>
 <script src="assets/js/favorite.js" defer></script>
+<script src="assets/js/gallery.js?v=20261107" defer></script>
+<?php if ($hasLocation) { ?>
+    <script src="assets/vendor/leaflet-1.9.4/leaflet.js" defer></script>
+    <script src="assets/js/map.js?v=20261107-08" defer></script>
+<?php } ?>
 <script src="assets/js/ai-summary.js?v=1" defer></script>

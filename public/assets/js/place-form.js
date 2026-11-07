@@ -12,18 +12,25 @@
     if (!formElement) {
         return;
     }
+    var isEditing = formElement.getAttribute('data-editing') === 'true';
+    var existingImageCount = Number(formElement.getAttribute('data-existing-image-count') || '0');
 
     var titleInput = document.getElementById('place-title');
     var descriptionInput = document.getElementById('place-description');
     var categorySelect = document.getElementById('place-category');
     var provinceSelect = document.getElementById('place-province');
     var wardSelect = document.getElementById('place-ward');
+    var wardHint = document.getElementById('place-ward-hint');
     var addressInput = document.getElementById('place-address');
     var latitudeInput = document.getElementById('place-latitude');
     var longitudeInput = document.getElementById('place-longitude');
     var geocodeButton = document.getElementById('place-geocode-btn');
     var clearCoordsButton = document.getElementById('place-clear-coords-btn');
     var mapReadout = document.getElementById('place-map-coord-readout');
+    var geocodeStatus = document.getElementById('place-geocode-status');
+    var geocodeResults = document.getElementById('place-geocode-results');
+    var geocodeRequest = null;
+    var geocodeSequence = 0;
 
     var tagFilterInput = document.getElementById('place-tag-filter');
     var selectedTagsContainer = document.getElementById('place-selected-tags');
@@ -216,6 +223,8 @@
         defaultOption.textContent = placeholderText || 'Chọn phường/xã';
         wardSelect.appendChild(defaultOption);
         wardSelect.value = '';
+        wardSelect.disabled = true;
+        wardSelect.setAttribute('aria-busy', 'false');
     }
 
     // Gọi API phường/xã của TV2 theo mã tỉnh (hợp đồng C03).
@@ -233,7 +242,11 @@
         var currentSequence = wardRequestSequence;
 
         // Luôn xóa lựa chọn phường cũ ngay khi đổi tỉnh.
-        resetWardOptions('Chọn phường/xã');
+        resetWardOptions('Chọn tỉnh/thành trước (không bắt buộc)');
+
+        if (wardHint) {
+            wardHint.textContent = 'Phường/xã là tùy chọn. Bạn có thể để trống nếu chưa tải được danh sách.';
+        }
 
         if (!provinceCode || provinceCode.trim() === '') {
             return;
@@ -241,8 +254,12 @@
 
         var wardsBaseUrl = formElement.getAttribute('data-wards-url') || '';
         if (wardsBaseUrl === '') {
+            resetWardOptions('Chưa tải được phường/xã (không bắt buộc)');
             return;
         }
+
+        resetWardOptions('Đang tải phường/xã...');
+        wardSelect.setAttribute('aria-busy', 'true');
 
         var separator = '&';
         if (wardsBaseUrl.indexOf('?') === -1) {
@@ -281,12 +298,18 @@
                 resetWardOptions('Chọn phường/xã');
 
                 var wardItems = [];
+                if (payload && payload.success === false) {
+                    throw new Error('Không tải được danh sách phường/xã.');
+                }
+
                 if (payload && payload.data && Array.isArray(payload.data.wards)) {
                     wardItems = payload.data.wards;
                 } else if (payload && Array.isArray(payload.data)) {
                     wardItems = payload.data;
                 } else if (Array.isArray(payload)) {
                     wardItems = payload;
+                } else {
+                    throw new Error('Dữ liệu phường/xã không hợp lệ.');
                 }
 
                 for (var index = 0; index < wardItems.length; index++) {
@@ -294,7 +317,14 @@
                     if (!wardItem || typeof wardItem !== 'object') {
                         continue;
                     }
-                    var wardCode = String(wardItem.ward_code || '').trim();
+                    // Mã địa giới phải là chuỗi để giữ số 0 ở đầu.
+                    if (typeof wardItem.ward_code !== 'string') {
+                        continue;
+                    }
+                    if (wardItem.province_code !== undefined && wardItem.province_code !== provinceCode) {
+                        continue;
+                    }
+                    var wardCode = wardItem.ward_code.trim();
                     var wardName = String(wardItem.ward_name || wardItem.name || '').trim();
                     if (wardCode === '' || wardName === '') {
                         continue;
@@ -308,6 +338,14 @@
                     }
                     wardSelect.appendChild(option);
                 }
+
+                wardSelect.disabled = wardSelect.options.length <= 1;
+                if (wardSelect.disabled) {
+                    resetWardOptions('Không có phường/xã để chọn (không bắt buộc)');
+                }
+                if (wardHint && !wardSelect.disabled) {
+                    wardHint.textContent = 'Bạn có thể chọn phường/xã hoặc để trống. Danh sách sẽ làm mới khi đổi tỉnh/thành.';
+                }
             })
             .catch(function (error) {
                 if (error && error.name === 'AbortError') {
@@ -315,7 +353,10 @@
                 }
                 // Lỗi API hoặc chưa nối C03 không chặn form vì phường/xã là tùy chọn.
                 if (currentSequence === wardRequestSequence) {
-                    resetWardOptions('Chọn phường/xã (tùy chọn)');
+                    resetWardOptions('Chưa tải được phường/xã (không bắt buộc)');
+                    if (wardHint) {
+                        wardHint.textContent = 'Chưa tải được danh sách phường/xã. Bạn vẫn có thể tiếp tục và để trống trường này.';
+                    }
                 }
             });
     }
@@ -406,7 +447,11 @@
         revokePreviewUrls();
 
         if (imageCountElement) {
-            imageCountElement.textContent = String(selectedImageFiles.length);
+            var displayedCount = selectedImageFiles.length;
+            if (isEditing && displayedCount === 0) {
+                displayedCount = existingImageCount;
+            }
+            imageCountElement.textContent = String(displayedCount);
         }
 
         if (!imagePreviewsContainer) {
@@ -419,6 +464,9 @@
             var emptyPlaceholder = document.createElement('div');
             emptyPlaceholder.className = 'hs-place-form__preview-placeholder';
             emptyPlaceholder.textContent = 'Chưa có hình ảnh nào được chọn. Hãy chọn từ 1 đến 3 ảnh minh họa địa điểm.';
+            if (isEditing && existingImageCount > 0) {
+                emptyPlaceholder.textContent = 'Chưa chọn ảnh thay thế. Bộ ảnh hiện tại sẽ được giữ nguyên.';
+            }
             imagePreviewsContainer.appendChild(emptyPlaceholder);
             return;
         }
@@ -599,7 +647,11 @@
             markInvalid(latitudeInput);
         }
 
-        if (selectedImageFiles.length < MIN_IMAGES || selectedImageFiles.length > MAX_IMAGES) {
+        var finalImageCount = selectedImageFiles.length;
+        if (isEditing && finalImageCount === 0) {
+            finalImageCount = existingImageCount;
+        }
+        if (finalImageCount < MIN_IMAGES || finalImageCount > MAX_IMAGES) {
             setFieldError(
                 'place-images-feedback',
                 'Vui lòng chọn từ ' + MIN_IMAGES + ' đến ' + MAX_IMAGES + ' hình ảnh hợp lệ cho địa điểm.'
@@ -700,13 +752,120 @@
         }
     }
 
-    // Đăng ký sự kiện cho tọa độ và nút tìm vị trí (không chặn submit khi Nominatim lỗi).
+    // Hủy kết quả cũ khi người dùng đổi địa chỉ, chọn ghim hoặc xóa tọa độ.
+    function cancelGeocode() {
+        geocodeSequence += 1;
+        if (geocodeRequest) {
+            geocodeRequest.abort();
+            geocodeRequest = null;
+        }
+        if (geocodeButton) {
+            geocodeButton.disabled = false;
+            geocodeButton.setAttribute('aria-disabled', 'false');
+            geocodeButton.textContent = 'Tìm vị trí theo địa chỉ';
+        }
+        if (geocodeResults) {
+            geocodeResults.replaceChildren();
+            geocodeResults.hidden = true;
+        }
+        if (geocodeStatus) {
+            geocodeStatus.textContent = '';
+        }
+    }
+
+    // Chỉ gọi API TV3 khi bấm tìm, không autocomplete; lỗi mạng không ảnh hưởng submit.
+    async function findLocation() {
+        cancelGeocode();
+        var address = addressInput.value.trim();
+        var provinceCode = provinceSelect.value;
+        if (address.length < 3 || !provinceCode) {
+            geocodeStatus.textContent = 'Vui lòng nhập địa chỉ chi tiết và chọn tỉnh/thành trước khi tìm.';
+            return;
+        }
+        var sequence = geocodeSequence;
+        var controller = new AbortController();
+        geocodeRequest = controller;
+        var timer = window.setTimeout(function () { controller.abort(); }, 8000);
+        geocodeButton.disabled = true;
+        geocodeButton.setAttribute('aria-disabled', 'true');
+        geocodeButton.textContent = 'Đang tìm vị trí...';
+        geocodeStatus.textContent = 'Đang tìm. Bạn vẫn có thể tiếp tục điền và gửi bài.';
+        try {
+            var url = new URL(formElement.getAttribute('data-geocode-url'), window.location.href);
+            url.searchParams.set('address', address);
+            url.searchParams.set('province_code', provinceCode);
+            var response = await fetch(url, { signal: controller.signal, credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'X-CSRF-Token': formElement.querySelector('[name="csrf_token"]').value } });
+            var payload = await response.json();
+            if (sequence !== geocodeSequence) {
+                return;
+            }
+            if (!response.ok || payload.success !== true || !Array.isArray(payload.data && payload.data.results)) {
+                throw new Error(payload.message || 'Chưa tìm được vị trí. Bạn có thể nhập hoặc bỏ trống tọa độ.');
+            }
+            if (payload.data.results.length === 0) {
+                geocodeStatus.textContent = 'Không tìm thấy vị trí. Bạn có thể chọn trên bản đồ, nhập hoặc bỏ trống tọa độ.';
+                return;
+            }
+            geocodeStatus.textContent = 'Chọn một kết quả để điền tọa độ; bạn vẫn có thể kéo ghim để điều chỉnh.';
+            payload.data.results.slice(0, 3).forEach(function (result) {
+                if (typeof result.latitude !== 'number' || typeof result.longitude !== 'number'
+                    || !Number.isFinite(result.latitude) || !Number.isFinite(result.longitude)
+                    || Math.abs(result.latitude) > 90 || Math.abs(result.longitude) > 180
+                    || (result.latitude === 0 && result.longitude === 0) || typeof result.label !== 'string') {
+                    return;
+                }
+                var button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'btn btn-sm btn-outline-secondary';
+                button.textContent = result.label;
+                button.addEventListener('click', function () {
+                    latitudeInput.value = result.latitude.toFixed(7);
+                    longitudeInput.value = result.longitude.toFixed(7);
+                    latitudeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    longitudeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    geocodeStatus.textContent = 'Đã chọn vị trí. Kiểm tra ghim hoặc điều chỉnh tọa độ trước khi lưu.';
+                    latitudeInput.focus();
+                });
+                geocodeResults.appendChild(button);
+            });
+            geocodeResults.hidden = geocodeResults.children.length === 0;
+        } catch (error) {
+            if (sequence === geocodeSequence) {
+                geocodeStatus.textContent = error.name === 'AbortError'
+                    ? 'Tìm vị trí mất quá lâu. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ để lưu bài.'
+                    : (error.message || 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.');
+            }
+        } finally {
+            window.clearTimeout(timer);
+            if (sequence === geocodeSequence) {
+                geocodeRequest = null;
+                geocodeButton.disabled = false;
+                geocodeButton.setAttribute('aria-disabled', 'false');
+                geocodeButton.textContent = 'Tìm vị trí theo địa chỉ';
+            }
+        }
+    }
+
+    // Thay thông tin đầu vào sẽ không dùng kết quả tìm cũ để ghi đè tọa độ mới.
+    [addressInput, provinceSelect, wardSelect].forEach(function (input) {
+        if (input) {
+            input.addEventListener('change', cancelGeocode);
+            if (input === addressInput) {
+                input.addEventListener('input', cancelGeocode);
+            }
+        }
+    });
+
+    // Đăng ký sự kiện tọa độ; giữ bộ kiểm tra và submit của T06.
     if (latitudeInput) {
         latitudeInput.addEventListener('input', validateCoordinates);
+        latitudeInput.addEventListener('input', cancelGeocode);
     }
 
     if (longitudeInput) {
         longitudeInput.addEventListener('input', validateCoordinates);
+        longitudeInput.addEventListener('input', cancelGeocode);
     }
 
     if (clearCoordsButton) {
@@ -717,26 +876,28 @@
             if (longitudeInput) {
                 longitudeInput.value = '';
             }
-            validateCoordinates();
+            latitudeInput.dispatchEvent(new Event('input', { bubbles: true }));
+            longitudeInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
     }
 
     if (geocodeButton) {
-        geocodeButton.addEventListener('click', function () {
-            setFieldError(
-                'place-coords-error',
-                'Chức năng tìm vị trí tự động hiện chưa hỗ trợ. Bạn có thể để trống tọa độ hoặc nhập cặp vĩ độ và kinh độ hợp lệ.'
-            );
-        });
+        geocodeButton.disabled = false;
+        geocodeButton.setAttribute('aria-disabled', 'false');
+        geocodeButton.addEventListener('click', findLocation);
     }
 
     // Đăng ký sự kiện chọn file ảnh và kéo thả ảnh.
     if (imageInput) {
         imageInput.addEventListener('change', function () {
+            selectedImageFiles = [];
+            setFieldError('place-images-feedback', '');
             if (imageInput.files && imageInput.files.length > 0) {
                 // Khi chọn lại qua hộp thoại file, thay thế danh sách hiện tại để dễ kiểm soát.
-                selectedImageFiles = [];
                 handleIncomingFiles(imageInput.files);
+            } else {
+                syncFilesToInput();
+                renderImagePreviews();
             }
         });
     }
@@ -815,6 +976,18 @@
             if (statusBanner) {
                 statusBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
+            return;
+        }
+
+        if (event.submitter && event.submitter.hasAttribute('formaction')) {
+            formElement.action = event.submitter.getAttribute('formaction');
+        }
+        var submitButtons = formElement.querySelectorAll('button[type="submit"]');
+        for (var buttonIndex = 0; buttonIndex < submitButtons.length; buttonIndex++) {
+            submitButtons[buttonIndex].disabled = true;
+        }
+        if (event.submitter) {
+            event.submitter.textContent = 'Đang lưu địa điểm...';
         }
     });
 

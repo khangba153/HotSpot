@@ -1,0 +1,5 @@
+/* Bản đồ và kết quả tìm vị trí trên form TV3-08. */
+.hs-place-form__map { width: 100%; height: 300px; border-radius: 12px; background: #f1f4f6; z-index: 0; }
+.hs-place-form__map[hidden], .hs-place-form__geocode-results[hidden] { display: none; }
+.hs-place-form__geocode-results { display: grid; gap: 8px; margin-bottom: 12px; }
+.hs-place-form__geocode-results button { text-align: left; white-space: normal; overflow-wrap: anywhere; }

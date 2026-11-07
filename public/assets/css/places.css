@@ -84,14 +84,6 @@
   gap: 4px;
 }
 
-.hs-place-heading__location svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: var(--hs-orange);
-  stroke-width: 2;
-}
-
 .hs-place-chip {
   display: inline-block;
   padding: 3px 10px;
@@ -619,21 +611,6 @@
   line-height: 1.55;
 }
 
-.hs-place-form__geo-note-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
-  margin-top: 1px;
-  border-radius: 50%;
-  background: #2274c7;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-}
-
 /* Khu vực chọn & xem trước 1-3 ảnh */
 .hs-place-form__dropzone {
   display: flex;
@@ -655,28 +632,6 @@
   border-color: var(--hs-orange);
   background: #fff7f4;
   outline: none;
-}
-
-.hs-place-form__dropzone-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
-  border-radius: 50%;
-  background: #eef4f8;
-  color: #4f677d;
-}
-
-.hs-place-form__dropzone-icon svg {
-  width: 24px;
-  height: 24px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 .hs-place-form__dropzone-text {
@@ -966,38 +921,6 @@
    Trang danh sách địa điểm của tôi (TV3-05 - selector riêng .hs-place-mine*)
    ========================================================================== */
 
-/* Hệ thống SVG icon đồng nhất trên trang TV3-05 */
-.hs-place-mine-svg {
-  display: inline-block;
-  flex-shrink: 0;
-  vertical-align: middle;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.75;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.hs-place-mine-svg--menu {
-  width: 20px;
-  height: 20px;
-}
-
-.hs-place-mine-svg--sm {
-  width: 17px;
-  height: 17px;
-}
-
-.hs-place-mine-svg--xs {
-  width: 16px;
-  height: 16px;
-}
-
-.hs-place-mine-svg--lg {
-  width: 24px;
-  height: 24px;
-}
-
 /* Hero ảnh bìa Vịnh Hạ Long — sáng rõ, lớp phủ mỏng phía trái */
 .hs-place-mine-hero {
   position: relative;
@@ -1170,15 +1093,6 @@
   background: var(--hs-orange);
 }
 
-.hs-place-mine-menu__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
-}
-
 .hs-place-mine-logout-form {
   margin-top: 6px;
   padding-top: 6px;
@@ -1306,40 +1220,6 @@
   border-bottom-color: var(--hs-orange);
 }
 
-.hs-place-mine-tab__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-}
-
-.hs-place-mine-tab__icon--all {
-  background: #fff1eb;
-  color: var(--hs-orange);
-}
-
-.hs-place-mine-tab__icon--pending {
-  background: #fff3d6;
-  color: #d98200;
-}
-
-.hs-place-mine-tab__icon--approved {
-  background: #dff6e8;
-  color: #18864b;
-}
-
-.hs-place-mine-tab__icon--rejected {
-  background: #fde2e1;
-  color: #d92d20;
-}
-
-.hs-place-mine-tab__icon--hidden {
-  background: #ede9fe;
-  color: #6d28d9;
-}
-
 /* Khối danh sách dạng bảng thẻ — ưu tiên độ rộng cột Địa điểm, thu gọn chiều cao hàng */
 .hs-place-mine-list-box {
   overflow: hidden;
@@ -1460,7 +1340,7 @@
   overflow: hidden;
 }
 
-/* Nhãn danh mục kèm SVG icon */
+/* Nhãn danh mục theo màu phân loại */
 .hs-place-mine-cat {
   display: inline-flex;
   align-items: center;
@@ -1470,11 +1350,6 @@
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
-}
-
-.hs-place-mine-cat__icon {
-  display: inline-flex;
-  align-items: center;
 }
 
 .hs-place-mine-cat--1,
@@ -1544,12 +1419,6 @@
   font-weight: 750;
   line-height: 1.25;
   white-space: nowrap;
-}
-
-.hs-place-mine-badge__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .hs-place-mine-badge--approved {
@@ -1667,14 +1536,6 @@
   font-size: 12px;
 }
 
-.hs-place-mine-rejection__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1px;
-  color: #e03131;
-}
-
 .hs-place-mine-rejection__content {
   flex: 1 1 auto;
   min-width: 0;
@@ -1703,18 +1564,6 @@
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 2px 10px rgb(24 37 50 / 3%);
-}
-
-.hs-place-mine-empty__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  margin-bottom: 12px;
-  border-radius: 50%;
-  background: #fff2ec;
-  color: var(--hs-orange);
 }
 
 .hs-place-mine-empty__title {
