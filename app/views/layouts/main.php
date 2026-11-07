@@ -198,7 +198,7 @@ if ($isLoginPage) {
         </div>
         <div class="hs-container hs-footer__bottom">
             <span>© 2026 Hot Spot. Bản demo đồ án Phát triển Web.</span>
-            <span>Khám phá Việt Nam, một địa điểm mỗi lần.</span>
+            <span>Khám phá Việt Nam, một địa điểm mỗi lần. <a href="assets/images/photo-credits.html" target="_blank" rel="noopener noreferrer">Nguồn ảnh</a></span>
         </div>
     </footer><?php } ?>
     <script src="assets/vendor/bootstrap.bundle.min.js"></script>
