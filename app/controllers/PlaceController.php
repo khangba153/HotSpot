@@ -5,12 +5,17 @@ namespace HotSpot\Controllers;
 
 use HotSpot\Core\Controller;
 use HotSpot\Core\HttpException;
+use HotSpot\Core\Database;
 use HotSpot\Models\Place;
 use HotSpot\Models\PlaceImage;
-use HotSpot\Models\PlaceSearch;
+use HotSpot\Models\PlaceTag;
+use HotSpot\Models\Category;
+use HotSpot\Models\Province;
+use HotSpot\Models\Tag;
 use HotSpot\Models\Review;
 use HotSpot\Models\User;
 use HotSpot\Models\Favorite;
+use HotSpot\Services\PlaceGeocoder;
 
 final class PlaceController extends Controller
 {
@@ -94,9 +99,15 @@ final class PlaceController extends Controller
 
         $hasLocation = false;
 
-        // Chỉ coi là có vị trí khi cả vĩ độ và kinh độ đều có giá trị.
-        if ($placeInformation['latitude'] !== null && $placeInformation['longitude'] !== null) {
-            $hasLocation = true;
+        // Chỉ hiện marker với cặp tọa độ hợp lệ; không biến NULL hoặc dữ liệu lỗi thành 0,0.
+        if (is_numeric($placeInformation['latitude']) && is_numeric($placeInformation['longitude'])) {
+            $latitude = (float) $placeInformation['latitude'];
+            $longitude = (float) $placeInformation['longitude'];
+            if (is_finite($latitude) && is_finite($longitude)
+                && $latitude >= -90 && $latitude <= 90 && $longitude >= -180 && $longitude <= 180
+                && ($latitude != 0 || $longitude != 0)) {
+                $hasLocation = true;
+            }
         }
 
         // Chuẩn bị dữ liệu cho widget yêu thích của Khang.
@@ -148,11 +159,350 @@ final class PlaceController extends Controller
     // Hiển thị form đăng địa điểm mới (TV3-02): bắt buộc đăng nhập.
     public function create(): void
     {
+        $userInformation = $this->requirePlaceAuthor();
+        $this->renderPlaceForm($userInformation);
+    }
+
+    // Đăng bài, ảnh và nhãn trong cùng một giao dịch; lỗi ở bước nào cũng hoàn tác.
+    public function store(): void
+    {
+        $userInformation = $this->requirePlaceAuthor();
+        $submittedToken = $_POST['csrf_token'] ?? null;
+        if (is_string($submittedToken) === false
+            || isset($_SESSION['csrf_token']) === false
+            || is_string($_SESSION['csrf_token']) === false
+            || hash_equals($_SESSION['csrf_token'], $submittedToken) === false) {
+            throw new HttpException(403, 'Phiên biểu mẫu không hợp lệ. Vui lòng tải lại trang.');
+        }
+
+        $allowedFields = ['csrf_token', 'title', 'description', 'category_id', 'province_code',
+            'ward_code', 'address', 'latitude', 'longitude', 'tag_ids'];
+        foreach (array_keys($_POST) as $fieldName) {
+            if (in_array($fieldName, $allowedFields, true) === false) {
+                throw new HttpException(400, 'Biểu mẫu có trường không được hỗ trợ.');
+            }
+        }
+        foreach (array_keys($_FILES) as $fileField) {
+            if ($fileField !== 'images') {
+                throw new HttpException(400, 'Trường tải ảnh không hợp lệ.');
+            }
+        }
+
+        $formErrors = [];
+        $formValues = $this->readPlaceFormValues($formErrors);
+        $placeData = $this->validatePlaceFormValues($formValues, $formErrors);
+        $placeImageModel = new PlaceImage();
+        $placeTagModel = new PlaceTag();
+        $imageInput = [];
+        if (isset($_FILES['images']) && is_array($_FILES['images'])) {
+            $imageInput = $_FILES['images'];
+        }
+
+        // Giữ mặc định kiểm tra HTTP upload/MIME thật và nhãn đang hoạt động.
+        $imageValidation = $placeImageModel->validateUploadBatch($imageInput);
+        $tagValidation = $placeTagModel->validateAndNormalizeTagIds($_POST['tag_ids'] ?? null);
+        $formErrors = array_merge($formErrors, $imageValidation['errors'], $tagValidation['errors']);
+
+        if (count($formErrors) > 0) {
+            http_response_code(422);
+            $this->renderPlaceForm($userInformation, $formValues, $tagValidation['tag_ids'], $formErrors);
+            return;
+        }
+
+        $databaseConnection = Database::getConnection();
+        $savedFiles = [];
+        try {
+            $databaseConnection->beginTransaction();
+            $placeModel = new Place();
+            $placeId = $placeModel->submitPendingPlace((int) $userInformation['user_id'], $placeData);
+            $savedFiles = $placeImageModel->saveValidatedFiles($imageValidation['files']);
+
+            foreach ($savedFiles as $savedFile) {
+                $placeImageModel->addPlaceImage(
+                    (int) $userInformation['user_id'],
+                    $placeId,
+                    $savedFile['image_path'],
+                    $savedFile['sort_order']
+                );
+            }
+            $placeTagModel->attachTagsToPlace($placeId, $tagValidation['tag_ids']);
+            $databaseConnection->commit();
+        } catch (\Throwable $exception) {
+            try {
+                if ($databaseConnection->inTransaction()) {
+                    $databaseConnection->rollBack();
+                }
+            } catch (\Throwable $rollbackException) {
+                error_log('PlaceController::store rollback failed: ' . $rollbackException->getMessage());
+            }
+            $undeletedPaths = $placeImageModel->cleanupSavedFiles($savedFiles);
+            if (count($undeletedPaths) > 0) {
+                error_log('PlaceController::store incomplete cleanup: ' . implode(', ', $undeletedPaths));
+            }
+            error_log('PlaceController::store failed: ' . $exception->getMessage());
+
+            $errorStatus = 500;
+            $errorMessage = 'Chưa thể lưu địa điểm. Vui lòng thử lại sau.';
+            if ($exception instanceof \PDOException && $exception->getCode() === '45000') {
+                $errorStatus = 422;
+                $errorMessage = 'Dữ liệu địa điểm không còn hợp lệ. Vui lòng kiểm tra lại danh mục và khu vực đã chọn.';
+            }
+            if ($exception instanceof \InvalidArgumentException) {
+                $errorStatus = 422;
+                $errorMessage = 'Nhãn đã chọn không còn hợp lệ. Vui lòng chọn lại nhãn.';
+            }
+            http_response_code($errorStatus);
+            $this->renderPlaceForm($userInformation, $formValues, $tagValidation['tag_ids'], [$errorMessage]);
+            return;
+        }
+
+        $_SESSION['place_success_message'] = 'Địa điểm đã được gửi thành công và đang chờ duyệt.';
+        header('Location: ' . createRouteUrl('places/mine'), true, 303);
+    }
+
+    // TV3-08: chỉ tìm theo thao tác thành viên, dùng nguồn tỉnh C02 của TV2.
+    public function geocode(): void
+    {
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+        try {
+            $this->requirePlaceAuthor();
+            $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+            if (!is_string($token) || !hash_equals((string) $_SESSION['csrf_token'], $token)) {
+                throw new HttpException(403, 'Phiên biểu mẫu không hợp lệ. Vui lòng tải lại trang.');
+            }
+            foreach (array_keys($_GET) as $field) {
+                if (!in_array($field, ['route', 'address', 'province_code'], true)) {
+                    throw new HttpException(400, 'Tham số tìm vị trí không được hỗ trợ.');
+                }
+            }
+            $address = $_GET['address'] ?? '';
+            $provinceCode = $_GET['province_code'] ?? '';
+            if (!is_string($address) || !mb_check_encoding($address, 'UTF-8') || !is_string($provinceCode)
+                || !mb_check_encoding($provinceCode, 'UTF-8')) {
+                throw new HttpException(422, 'Địa chỉ hoặc tỉnh/thành không hợp lệ.');
+            }
+            $address = preg_replace('/\s+/u', ' ', trim($address));
+            $provinceCode = trim($provinceCode);
+            if (mb_strlen($address, 'UTF-8') < 3 || mb_strlen($address, 'UTF-8') > 300 || strlen($provinceCode) > 10) {
+                throw new HttpException(422, 'Vui lòng nhập địa chỉ từ 3 đến 300 ký tự và chọn tỉnh/thành.');
+            }
+            $provinceName = '';
+            foreach ((new Province())->findAllProvinces() as $province) {
+                if ((string) $province['province_code'] === $provinceCode) {
+                    $provinceName = (string) $province['province_name'];
+                    break;
+                }
+            }
+            if ($provinceName === '') {
+                throw new HttpException(422, 'Vui lòng chọn tỉnh/thành hợp lệ.');
+            }
+            // Nhả khóa session trước khi gọi mạng để lưu bài không phải chờ tìm vị trí.
+            session_write_close();
+            $results = (new PlaceGeocoder())->search($address . ', ' . $provinceName . ', Việt Nam');
+            $message = 'Không tìm thấy vị trí phù hợp.';
+            if (count($results) > 0) {
+                $message = 'Chọn kết quả phù hợp.';
+            }
+            echo json_encode(['success' => true, 'message' => $message,
+                'data' => ['results' => $results]], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
+        } catch (\Throwable $exception) {
+            $status = 503;
+            $message = 'Chưa thể tìm vị trí. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ để lưu bài.';
+            if ($exception instanceof HttpException) {
+                $status = $exception->getCode();
+                $message = $exception->getMessage();
+            } else {
+                error_log('PlaceController::geocode failed: ' . get_class($exception));
+            }
+            http_response_code($status);
+            if ($status === 429) {
+                header('Retry-After: 2');
+            }
+            echo json_encode(['success' => false, 'message' => $message, 'data' => ['results' => []]], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    // Nạp dữ liệu bài của chủ sở hữu vào chính form đăng địa điểm.
+    public function edit(): void
+    {
+        $userInformation = $this->requirePlaceAuthor();
+        $place = $this->requireEditablePlace($userInformation, $this->readPlaceIdFromQuery());
+        $tags = (new Place())->findTagsByPlaceId((int) $place['place_id']);
+        $selectedTagIds = [];
+        foreach ($tags as $tag) {
+            $selectedTagIds[] = (int) $tag['tag_id'];
+        }
+        $this->renderPlaceForm($userInformation, $place, $selectedTagIds, [], $place);
+    }
+
+    public function update(): void
+    {
+        $this->saveEditedPlace(false);
+    }
+
+    public function resubmit(): void
+    {
+        $this->saveEditedPlace(true);
+    }
+
+    // Kiểm quyền cả trước hiển thị và sau khi khóa bài ở POST.
+    private function requireEditablePlace(array $userInformation, int $placeId, bool $lockForUpdate = false): array
+    {
+        if ($placeId <= 0) {
+            throw new HttpException(404, 'Không tìm thấy địa điểm.');
+        }
+        $placeModel = new Place();
+        if ($lockForUpdate) {
+            $place = $placeModel->lockById($placeId);
+        } else {
+            $place = $placeModel->findDetailById($placeId);
+        }
+        if ($place === null) {
+            throw new HttpException(404, 'Không tìm thấy địa điểm.');
+        }
+        if ((int) $place['owner_id'] !== (int) $userInformation['user_id']) {
+            throw new HttpException(403, 'Bạn không được sửa địa điểm của người khác.');
+        }
+        if (in_array($place['status_code'], ['PENDING', 'REJECTED'], true) === false) {
+            throw new HttpException(403, 'Chỉ được sửa địa điểm đang chờ duyệt hoặc bị từ chối.');
+        }
+        return $place;
+    }
+
+    // Lưu sửa hoặc gửi lại; chỉ thay toàn bộ ảnh khi có chọn ảnh mới.
+    private function saveEditedPlace(bool $resubmit): void
+    {
+        $userInformation = $this->requirePlaceAuthor();
+        $token = $_POST['csrf_token'] ?? null;
+        if (is_string($token) === false || is_string($_SESSION['csrf_token'] ?? null) === false
+            || hash_equals($_SESSION['csrf_token'], $token) === false) {
+            throw new HttpException(403, 'Phiên biểu mẫu không hợp lệ. Vui lòng tải lại trang.');
+        }
+        $allowedFields = ['csrf_token', 'place_id', 'title', 'description', 'category_id',
+            'province_code', 'ward_code', 'address', 'latitude', 'longitude', 'tag_ids'];
+        foreach (array_keys($_POST) as $fieldName) {
+            if (in_array($fieldName, $allowedFields, true) === false) {
+                throw new HttpException(400, 'Biểu mẫu có trường không được hỗ trợ.');
+            }
+        }
+        foreach (array_keys($_FILES) as $fieldName) {
+            if ($fieldName !== 'images') {
+                throw new HttpException(400, 'Trường tải ảnh không hợp lệ.');
+            }
+        }
+        $rawId = $_POST['place_id'] ?? null;
+        if (is_string($rawId) === false) {
+            throw new HttpException(404, 'Không tìm thấy địa điểm.');
+        }
+        $placeId = filter_var($rawId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($placeId === false) {
+            throw new HttpException(404, 'Không tìm thấy địa điểm.');
+        }
+        $place = $this->requireEditablePlace($userInformation, $placeId);
+        if ($resubmit && $place['status_code'] !== 'REJECTED') {
+            throw new HttpException(409, 'Chỉ bài bị từ chối mới cần gửi duyệt lại.');
+        }
+
+        $formErrors = [];
+        $formValues = $this->readPlaceFormValues($formErrors);
+        $placeData = $this->validatePlaceFormValues($formValues, $formErrors);
+        $imageModel = new PlaceImage();
+        $tagModel = new PlaceTag();
+        $imageInput = [];
+        if (isset($_FILES['images']) && is_array($_FILES['images'])) {
+            $imageInput = $_FILES['images'];
+        }
+        $imageValidation = $imageModel->validateUploadBatch($imageInput, 0);
+        $tagValidation = $tagModel->validateAndNormalizeTagIds($_POST['tag_ids'] ?? null);
+        $formErrors = array_merge($formErrors, $imageValidation['errors'], $tagValidation['errors']);
+        if (count($formErrors) > 0) {
+            http_response_code(422);
+            $this->renderPlaceForm($userInformation, $formValues, $tagValidation['tag_ids'], $formErrors, $place);
+            return;
+        }
+
+        $connection = Database::getConnection();
+        $newFiles = [];
+        $oldImagesToDelete = [];
+        try {
+            $connection->beginTransaction();
+            $lockedPlace = $this->requireEditablePlace($userInformation, $placeId, true);
+            if ($resubmit && $lockedPlace['status_code'] !== 'REJECTED') {
+                throw new HttpException(409, 'Trạng thái bài đã thay đổi. Vui lòng tải lại trang.');
+            }
+            $oldImages = $imageModel->findByPlaceId($placeId);
+            if (count($imageValidation['files']) === 0 && (count($oldImages) < 1 || count($oldImages) > 3)) {
+                throw new \InvalidArgumentException('Vui lòng chọn từ 1 đến 3 ảnh để thay bộ ảnh hiện tại.');
+            }
+            (new Place())->updateOwnedPlace((int) $userInformation['user_id'], $lockedPlace, $placeData, $resubmit);
+            if (count($imageValidation['files']) > 0) {
+                $imageModel->removeRecordsForPlace($placeId);
+                $newFiles = $imageModel->saveValidatedFiles($imageValidation['files']);
+                foreach ($newFiles as $image) {
+                    $imageModel->addPlaceImage((int) $userInformation['user_id'], $placeId, $image['image_path'], $image['sort_order']);
+                }
+                $oldImagesToDelete = $oldImages;
+            }
+            $tagModel->replaceTagsForPlace($placeId, $tagValidation['tag_ids']);
+            $connection->commit();
+        } catch (\Throwable $exception) {
+            try {
+                if ($connection->inTransaction()) {
+                    $connection->rollBack();
+                }
+            } catch (\Throwable $rollbackException) {
+                error_log('PlaceController::saveEditedPlace rollback failed: ' . $rollbackException->getMessage());
+            }
+            $undeleted = $imageModel->cleanupSavedFiles($newFiles);
+            if (count($undeleted) > 0) {
+                error_log('PlaceController::saveEditedPlace incomplete cleanup: ' . implode(', ', $undeleted));
+            }
+            if ($exception instanceof HttpException) {
+                throw $exception;
+            }
+            error_log('PlaceController::saveEditedPlace failed: ' . $exception->getMessage());
+            $errorMessage = 'Chưa thể lưu thay đổi. Ảnh và dữ liệu cũ vẫn được giữ lại. Vui lòng thử lại.';
+            $status = 500;
+            if ($exception instanceof \InvalidArgumentException) {
+                $errorMessage = $exception->getMessage();
+                $status = 422;
+            } elseif ($exception instanceof \PDOException && $exception->getCode() === '45000') {
+                $errorMessage = 'Dữ liệu bài không còn hợp lệ. Vui lòng kiểm tra danh mục và khu vực rồi thử lại.';
+                $status = 422;
+            }
+            http_response_code($status);
+            $this->renderPlaceForm($userInformation, $formValues, $tagValidation['tag_ids'], [$errorMessage], $place);
+            return;
+        }
+
+        // Chỉ dọn file cũ sau commit; helper bỏ qua ảnh seed hoặc đường dẫn bên ngoài uploads/places.
+        $undeleted = $imageModel->cleanupSavedFiles($oldImagesToDelete);
+        if (count($undeleted) > 0) {
+            error_log('PlaceController::saveEditedPlace old file cleanup incomplete: ' . implode(', ', $undeleted));
+        }
+        $_SESSION['place_success_message'] = 'Đã lưu thay đổi địa điểm.';
+        if ($resubmit) {
+            $_SESSION['place_success_message'] = 'Địa điểm đã được gửi duyệt lại và đang chờ duyệt.';
+        }
+        header('Location: ' . createRouteUrl('places/mine'), true, 303);
+    }
+
+    // Lấy người đăng từ session; không nhận owner/status hay cờ bỏ qua kiểm tra từ request.
+    private function requirePlaceAuthor(): array
+    {
         if (isset($_SESSION['user_id']) === false) {
             throw new HttpException(401, 'Vui lòng đăng nhập để đăng địa điểm.');
         }
 
-        $userId = (int) $_SESSION['user_id'];
+        $sessionUserId = $_SESSION['user_id'];
+        if (is_int($sessionUserId) === false && is_string($sessionUserId) === false) {
+            throw new HttpException(401, 'Phiên đăng nhập không hợp lệ.');
+        }
+        $userId = filter_var($sessionUserId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($userId === false) {
+            throw new HttpException(401, 'Phiên đăng nhập không hợp lệ.');
+        }
         $userModel = new User();
         $userInformation = $userModel->findById($userId);
 
@@ -160,53 +510,188 @@ final class PlaceController extends Controller
             throw new HttpException(401, 'Tài khoản không tồn tại. Vui lòng đăng nhập lại.');
         }
 
+        if ($userInformation['role_code'] !== 'MEMBER') {
+            throw new HttpException(403, 'Chỉ thành viên được đăng địa điểm.');
+        }
+
         if (isset($_SESSION['csrf_token']) === false) {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
 
-        // Hợp đồng C02/C03: dùng PlaceSearch::findActiveCategories() đã có của TV2;
-        // TV2 chưa bàn giao Model đọc tỉnh/nhãn và API phường/xã nên không tự tạo bản trùng.
+        return $userInformation;
+    }
+
+    // Tái sử dụng form khi mở mới hoặc trả lỗi; không giữ file upload trong session.
+    private function renderPlaceForm(
+        array $userInformation,
+        array $formValues = [],
+        array $selectedTagIds = [],
+        array $formErrors = [],
+        ?array $editingPlace = null
+    ): void {
+
+        // C02: tái sử dụng nguồn dữ liệu thật của TV2, chỉ chọn danh mục/nhãn đang hoạt động.
         $categories = [];
         $provinces = [];
         $wards = [];
         $tags = [];
-        $missingDependencies = [];
+        $dataLoadErrors = [];
 
         try {
-            $placeSearchModel = new PlaceSearch();
-            $categories = $placeSearchModel->findActiveCategories();
+            $categoryModel = new Category();
+            $categories = $categoryModel->findActiveCategories();
         } catch (\Throwable $exception) {
             error_log('PlaceController::create categories load error: ' . $exception->getMessage());
-            $missingDependencies[] = 'Danh mục địa điểm hiện chưa tải được. Vui lòng thử lại sau.';
+            $dataLoadErrors[] = 'Chưa tải được danh mục địa điểm. Vui lòng tải lại trang để thử lại.';
         }
 
-        $missingDependencies[] = 'Dữ liệu tỉnh/thành phố, phường/xã và nhãn hiện chưa sẵn sàng. Bạn có thể bật chế độ xem thử với dữ liệu mẫu để kiểm tra biểu mẫu.';
+        try {
+            $provinceModel = new Province();
+            $provinces = $provinceModel->findAllProvinces();
+        } catch (\Throwable $exception) {
+            error_log('PlaceController::create provinces load error: ' . $exception->getMessage());
+            $dataLoadErrors[] = 'Chưa tải được tỉnh/thành phố. Vui lòng tải lại trang để thử lại.';
+        }
 
-        $isPreviewSample = false;
-        if (isset($_GET['preview']) && is_string($_GET['preview']) && $_GET['preview'] === '1') {
-            $isPreviewSample = true;
-            $sampleData = $this->getPreviewSampleData();
-            if (count($categories) === 0) {
-                $categories = $sampleData['categories'];
+        try {
+            $tagModel = new Tag();
+            $tags = $tagModel->findActiveTags();
+        } catch (\Throwable $exception) {
+            error_log('PlaceController::create tags load error: ' . $exception->getMessage());
+            $dataLoadErrors[] = 'Chưa tải được danh sách nhãn. Bạn có thể để trống nhãn hoặc tải lại trang.';
+        }
+
+        $existingImages = [];
+        $existingImageUrls = [];
+        $isEditing = $editingPlace !== null;
+        $isRejected = false;
+        $placeId = 0;
+        $pageTitle = 'Đăng địa điểm mới';
+        if ($isEditing) {
+            $placeId = (int) $editingPlace['place_id'];
+            $isRejected = $editingPlace['status_code'] === 'REJECTED';
+            $pageTitle = 'Chỉnh sửa địa điểm';
+            $existingImages = (new PlaceImage())->findByPlaceId($placeId);
+            if (count($existingImages) > 0) {
+                $existingImageUrls = $this->buildImageUrlList($existingImages, (int) $editingPlace['category_id']);
             }
-            $provinces = $sampleData['provinces'];
-            $tags = $sampleData['tags'];
+            $hasCurrentCategory = false;
+            foreach ($categories as $category) {
+                if ((int) $category['category_id'] === (int) $editingPlace['category_id']) {
+                    $hasCurrentCategory = true;
+                }
+            }
+            if ($hasCurrentCategory === false) {
+                $categories[] = ['category_id' => $editingPlace['category_id'],
+                    'name' => $editingPlace['category_name'] . ' (đã ngừng, chỉ giữ cho bài này)'];
+            }
+            if (isset($editingPlace['ward_code'], $formValues['ward_code'], $formValues['province_code'])
+                && (string) $formValues['ward_code'] === (string) $editingPlace['ward_code']
+                && (string) $formValues['province_code'] === (string) $editingPlace['province_code']) {
+                $wards[] = ['ward_code' => $editingPlace['ward_code'], 'ward_name' => $editingPlace['ward_name']];
+            }
         }
 
         $viewData = [
-            'title' => 'Đăng địa điểm mới',
+            'title' => $pageTitle,
             'userInformation' => $userInformation,
             'csrfToken' => $_SESSION['csrf_token'],
             'categories' => $categories,
             'provinces' => $provinces,
             'wards' => $wards,
             'tags' => $tags,
-            'missingDependencies' => $missingDependencies,
-            'isPreviewSample' => $isPreviewSample,
-            'isStoreReady' => false,
+            'dataLoadErrors' => $dataLoadErrors,
+            'formValues' => $formValues,
+            'selectedTagIds' => $selectedTagIds,
+            'formErrors' => $formErrors,
+            'isStoreReady' => count($categories) > 0 && count($provinces) > 0,
+            'isEditing' => $isEditing,
+            'isRejected' => $isRejected,
+            'placeId' => $placeId,
+            'existingImageUrls' => $existingImageUrls,
+            'existingImageCount' => count($existingImages),
+            'editingPlace' => $editingPlace,
         ];
 
         $this->render('places/form', $viewData);
+    }
+
+    // Chỉ nhận chuỗi UTF-8 ở các trường văn bản; giữ nội dung hợp lệ để điền lại form.
+    private function readPlaceFormValues(array &$formErrors): array
+    {
+        $formValues = [];
+        $fieldNames = ['title', 'description', 'category_id', 'province_code', 'ward_code',
+            'address', 'latitude', 'longitude'];
+        foreach ($fieldNames as $fieldName) {
+            $rawValue = $_POST[$fieldName] ?? '';
+            $formValues[$fieldName] = '';
+            if (is_string($rawValue) === false || mb_check_encoding($rawValue, 'UTF-8') === false) {
+                $formErrors[] = 'Dữ liệu trường ' . $fieldName . ' không đúng định dạng.';
+            } else {
+                $formValues[$fieldName] = trim($rawValue);
+            }
+        }
+        return $formValues;
+    }
+
+    // Kiểm tra giới hạn của form và cặp tọa độ; routine kiểm tra danh mục/khu vực trong giao dịch.
+    private function validatePlaceFormValues(array $formValues, array &$formErrors): array
+    {
+        $textFields = [
+            'title' => ['Tên địa điểm', 100],
+            'description' => ['Mô tả', 1000],
+            'address' => ['Địa chỉ', 300],
+            'province_code' => ['Tỉnh/thành', 10],
+        ];
+        foreach ($textFields as $fieldName => $fieldRules) {
+            if ($formValues[$fieldName] === '') {
+                $formErrors[] = $fieldRules[0] . ' là thông tin bắt buộc.';
+            } elseif (mb_strlen($formValues[$fieldName], 'UTF-8') > $fieldRules[1]) {
+                $formErrors[] = $fieldRules[0] . ' vượt quá độ dài cho phép.';
+            }
+        }
+        if (mb_strlen($formValues['ward_code'], 'UTF-8') > 10) {
+            $formErrors[] = 'Mã phường/xã không hợp lệ.';
+        }
+        $categoryId = filter_var($formValues['category_id'], FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1, 'max_range' => 4294967295]]);
+        if ($categoryId === false) {
+            $formErrors[] = 'Vui lòng chọn danh mục hợp lệ.';
+        }
+
+        $latitude = null;
+        $longitude = null;
+        if ($formValues['latitude'] !== '' || $formValues['longitude'] !== '') {
+            if ($formValues['latitude'] === '' || $formValues['longitude'] === ''
+                || is_numeric($formValues['latitude']) === false || is_numeric($formValues['longitude']) === false) {
+                $formErrors[] = 'Vĩ độ và kinh độ phải cùng để trống hoặc cùng là số hợp lệ.';
+            } else {
+                $latitudeNumber = (float) $formValues['latitude'];
+                $longitudeNumber = (float) $formValues['longitude'];
+                if (is_finite($latitudeNumber) === false || is_finite($longitudeNumber) === false
+                    || $latitudeNumber < -90 || $latitudeNumber > 90
+                    || $longitudeNumber < -180 || $longitudeNumber > 180
+                    || ($latitudeNumber == 0 && $longitudeNumber == 0)) {
+                    $formErrors[] = 'Tọa độ ngoài phạm vi hợp lệ hoặc là tọa độ giả (0, 0).';
+                } else {
+                    $latitude = number_format($latitudeNumber, 7, '.', '');
+                    $longitude = number_format($longitudeNumber, 7, '.', '');
+                    if ((float) $latitude == 0 && (float) $longitude == 0) {
+                        $formErrors[] = 'Tọa độ quá nhỏ và trở thành (0, 0) khi lưu. Vui lòng để trống nếu chưa có vị trí.';
+                    }
+                }
+            }
+        }
+
+        $placeData = $formValues;
+        $placeData['category_id'] = $categoryId;
+        $placeData['latitude'] = $latitude;
+        $placeData['longitude'] = $longitude;
+        $placeData['ward_code'] = null;
+        if ($formValues['ward_code'] !== '') {
+            $placeData['ward_code'] = $formValues['ward_code'];
+        }
+        return $placeData;
     }
 
     // Hiển thị danh sách địa điểm của tài khoản đang đăng nhập (TV3-05, hợp đồng C08).
@@ -228,6 +713,12 @@ final class PlaceController extends Controller
         if (isset($_SESSION['csrf_token']) === false) {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
+
+        $successMessage = '';
+        if (isset($_SESSION['place_success_message']) && is_string($_SESSION['place_success_message'])) {
+            $successMessage = $_SESSION['place_success_message'];
+        }
+        unset($_SESSION['place_success_message']);
 
         $allowedStatusFilters = ['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'HIDDEN'];
         $activeStatusFilter = 'ALL';
@@ -284,41 +775,12 @@ final class PlaceController extends Controller
             'userInformation' => $userInformation,
             'csrfToken' => (string) $_SESSION['csrf_token'],
             'myPlaces' => $myPlaceList,
+            'successMessage' => $successMessage,
             'statusCounts' => $statusCounts,
             'activeStatusFilter' => $activeStatusFilter,
         ];
 
         $this->render('places/mine', $viewData);
-    }
-
-    // Dữ liệu mẫu chỉ dùng riêng khi bật chế độ preview giao diện (?preview=1), không thay dữ liệu thật.
-    private function getPreviewSampleData(): array
-    {
-        return [
-            'categories' => [
-                ['category_id' => 1, 'name' => 'Ẩm thực'],
-                ['category_id' => 2, 'name' => 'Cà phê'],
-                ['category_id' => 3, 'name' => 'Du lịch'],
-                ['category_id' => 4, 'name' => 'Vui chơi'],
-                ['category_id' => 5, 'name' => 'Thiên nhiên'],
-                ['category_id' => 6, 'name' => 'Văn hóa'],
-            ],
-            'provinces' => [
-                ['province_code' => '01', 'province_name' => 'Thành phố Hà Nội'],
-                ['province_code' => '48', 'province_name' => 'Thành phố Đà Nẵng'],
-                ['province_code' => '68', 'province_name' => 'Tỉnh Lâm Đồng'],
-                ['province_code' => '79', 'province_name' => 'Thành phố Hồ Chí Minh'],
-            ],
-            'tags' => [
-                ['tag_id' => 1, 'name' => 'Cà phê'],
-                ['tag_id' => 2, 'name' => 'View đẹp'],
-                ['tag_id' => 3, 'name' => 'Đà Lạt'],
-                ['tag_id' => 4, 'name' => 'Yên tĩnh'],
-                ['tag_id' => 5, 'name' => 'Check-in'],
-                ['tag_id' => 6, 'name' => 'Gia đình'],
-                ['tag_id' => 7, 'name' => 'Giá hợp lý'],
-            ],
-        ];
     }
 
     // Đọc id từ query string; trả về 0 nếu không phải số nguyên dương.

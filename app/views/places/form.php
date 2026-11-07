@@ -79,14 +79,9 @@ if (isset($viewData['formMessageType']) && is_string($viewData['formMessageType'
     }
 }
 
-$missingDependencies = [];
-if (isset($viewData['missingDependencies']) && is_array($viewData['missingDependencies'])) {
-    $missingDependencies = $viewData['missingDependencies'];
-}
-
-$isPreviewSample = false;
-if (isset($viewData['isPreviewSample']) && $viewData['isPreviewSample'] === true) {
-    $isPreviewSample = true;
+$dataLoadErrors = [];
+if (isset($viewData['dataLoadErrors']) && is_array($viewData['dataLoadErrors'])) {
+    $dataLoadErrors = $viewData['dataLoadErrors'];
 }
 
 $isStoreReady = false;
@@ -95,12 +90,24 @@ if (isset($viewData['isStoreReady']) && $viewData['isStoreReady'] === true) {
 }
 
 $homePageUrl = createRouteUrl('home');
+$isEditing = ($viewData['isEditing'] ?? false) === true;
+$isRejected = ($viewData['isRejected'] ?? false) === true;
+$existingImageUrls = $viewData['existingImageUrls'] ?? [];
+$existingImageCount = (int) ($viewData['existingImageCount'] ?? 0);
+$cancelPageUrl = $homePageUrl;
+$submitLabel = 'Gửi địa điểm chờ duyệt';
+if ($isEditing) {
+    $cancelPageUrl = createRouteUrl('places/mine');
+    $submitLabel = 'Lưu thay đổi';
+}
 $createPageUrl = createRouteUrl('places/create');
-$previewSampleUrl = $createPageUrl . '&preview=1';
 $formActionUrl = $createPageUrl;
 $storeReadyAttribute = 'false';
 if ($isStoreReady) {
     $formActionUrl = createRouteUrl('places/store');
+    if ($isEditing) {
+        $formActionUrl = createRouteUrl('places/update');
+    }
     $storeReadyAttribute = 'true';
 }
 if ($isStoreReady && isset($viewData['formAction']) && is_string($viewData['formAction']) && trim($viewData['formAction']) !== '') {
@@ -120,6 +127,8 @@ if (function_exists('mb_strlen')) {
     $initialDescriptionLength = strlen($formValues['description']);
 }
 ?>
+<link rel="stylesheet" href="assets/vendor/leaflet-1.9.4/leaflet.css">
+<link rel="stylesheet" href="assets/css/place-map.css?v=20261107-08">
 <section class="hs-place-form-hero" aria-labelledby="place-form-hero-title">
     <div class="hs-place-form-hero__overlay" aria-hidden="true"></div>
     <div class="container hs-place-form-hero__inner">
@@ -144,29 +153,10 @@ if (function_exists('mb_strlen')) {
 
 <section class="hs-place-form-page">
     <div class="container">
-        <?php if ($isPreviewSample) { ?>
+        <?php if (count($dataLoadErrors) > 0) { ?>
             <div class="alert alert-warning hs-place-form-banner" role="status">
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    <div>
-                        <strong>Chế độ xem thử giao diện (Dữ liệu mẫu):</strong>
-                        Danh mục, tỉnh/thành phố và nhãn đang hiển thị bên dưới là dữ liệu mẫu phục vụ kiểm tra biểu mẫu, <strong>không phải dữ liệu thật từ hệ thống</strong>.
-                    </div>
-                    <a class="btn btn-sm btn-outline-dark" href="<?php echo escapeHtml($createPageUrl); ?>">
-                        Tắt dữ liệu mẫu
-                    </a>
-                </div>
-            </div>
-        <?php } elseif (count($missingDependencies) > 0) { ?>
-            <div class="alert alert-info hs-place-form-banner" role="status">
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    <div>
-                        <strong>Thông báo dữ liệu:</strong>
-                        <?php echo escapeHtml(implode(' ', $missingDependencies)); ?>
-                    </div>
-                    <a class="btn btn-sm btn-outline-primary" href="<?php echo escapeHtml($previewSampleUrl); ?>">
-                        Xem thử với dữ liệu mẫu
-                    </a>
-                </div>
+                <strong>Thông báo dữ liệu:</strong>
+                <?php echo escapeHtml(implode(' ', $dataLoadErrors)); ?>
             </div>
         <?php } ?>
 
@@ -186,6 +176,11 @@ if (function_exists('mb_strlen')) {
                         <?php } ?>
                     <?php } ?>
                 </ul>
+                <?php if ($isEditing) { ?>
+                    <p class="mb-0 mt-2">Ảnh hiện tại vẫn được giữ. Nếu muốn thay ảnh, vui lòng chọn lại ảnh mới.</p>
+                <?php } else { ?>
+                    <p class="mb-0 mt-2">Thông tin đã nhập được giữ lại. Vui lòng chọn lại ảnh trước khi gửi.</p>
+                <?php } ?>
             </div>
         <?php } ?>
 
@@ -205,8 +200,22 @@ if (function_exists('mb_strlen')) {
                     action="<?php echo escapeHtml($formActionUrl); ?>"
                     enctype="multipart/form-data"
                     data-wards-url="<?php echo escapeHtml($wardsApiUrl); ?>"
+                    data-geocode-url="<?php echo escapeHtml(createRouteUrl('api/places/geocode')); ?>"
                     data-store-ready="<?php echo $storeReadyAttribute; ?>"
+                    data-editing="<?php if ($isEditing) { echo 'true'; } else { echo 'false'; } ?>"
+                    data-existing-image-count="<?php echo $existingImageCount; ?>"
                     novalidate>
+
+                    <?php if ($isEditing) { ?>
+                        <input type="hidden" name="place_id" value="<?php echo (int) $viewData['placeId']; ?>">
+                        <?php if ($isRejected) { ?>
+                            <div class="alert alert-warning" role="note">
+                                <strong>Lý do từ chối:</strong>
+                                <?php echo escapeHtml((string) ($viewData['editingPlace']['rejection_reason'] ?? '')); ?>
+                                <p class="mb-0 mt-2">Lưu thay đổi sẽ giữ trạng thái bị từ chối. Chọn Gửi duyệt lại khi bạn đã chỉnh sửa xong.</p>
+                            </div>
+                        <?php } ?>
+                    <?php } ?>
 
                     <input
                         type="hidden"
@@ -339,7 +348,10 @@ if (function_exists('mb_strlen')) {
                                             if (is_array($tagItem) === false) {
                                                 continue;
                                             }
-                                            $tagId = isset($tagItem['tag_id']) ? (int) $tagItem['tag_id'] : 0;
+                                            $tagId = 0;
+                                            if (isset($tagItem['tag_id'])) {
+                                                $tagId = (int) $tagItem['tag_id'];
+                                            }
                                             $tagName = trim((string) ($tagItem['name'] ?? ''));
                                             if ($tagId <= 0 || $tagName === '') {
                                                 continue;
@@ -432,8 +444,9 @@ if (function_exists('mb_strlen')) {
                                     name="ward_code"
                                     class="form-select hs-place-form__control"
                                     data-initial-ward="<?php echo escapeHtml($formValues['ward_code']); ?>"
+                                    <?php if (count($wards) === 0) { echo 'disabled'; } ?>
                                     aria-describedby="place-ward-hint">
-                                    <option value="">Chọn phường/xã</option>
+                                    <option value="">Chọn tỉnh/thành trước (không bắt buộc)</option>
                                     <?php foreach ($wards as $wardItem) {
                                         if (is_array($wardItem) === false) {
                                             continue;
@@ -452,8 +465,8 @@ if (function_exists('mb_strlen')) {
                                         </option>
                                     <?php } ?>
                                 </select>
-                                <small id="place-ward-hint" class="hs-place-form__hint">
-                                    Tùy chọn; tự động làm mới khi đổi tỉnh/thành.
+                                <small id="place-ward-hint" class="hs-place-form__hint" aria-live="polite">
+                                    Phường/xã là tùy chọn. Bạn có thể để trống nếu chưa tải được danh sách.
                                 </small>
                             </div>
 
@@ -489,23 +502,22 @@ if (function_exists('mb_strlen')) {
 
                         <div class="row g-3 align-items-stretch">
                             <div class="col-12 col-md-6">
-                                <div id="place-map-preview" class="hs-place-form__map-preview">
-                                    <p class="hs-place-form__map-placeholder-title mb-2">
-                                        Bản đồ trực quan chưa hỗ trợ
-                                    </p>
-                                    <p class="hs-place-form__map-placeholder-copy mb-2">
-                                        Khung chọn vị trí trên bản đồ đang được hoàn thiện. Bạn có thể để trống tọa độ hoặc nhập cặp vĩ độ và kinh độ ở khung bên cạnh.
-                                    </p>
-                                    <p id="place-map-coord-readout" class="hs-place-form__map-readout mb-0">
-                                        Chưa nhập tọa độ (không bắt buộc)
-                                    </p>
-                                </div>
+                                <div id="place-map-preview" class="hs-place-form__map" data-place-map-picker
+                                    role="region" aria-label="Chọn vị trí địa điểm trên bản đồ"
+                                    aria-describedby="place-map-picker-status"
+                                    data-tile-url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"></div>
+                                <p id="place-map-picker-status" class="hs-place-form__hint mt-2" role="status" aria-live="polite">
+                                    Chạm bản đồ để đặt ghim, kéo ghim để chỉnh vị trí. Dùng phím Enter để chọn tâm bản đồ. Bạn cũng có thể nhập hoặc bỏ trống tọa độ.
+                                </p>
+                                <p id="place-map-coord-readout" class="hs-place-form__map-readout mb-0">
+                                    Chưa nhập tọa độ (không bắt buộc)
+                                </p>
                             </div>
 
                             <div class="col-12 col-md-6">
                                 <div class="hs-place-form__geo-panel">
                                     <p class="hs-place-form__geo-prompt">
-                                        Tọa độ địa lý là thông tin tùy chọn. Chức năng tìm vị trí tự động hiện chưa hỗ trợ.
+                                        Nhập địa chỉ và chọn tỉnh/thành ở trên, rồi bấm tìm vị trí. Chọn kết quả phù hợp hoặc điều chỉnh ghim trên bản đồ.
                                     </p>
 
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
@@ -514,8 +526,8 @@ if (function_exists('mb_strlen')) {
                                             id="place-geocode-btn"
                                             class="btn hs-place-form__geocode-btn"
                                             disabled
-                                            aria-disabled="true">
-                                            Tìm vị trí (Chưa hỗ trợ)
+                                            aria-disabled="true" aria-describedby="place-geocode-status">
+                                            Tìm vị trí theo địa chỉ
                                         </button>
 
                                         <button
@@ -525,6 +537,9 @@ if (function_exists('mb_strlen')) {
                                             Xóa tọa độ
                                         </button>
                                     </div>
+
+                                    <p id="place-geocode-status" class="hs-place-form__hint" role="status" aria-live="polite"></p>
+                                    <div id="place-geocode-results" class="hs-place-form__geocode-results" aria-label="Kết quả tìm vị trí" hidden></div>
 
                                     <div class="row g-2 mb-2">
                                         <div class="col-6">
@@ -564,9 +579,9 @@ if (function_exists('mb_strlen')) {
                                         hidden></p>
 
                                     <div class="hs-place-form__geo-note" role="note">
-                                        <span class="hs-place-form__geo-note-icon" aria-hidden="true">i</span>
                                         <p class="mb-0">
-                                            <strong>Lưu ý:</strong> Việc tìm kiếm vị trí sử dụng Nominatim (OpenStreetMap) có thể không thành công trong một số trường hợp. Bạn vẫn có thể gửi địa điểm mà không cần chọn vị trí trên bản đồ.
+                                            <strong>Lưu ý:</strong> Chỉ khi bấm tìm, địa chỉ địa điểm được gửi tới Nominatim. Không nhập thông tin cá nhân hoặc bí mật. Dịch vụ có thể không tìm thấy vị trí; bạn vẫn có thể lưu bài không có tọa độ.
+                                            Dữ liệu © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>.
                                         </p>
                                     </div>
                                 </div>
@@ -582,10 +597,19 @@ if (function_exists('mb_strlen')) {
                                 Hình ảnh địa điểm <span class="hs-place-form__required" aria-hidden="true">*</span>
                             </h2>
                             <small class="hs-place-form__counter ms-auto" id="place-image-counter">
-                                <span data-place-image-count>0</span>/3 hình ảnh
+                                <span data-place-image-count><?php echo $existingImageCount; ?></span>/3 hình ảnh
                             </small>
                         </div>
 
+                        <?php if ($isEditing) { ?>
+                            <p class="hs-place-form__hint">Không chọn ảnh mới sẽ giữ bộ ảnh hiện tại. Chọn 1–3 ảnh mới để thay toàn bộ ảnh cũ.</p>
+                            <div id="place-current-images" class="hs-place-form__previews mb-3">
+                                <?php foreach ($existingImageUrls as $imageUrl) { ?>
+                                    <img class="hs-place-form__preview-img" src="<?php echo escapeHtml($imageUrl); ?>"
+                                        alt="Ảnh hiện tại của địa điểm" loading="lazy">
+                                <?php } ?>
+                            </div>
+                        <?php } ?>
                         <div class="row g-3 align-items-center">
                             <div class="col-12 col-md-5">
                                 <input
@@ -604,17 +628,10 @@ if (function_exists('mb_strlen')) {
                                     tabindex="0"
                                     role="button"
                                     aria-label="Kéo thả hình ảnh vào đây hoặc nhấp để chọn từ 1 đến 3 ảnh">
-                                    <span class="hs-place-form__dropzone-icon" aria-hidden="true">
-                                        <svg viewBox="0 0 24 24">
-                                            <path d="M16 16l-4-4-4 4"></path>
-                                            <path d="M12 12v9"></path>
-                                            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
-                                        </svg>
-                                    </span>
                                     <span class="hs-place-form__dropzone-text">
                                         <strong>Kéo thả hình ảnh vào đây hoặc nhấp để chọn</strong>
                                         <small id="place-images-help">
-                                            Hỗ trợ định dạng: JPG, PNG, WebP. Tối đa 3 hình ảnh (bắt buộc 1–3 ảnh).
+                                            JPG, PNG, WebP; tối đa 5MB mỗi ảnh. Chọn từ 1 đến 3 ảnh.
                                         </small>
                                     </span>
                                 </label>
@@ -648,13 +665,19 @@ if (function_exists('mb_strlen')) {
                     <?php } ?>
 
                     <div class="hs-place-form__actions">
-                        <a href="<?php echo escapeHtml($homePageUrl); ?>" class="btn hs-place-form__cancel-btn">
+                        <a href="<?php echo escapeHtml($cancelPageUrl); ?>" class="btn hs-place-form__cancel-btn">
                             Hủy bỏ
                         </a>
                         <?php if ($isStoreReady) { ?>
                             <button type="submit" id="place-submit-btn" class="btn hs-place-form__submit-btn">
-                                Gửi địa điểm chờ duyệt
+                                <?php echo escapeHtml($submitLabel); ?>
                             </button>
+                            <?php if ($isEditing && $isRejected) { ?>
+                                <button type="submit" id="place-resubmit-btn" class="btn hs-place-form__submit-btn"
+                                    formaction="<?php echo escapeHtml(createRouteUrl('places/resubmit')); ?>">
+                                    Gửi duyệt lại
+                                </button>
+                            <?php } ?>
                         <?php } else { ?>
                             <button type="button" id="place-check-btn" class="btn hs-place-form__check-btn">
                                 Kiểm tra thông tin đã nhập
