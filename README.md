@@ -40,6 +40,16 @@ Không commit `app/config/app.php`, `app/config/database.php`, mật khẩu ứn
 
 Kiểm thử luồng chính của Google, ghi nhớ đăng nhập và khôi phục mật khẩu đã được Khang báo đạt trên local. Điều này không xác nhận các tính năng mới đã được deploy lên hosting hoặc tất cả module của nhóm đã hoàn thành.
 
+## Tọa độ tùy chọn (TV3-08)
+
+Form tạo/sửa dùng lại luồng T06, Leaflet 1.9.4 và Detail T07. Dữ liệu chọn danh mục/tỉnh/nhãn dùng model TV2 (C02). Phường/xã gọi `GET api/locations/wards?province_code=...` theo C03, giữ mã dạng chuỗi và xóa lựa chọn cũ khi đổi tỉnh. Endpoint này thuộc TV2; khi chưa có hoặc mạng lỗi, phường/xã vẫn được bỏ trống. Favorite/Review trên Detail dùng các partial và endpoint do KH/TV4 cung cấp (C09/C05).
+
+`GET index.php?route=api/places/geocode&address=...&province_code=...` thuộc TV3, chỉ cho MEMBER đăng nhập và có header `X-CSRF-Token` từ form. Kết quả JSON có `success`, `message`, `data.results` (tối đa 3 mục `label`, `latitude`, `longitude`). Endpoint tái sử dụng `Province::findAllProvinces()`, ghép địa chỉ với tên tỉnh, gọi Nominatim từ PHP; không ghi database. Form chỉ điền tọa độ sau khi người dùng chọn kết quả hoặc đặt/kéo ghim. Không tìm theo từng phím gõ hay tự tìm lúc tải trang/lưu bài. Lưu qua `places/store`, `places/update`, `places/resubmit` với kiểm tra tọa độ của T06; để trống cả hai lưu NULL, không dùng cặp giả 0/0.
+
+Tuân thủ [chính sách Nominatim](https://operations.osmfoundation.org/policies/nominatim/): chỉ tìm do người dùng yêu cầu, User-Agent nhận diện HotSpot, khóa và giới hạn chung dưới 1 request/giây cho ứng dụng trên một máy chủ. Cache kết quả 24 giờ, kết quả rỗng 1 giờ, tối đa 200 mục trong `storage/cache/geocoding/` (runtime được Git bỏ qua, ngoài web root). Thư mục này cần quyền ghi cho PHP. Không gửi thông tin cá nhân hoặc bí mật. Attribution OpenStreetMap hiện trên form và bản đồ. Không sử dụng endpoint này làm dịch vụ geocoding công khai/tổng quát, autocomplete hay tìm hàng loạt.
+
+Có thể đổi nhà cung cấp tương thích Nominatim bằng biến môi trường máy chủ `HOTSPOT_GEOCODE_ENDPOINT` (URL HTTPS `/search`, không kèm query). Mặc định `https://nominatim.openstreetmap.org/search`; không nhận URL từ người dùng. Kết nối giữ kiểm tra chứng chỉ TLS, connect timeout 2 giây, tổng timeout 5 giây. Rate limit trả 429; mất kết nối/timeout trả 503, upstream sai dữ liệu trả 502. Các lỗi chỉ hiện trong phần vị trí, không khóa nút lưu. Người dùng có thể nhập tọa độ hoặc xóa cả hai để lưu bài khi offline.
+
 ## Git
 
 PR bàn giao phải được review và merge trước khi nhóm lấy phiên bản từ `main`. Khi đã merge:

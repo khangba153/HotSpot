@@ -222,5 +222,5 @@ $homePageUrl = createRouteUrl('home');
 <script src="assets/js/gallery.js?v=20261107" defer></script>
 <?php if ($hasLocation) { ?>
     <script src="assets/vendor/leaflet-1.9.4/leaflet.js" defer></script>
-    <script src="assets/js/map.js?v=20261107" defer></script>
+    <script src="assets/js/map.js?v=20261107-08" defer></script>
 <?php } ?>

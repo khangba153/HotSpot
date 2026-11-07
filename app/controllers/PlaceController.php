@@ -15,6 +15,7 @@ use HotSpot\Models\Tag;
 use HotSpot\Models\Review;
 use HotSpot\Models\User;
 use HotSpot\Models\Favorite;
+use HotSpot\Services\PlaceGeocoder;
 
 final class PlaceController extends Controller
 {
@@ -257,6 +258,65 @@ final class PlaceController extends Controller
 
         $_SESSION['place_success_message'] = 'Địa điểm đã được gửi thành công và đang chờ duyệt.';
         header('Location: ' . createRouteUrl('places/mine'), true, 303);
+    }
+
+    // TV3-08: chỉ tìm theo thao tác thành viên, dùng nguồn tỉnh C02 của TV2.
+    public function geocode(): void
+    {
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+        try {
+            $this->requirePlaceAuthor();
+            $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+            if (!is_string($token) || !hash_equals((string) $_SESSION['csrf_token'], $token)) {
+                throw new HttpException(403, 'Phiên biểu mẫu không hợp lệ. Vui lòng tải lại trang.');
+            }
+            foreach (array_keys($_GET) as $field) {
+                if (!in_array($field, ['route', 'address', 'province_code'], true)) {
+                    throw new HttpException(400, 'Tham số tìm vị trí không được hỗ trợ.');
+                }
+            }
+            $address = $_GET['address'] ?? '';
+            $provinceCode = $_GET['province_code'] ?? '';
+            if (!is_string($address) || !mb_check_encoding($address, 'UTF-8') || !is_string($provinceCode)
+                || !mb_check_encoding($provinceCode, 'UTF-8')) {
+                throw new HttpException(422, 'Địa chỉ hoặc tỉnh/thành không hợp lệ.');
+            }
+            $address = preg_replace('/\s+/u', ' ', trim($address));
+            $provinceCode = trim($provinceCode);
+            if (mb_strlen($address, 'UTF-8') < 3 || mb_strlen($address, 'UTF-8') > 300 || strlen($provinceCode) > 10) {
+                throw new HttpException(422, 'Vui lòng nhập địa chỉ từ 3 đến 300 ký tự và chọn tỉnh/thành.');
+            }
+            $provinceName = '';
+            foreach ((new Province())->findAllProvinces() as $province) {
+                if ((string) $province['province_code'] === $provinceCode) {
+                    $provinceName = (string) $province['province_name'];
+                    break;
+                }
+            }
+            if ($provinceName === '') {
+                throw new HttpException(422, 'Vui lòng chọn tỉnh/thành hợp lệ.');
+            }
+            // Nhả khóa session trước khi gọi mạng để lưu bài không phải chờ tìm vị trí.
+            session_write_close();
+            $results = (new PlaceGeocoder())->search($address . ', ' . $provinceName . ', Việt Nam');
+            echo json_encode(['success' => true, 'message' => count($results) > 0 ? 'Chọn kết quả phù hợp.' : 'Không tìm thấy vị trí phù hợp.',
+                'data' => ['results' => $results]], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
+        } catch (\Throwable $exception) {
+            $status = 503;
+            $message = 'Chưa thể tìm vị trí. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ để lưu bài.';
+            if ($exception instanceof HttpException) {
+                $status = $exception->getCode();
+                $message = $exception->getMessage();
+            } else {
+                error_log('PlaceController::geocode failed: ' . get_class($exception));
+            }
+            http_response_code($status);
+            if ($status === 429) {
+                header('Retry-After: 2');
+            }
+            echo json_encode(['success' => false, 'message' => $message, 'data' => ['results' => []]], JSON_UNESCAPED_UNICODE);
+        }
     }
 
     // Nạp dữ liệu bài của chủ sở hữu vào chính form đăng địa điểm.

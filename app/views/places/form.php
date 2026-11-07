@@ -127,6 +127,8 @@ if (function_exists('mb_strlen')) {
     $initialDescriptionLength = strlen($formValues['description']);
 }
 ?>
+<link rel="stylesheet" href="assets/vendor/leaflet-1.9.4/leaflet.css">
+<link rel="stylesheet" href="assets/css/place-map.css?v=20261107-08">
 <section class="hs-place-form-hero" aria-labelledby="place-form-hero-title">
     <div class="hs-place-form-hero__overlay" aria-hidden="true"></div>
     <div class="container hs-place-form-hero__inner">
@@ -198,6 +200,7 @@ if (function_exists('mb_strlen')) {
                     action="<?php echo escapeHtml($formActionUrl); ?>"
                     enctype="multipart/form-data"
                     data-wards-url="<?php echo escapeHtml($wardsApiUrl); ?>"
+                    data-geocode-url="<?php echo escapeHtml(createRouteUrl('api/places/geocode')); ?>"
                     data-store-ready="<?php echo $storeReadyAttribute; ?>"
                     data-editing="<?php if ($isEditing) { echo 'true'; } else { echo 'false'; } ?>"
                     data-existing-image-count="<?php echo $existingImageCount; ?>"
@@ -517,23 +520,22 @@ if (function_exists('mb_strlen')) {
 
                         <div class="row g-3 align-items-stretch">
                             <div class="col-12 col-md-6">
-                                <div id="place-map-preview" class="hs-place-form__map-preview">
-                                    <p class="hs-place-form__map-placeholder-title mb-2">
-                                        Bản đồ trực quan chưa hỗ trợ
-                                    </p>
-                                    <p class="hs-place-form__map-placeholder-copy mb-2">
-                                        Khung chọn vị trí trên bản đồ đang được hoàn thiện. Bạn có thể để trống tọa độ hoặc nhập cặp vĩ độ và kinh độ ở khung bên cạnh.
-                                    </p>
-                                    <p id="place-map-coord-readout" class="hs-place-form__map-readout mb-0">
-                                        Chưa nhập tọa độ (không bắt buộc)
-                                    </p>
-                                </div>
+                                <div id="place-map-preview" class="hs-place-form__map" data-place-map-picker
+                                    role="region" aria-label="Chọn vị trí địa điểm trên bản đồ"
+                                    aria-describedby="place-map-picker-status"
+                                    data-tile-url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"></div>
+                                <p id="place-map-picker-status" class="hs-place-form__hint mt-2" role="status" aria-live="polite">
+                                    Chạm bản đồ để đặt ghim, kéo ghim để chỉnh vị trí. Dùng phím Enter để chọn tâm bản đồ. Bạn cũng có thể nhập hoặc bỏ trống tọa độ.
+                                </p>
+                                <p id="place-map-coord-readout" class="hs-place-form__map-readout mb-0">
+                                    Chưa nhập tọa độ (không bắt buộc)
+                                </p>
                             </div>
 
                             <div class="col-12 col-md-6">
                                 <div class="hs-place-form__geo-panel">
                                     <p class="hs-place-form__geo-prompt">
-                                        Tọa độ địa lý là thông tin tùy chọn. Chức năng tìm vị trí tự động hiện chưa hỗ trợ.
+                                        Nhập địa chỉ và chọn tỉnh/thành ở trên, rồi bấm tìm vị trí. Chọn kết quả phù hợp hoặc điều chỉnh ghim trên bản đồ.
                                     </p>
 
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
@@ -542,8 +544,8 @@ if (function_exists('mb_strlen')) {
                                             id="place-geocode-btn"
                                             class="btn hs-place-form__geocode-btn"
                                             disabled
-                                            aria-disabled="true">
-                                            Tìm vị trí (Chưa hỗ trợ)
+                                            aria-disabled="true" aria-describedby="place-geocode-status">
+                                            Tìm vị trí theo địa chỉ
                                         </button>
 
                                         <button
@@ -553,6 +555,9 @@ if (function_exists('mb_strlen')) {
                                             Xóa tọa độ
                                         </button>
                                     </div>
+
+                                    <p id="place-geocode-status" class="hs-place-form__hint" role="status" aria-live="polite"></p>
+                                    <div id="place-geocode-results" class="hs-place-form__geocode-results" aria-label="Kết quả tìm vị trí" hidden></div>
 
                                     <div class="row g-2 mb-2">
                                         <div class="col-6">
@@ -594,7 +599,8 @@ if (function_exists('mb_strlen')) {
                                     <div class="hs-place-form__geo-note" role="note">
                                         <span class="hs-place-form__geo-note-icon" aria-hidden="true">i</span>
                                         <p class="mb-0">
-                                            <strong>Lưu ý:</strong> Việc tìm kiếm vị trí sử dụng Nominatim (OpenStreetMap) có thể không thành công trong một số trường hợp. Bạn vẫn có thể gửi địa điểm mà không cần chọn vị trí trên bản đồ.
+                                            <strong>Lưu ý:</strong> Chỉ khi bấm tìm, địa chỉ địa điểm được gửi tới Nominatim. Không nhập thông tin cá nhân hoặc bí mật. Dịch vụ có thể không tìm thấy vị trí; bạn vẫn có thể lưu bài không có tọa độ.
+                                            Dữ liệu © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>.
                                         </p>
                                     </div>
                                 </div>
@@ -764,4 +770,6 @@ if (function_exists('mb_strlen')) {
         </div>
     </div>
 </section>
-<script src="assets/js/place-form.js?v=20261107-06" defer></script>
+<script src="assets/js/place-form.js?v=20261107-08" defer></script>
+<script src="assets/vendor/leaflet-1.9.4/leaflet.js" defer></script>
+<script src="assets/js/map.js?v=20261107-08" defer></script>
