@@ -137,7 +137,7 @@
                     return;
                 }
 
-                showWardLoadError(wardState);
+                showWardLoadError(wardState, error);
             });
     }
 
