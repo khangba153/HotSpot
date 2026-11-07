@@ -250,28 +250,7 @@ if (function_exists('mb_strlen')) {
                             </div>
 
                             <div class="col-12 col-md-6">
-                                <label for="place-description" class="form-label hs-place-form__label">
-                                    Mô tả <span class="hs-place-form__required" aria-hidden="true">*</span>
-                                </label>
-                                <textarea
-                                    id="place-description"
-                                    name="description"
-                                    class="form-control hs-place-form__control hs-place-form__textarea"
-                                    rows="3"
-                                    maxlength="1000"
-                                    placeholder="Giới thiệu ngắn gọn về địa điểm, điểm đặc biệt, trải nghiệm nổi bật,..."
-                                    required
-                                    aria-describedby="place-description-counter place-description-error"><?php echo escapeHtml($formValues['description']); ?></textarea>
-                                <div class="hs-place-form__meta-row">
-                                    <p
-                                        id="place-description-error"
-                                        class="hs-place-form__field-error"
-                                        role="alert"
-                                        hidden></p>
-                                    <small id="place-description-counter" class="hs-place-form__counter">
-                                        <span data-place-description-count><?php echo $initialDescriptionLength; ?></span>/1000
-                                    </small>
-                                </div>
+                                <?php require dirname(__DIR__) . '/ai/_place_description.php'; ?>
                             </div>
                         </div>
                     </section>
@@ -743,3 +722,4 @@ if (function_exists('mb_strlen')) {
     </div>
 </section>
 <script src="assets/js/place-form.js" defer></script>
+<script src="assets/js/ai-description.js?v=2" defer></script>
