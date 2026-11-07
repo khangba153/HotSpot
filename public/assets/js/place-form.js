@@ -52,8 +52,6 @@
 
     var selectedImageFiles = [];
     var activeObjectUrls = [];
-    var wardRequestSequence = 0;
-    var activeWardAbortController = null;
 
     // Hiển thị hoặc ẩn thông báo lỗi của từng trường.
     function setFieldError(errorElementId, message) {
@@ -119,8 +117,8 @@
             tagCountElement.textContent = String(checkedList.length);
         }
 
-        for (var i = 0; i < tagCheckboxes.length; i++) {
-            var checkbox = tagCheckboxes[i];
+        for (var checkboxIndex = 0; checkboxIndex < tagCheckboxes.length; checkboxIndex++) {
+            var checkbox = tagCheckboxes[checkboxIndex];
             var parentLabel = checkbox.closest('.hs-place-tag-choice');
             if (parentLabel) {
                 if (checkbox.checked) {
@@ -143,31 +141,34 @@
 
         selectedTagsContainer.innerHTML = '';
 
-        for (var j = 0; j < checkedList.length; j++) {
-            (function (checkedBox) {
-                var tagName = checkedBox.getAttribute('data-tag-name') || checkedBox.value;
-                var chip = document.createElement('span');
-                chip.className = 'hs-place-selected-tag';
-
-                var textSpan = document.createElement('span');
-                textSpan.textContent = tagName;
-
-                var removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'hs-place-selected-tag__remove';
-                removeButton.setAttribute('aria-label', 'Bỏ nhãn ' + tagName);
-                removeButton.textContent = '×';
-                removeButton.addEventListener('click', function () {
-                    checkedBox.checked = false;
-                    setFieldError('place-tags-feedback', '');
-                    renderSelectedTags();
-                });
-
-                chip.appendChild(textSpan);
-                chip.appendChild(removeButton);
-                selectedTagsContainer.appendChild(chip);
-            })(checkedList[j]);
+        for (var selectedTagIndex = 0; selectedTagIndex < checkedList.length; selectedTagIndex++) {
+            appendSelectedTag(checkedList[selectedTagIndex]);
         }
+    }
+
+    // Mỗi lần gọi giữ riêng checkbox cho nút bỏ nhãn, không cần hàm tự gọi trong vòng lặp.
+    function appendSelectedTag(checkedBox) {
+        var tagName = checkedBox.getAttribute('data-tag-name') || checkedBox.value;
+        var chip = document.createElement('span');
+        chip.className = 'hs-place-selected-tag';
+
+        var textSpan = document.createElement('span');
+        textSpan.textContent = tagName;
+
+        var removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'hs-place-selected-tag__remove';
+        removeButton.setAttribute('aria-label', 'Bỏ nhãn ' + tagName);
+        removeButton.textContent = '×';
+        removeButton.addEventListener('click', function () {
+            checkedBox.checked = false;
+            setFieldError('place-tags-feedback', '');
+            renderSelectedTags();
+        });
+
+        chip.appendChild(textSpan);
+        chip.appendChild(removeButton);
+        selectedTagsContainer.appendChild(chip);
     }
 
     // Xử lý khi người dùng chọn hoặc bỏ chọn một nhãn.
@@ -197,168 +198,18 @@
 
         var keyword = tagFilterInput.value.trim().toLowerCase();
 
-        for (var i = 0; i < tagCheckboxes.length; i++) {
-            var parentLabel = tagCheckboxes[i].closest('.hs-place-tag-choice');
+        for (var checkboxIndex = 0; checkboxIndex < tagCheckboxes.length; checkboxIndex++) {
+            var parentLabel = tagCheckboxes[checkboxIndex].closest('.hs-place-tag-choice');
             if (!parentLabel) {
                 continue;
             }
-            var tagName = (tagCheckboxes[i].getAttribute('data-tag-name') || '').toLowerCase();
+            var tagName = (tagCheckboxes[checkboxIndex].getAttribute('data-tag-name') || '').toLowerCase();
             if (keyword === '' || tagName.indexOf(keyword) !== -1) {
                 parentLabel.hidden = false;
             } else {
                 parentLabel.hidden = true;
             }
         }
-    }
-
-    // Làm mới ô chọn Phường/Xã để không giữ lại phường của tỉnh cũ.
-    function resetWardOptions(placeholderText) {
-        if (!wardSelect) {
-            return;
-        }
-
-        wardSelect.innerHTML = '';
-        var defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = placeholderText || 'Chọn phường/xã';
-        wardSelect.appendChild(defaultOption);
-        wardSelect.value = '';
-        wardSelect.disabled = true;
-        wardSelect.setAttribute('aria-busy', 'false');
-    }
-
-    // Gọi API phường/xã của TV2 theo mã tỉnh (hợp đồng C03).
-    function loadWardsForProvince(provinceCode, preferredWardCode) {
-        if (!wardSelect) {
-            return;
-        }
-
-        if (activeWardAbortController) {
-            activeWardAbortController.abort();
-            activeWardAbortController = null;
-        }
-
-        wardRequestSequence += 1;
-        var currentSequence = wardRequestSequence;
-
-        // Luôn xóa lựa chọn phường cũ ngay khi đổi tỉnh.
-        resetWardOptions('Chọn tỉnh/thành trước (không bắt buộc)');
-
-        if (wardHint) {
-            wardHint.textContent = 'Phường/xã là tùy chọn. Bạn có thể để trống nếu chưa tải được danh sách.';
-        }
-
-        if (!provinceCode || provinceCode.trim() === '') {
-            return;
-        }
-
-        var wardsBaseUrl = formElement.getAttribute('data-wards-url') || '';
-        if (wardsBaseUrl === '') {
-            resetWardOptions('Chưa tải được phường/xã (không bắt buộc)');
-            return;
-        }
-
-        resetWardOptions('Đang tải phường/xã...');
-        wardSelect.setAttribute('aria-busy', 'true');
-
-        var separator = '&';
-        if (wardsBaseUrl.indexOf('?') === -1) {
-            separator = '?';
-        }
-        var requestUrl = wardsBaseUrl + separator + 'province_code=' + encodeURIComponent(provinceCode);
-
-        if (typeof AbortController !== 'undefined') {
-            activeWardAbortController = new AbortController();
-        }
-
-        var fetchOptions = {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
-        };
-
-        if (activeWardAbortController) {
-            fetchOptions.signal = activeWardAbortController.signal;
-        }
-
-        fetch(requestUrl, fetchOptions)
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('Wards API status ' + response.status);
-                }
-                return response.json();
-            })
-            .then(function (payload) {
-                // Bỏ qua nếu người dùng đã chuyển sang tỉnh khác trong lúc chờ phản hồi.
-                if (currentSequence !== wardRequestSequence) {
-                    return;
-                }
-
-                resetWardOptions('Chọn phường/xã');
-
-                var wardItems = [];
-                if (payload && payload.success === false) {
-                    throw new Error('Không tải được danh sách phường/xã.');
-                }
-
-                if (payload && payload.data && Array.isArray(payload.data.wards)) {
-                    wardItems = payload.data.wards;
-                } else if (payload && Array.isArray(payload.data)) {
-                    wardItems = payload.data;
-                } else if (Array.isArray(payload)) {
-                    wardItems = payload;
-                } else {
-                    throw new Error('Dữ liệu phường/xã không hợp lệ.');
-                }
-
-                for (var index = 0; index < wardItems.length; index++) {
-                    var wardItem = wardItems[index];
-                    if (!wardItem || typeof wardItem !== 'object') {
-                        continue;
-                    }
-                    // Mã địa giới phải là chuỗi để giữ số 0 ở đầu.
-                    if (typeof wardItem.ward_code !== 'string') {
-                        continue;
-                    }
-                    if (wardItem.province_code !== undefined && wardItem.province_code !== provinceCode) {
-                        continue;
-                    }
-                    var wardCode = wardItem.ward_code.trim();
-                    var wardName = String(wardItem.ward_name || wardItem.name || '').trim();
-                    if (wardCode === '' || wardName === '') {
-                        continue;
-                    }
-
-                    var option = document.createElement('option');
-                    option.value = wardCode;
-                    option.textContent = wardName;
-                    if (preferredWardCode && preferredWardCode === wardCode) {
-                        option.selected = true;
-                    }
-                    wardSelect.appendChild(option);
-                }
-
-                wardSelect.disabled = wardSelect.options.length <= 1;
-                if (wardSelect.disabled) {
-                    resetWardOptions('Không có phường/xã để chọn (không bắt buộc)');
-                }
-                if (wardHint && !wardSelect.disabled) {
-                    wardHint.textContent = 'Bạn có thể chọn phường/xã hoặc để trống. Danh sách sẽ làm mới khi đổi tỉnh/thành.';
-                }
-            })
-            .catch(function (error) {
-                if (error && error.name === 'AbortError') {
-                    return;
-                }
-                // Lỗi API hoặc chưa nối C03 không chặn form vì phường/xã là tùy chọn.
-                if (currentSequence === wardRequestSequence) {
-                    resetWardOptions('Chưa tải được phường/xã (không bắt buộc)');
-                    if (wardHint) {
-                        wardHint.textContent = 'Chưa tải được danh sách phường/xã. Bạn vẫn có thể tiếp tục và để trống trường này.';
-                    }
-                }
-            });
     }
 
     // Kiểm tra cặp tọa độ tùy chọn: hoặc cùng để trống, hoặc cùng hợp lệ (không nhận 0,0 giả).
@@ -419,8 +270,8 @@
 
     // Giải phóng các URL xem trước ảnh cũ trong bộ nhớ trình duyệt.
     function revokePreviewUrls() {
-        for (var i = 0; i < activeObjectUrls.length; i++) {
-            URL.revokeObjectURL(activeObjectUrls[i]);
+        for (var previewUrlIndex = 0; previewUrlIndex < activeObjectUrls.length; previewUrlIndex++) {
+            URL.revokeObjectURL(activeObjectUrls[previewUrlIndex]);
         }
         activeObjectUrls = [];
     }
@@ -433,11 +284,11 @@
 
         try {
             var dataTransfer = new DataTransfer();
-            for (var i = 0; i < selectedImageFiles.length; i++) {
-                dataTransfer.items.add(selectedImageFiles[i]);
+            for (var imageIndex = 0; imageIndex < selectedImageFiles.length; imageIndex++) {
+                dataTransfer.items.add(selectedImageFiles[imageIndex]);
             }
             imageInput.files = dataTransfer.files;
-        } catch (err) {
+        } catch (error) {
             // Một số trình duyệt cũ không cho gán lại input.files.
         }
     }
@@ -471,46 +322,49 @@
             return;
         }
 
-        for (var index = 0; index < selectedImageFiles.length; index++) {
-            (function (fileIndex) {
-                var file = selectedImageFiles[fileIndex];
-                var objectUrl = URL.createObjectURL(file);
-                activeObjectUrls.push(objectUrl);
-
-                var itemCard = document.createElement('div');
-                itemCard.className = 'hs-place-form__preview-item';
-
-                var imageElement = document.createElement('img');
-                imageElement.className = 'hs-place-form__preview-img';
-                imageElement.src = objectUrl;
-                imageElement.alt = 'Ảnh xem trước ' + (fileIndex + 1) + ': ' + file.name;
-
-                var badgeElement = document.createElement('span');
-                badgeElement.className = 'hs-place-form__preview-badge';
-                if (fileIndex === 0) {
-                    badgeElement.textContent = 'Ảnh bìa';
-                } else {
-                    badgeElement.textContent = 'Ảnh ' + (fileIndex + 1);
-                }
-
-                var removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'hs-place-form__preview-remove';
-                removeButton.setAttribute('aria-label', 'Xóa ảnh ' + file.name);
-                removeButton.textContent = '×';
-                removeButton.addEventListener('click', function () {
-                    selectedImageFiles.splice(fileIndex, 1);
-                    syncFilesToInput();
-                    setFieldError('place-images-feedback', '');
-                    renderImagePreviews();
-                });
-
-                itemCard.appendChild(imageElement);
-                itemCard.appendChild(badgeElement);
-                itemCard.appendChild(removeButton);
-                imagePreviewsContainer.appendChild(itemCard);
-            })(index);
+        for (var imageIndex = 0; imageIndex < selectedImageFiles.length; imageIndex++) {
+            appendImagePreview(imageIndex);
         }
+    }
+
+    // Mỗi thẻ ảnh giữ chỉ số riêng; khi xóa sẽ dựng lại danh sách và gán lại chỉ số.
+    function appendImagePreview(fileIndex) {
+        var file = selectedImageFiles[fileIndex];
+        var objectUrl = URL.createObjectURL(file);
+        activeObjectUrls.push(objectUrl);
+
+        var itemCard = document.createElement('div');
+        itemCard.className = 'hs-place-form__preview-item';
+
+        var imageElement = document.createElement('img');
+        imageElement.className = 'hs-place-form__preview-img';
+        imageElement.src = objectUrl;
+        imageElement.alt = 'Ảnh xem trước ' + (fileIndex + 1) + ': ' + file.name;
+
+        var badgeElement = document.createElement('span');
+        badgeElement.className = 'hs-place-form__preview-badge';
+        if (fileIndex === 0) {
+            badgeElement.textContent = 'Ảnh bìa';
+        } else {
+            badgeElement.textContent = 'Ảnh ' + (fileIndex + 1);
+        }
+
+        var removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'hs-place-form__preview-remove';
+        removeButton.setAttribute('aria-label', 'Xóa ảnh ' + file.name);
+        removeButton.textContent = '×';
+        removeButton.addEventListener('click', function () {
+            selectedImageFiles.splice(fileIndex, 1);
+            syncFilesToInput();
+            setFieldError('place-images-feedback', '');
+            renderImagePreviews();
+        });
+
+        itemCard.appendChild(imageElement);
+        itemCard.appendChild(badgeElement);
+        itemCard.appendChild(removeButton);
+        imagePreviewsContainer.appendChild(itemCard);
     }
 
     // Kiểm tra và tiếp nhận danh sách file người dùng chọn hoặc kéo thả.
@@ -523,8 +377,8 @@
         var invalidTypeMessages = [];
         var validIncoming = [];
 
-        for (var i = 0; i < incomingArray.length; i++) {
-            var currentFile = incomingArray[i];
+        for (var incomingFileIndex = 0; incomingFileIndex < incomingArray.length; incomingFileIndex++) {
+            var currentFile = incomingArray[incomingFileIndex];
             if (ALLOWED_IMAGE_TYPES.indexOf(currentFile.type) === -1) {
                 invalidTypeMessages.push('File "' + currentFile.name + '" không đúng định dạng JPG, PNG hoặc WebP.');
                 continue;
@@ -540,8 +394,8 @@
 
         if (combinedCount > MAX_IMAGES) {
             var allowedSlots = Math.max(0, MAX_IMAGES - selectedImageFiles.length);
-            for (var j = 0; j < allowedSlots; j++) {
-                selectedImageFiles.push(validIncoming[j]);
+            for (var acceptedFileIndex = 0; acceptedFileIndex < allowedSlots; acceptedFileIndex++) {
+                selectedImageFiles.push(validIncoming[acceptedFileIndex]);
             }
             syncFilesToInput();
             renderImagePreviews();
@@ -552,8 +406,8 @@
             return;
         }
 
-        for (var k = 0; k < validIncoming.length; k++) {
-            selectedImageFiles.push(validIncoming[k]);
+        for (var validFileIndex = 0; validFileIndex < validIncoming.length; validFileIndex++) {
+            selectedImageFiles.push(validIncoming[validFileIndex]);
         }
 
         syncFilesToInput();
@@ -717,13 +571,13 @@
                 if (keyword === '') {
                     return;
                 }
-                for (var idx = 0; idx < tagCheckboxes.length; idx++) {
-                    var box = tagCheckboxes[idx];
-                    var name = (box.getAttribute('data-tag-name') || '').trim().toLowerCase();
-                    if (name === keyword) {
-                        if (!box.checked) {
-                            box.checked = true;
-                            handleTagCheckboxChange({ target: box });
+                for (var checkboxIndex = 0; checkboxIndex < tagCheckboxes.length; checkboxIndex++) {
+                    var checkbox = tagCheckboxes[checkboxIndex];
+                    var tagName = (checkbox.getAttribute('data-tag-name') || '').trim().toLowerCase();
+                    if (tagName === keyword) {
+                        if (!checkbox.checked) {
+                            checkbox.checked = true;
+                            handleTagCheckboxChange({ target: checkbox });
                         }
                         return;
                     }
@@ -736,20 +590,22 @@
         });
     }
 
-    // Đăng ký sự kiện đổi Tỉnh/Thành để nạp lại Phường/Xã.
     if (provinceSelect) {
         provinceSelect.addEventListener('change', function () {
             if (provinceSelect.value.trim() !== '') {
                 setFieldError('place-province-error', '');
             }
-            loadWardsForProvince(provinceSelect.value, '');
         });
+    }
 
-        // Nếu mở form đã có sẵn mã tỉnh và danh sách phường đang trống thì nạp phường tương ứng.
-        if (provinceSelect.value.trim() !== '' && wardSelect && wardSelect.options.length <= 1) {
-            var initialWardCode = wardSelect.getAttribute('data-initial-ward') || '';
-            loadWardsForProvince(provinceSelect.value, initialWardCode);
-        }
+    if (provinceSelect && wardSelect && window.HotSpotLocations) {
+        window.HotSpotLocations.bindWardSelect(
+            provinceSelect,
+            wardSelect,
+            wardHint,
+            formElement.getAttribute('data-wards-url') || '',
+            wardSelect.getAttribute('data-initial-ward') || ''
+        );
     }
 
     // Hủy kết quả cũ khi người dùng đổi địa chỉ, chọn ghim hoặc xóa tọa độ.
@@ -832,9 +688,11 @@
             geocodeResults.hidden = geocodeResults.children.length === 0;
         } catch (error) {
             if (sequence === geocodeSequence) {
-                geocodeStatus.textContent = error.name === 'AbortError'
-                    ? 'Tìm vị trí mất quá lâu. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ để lưu bài.'
-                    : (error.message || 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.');
+                var errorMessage = error.message || 'Chưa thể tìm vị trí. Bạn vẫn có thể lưu bài không có tọa độ.';
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Tìm vị trí mất quá lâu. Bạn vẫn có thể nhập hoặc bỏ trống tọa độ để lưu bài.';
+                }
+                geocodeStatus.textContent = errorMessage;
             }
         } finally {
             window.clearTimeout(timer);

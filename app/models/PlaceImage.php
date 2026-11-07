@@ -94,9 +94,9 @@ final class PlaceImage extends Model
                 $errorCode = (int) $fileItem['error'];
             }
 
-            $tmpName = '';
+            $temporaryFileName = '';
             if (isset($fileItem['tmp_name'])) {
-                $tmpName = trim((string) $fileItem['tmp_name']);
+                $temporaryFileName = trim((string) $fileItem['tmp_name']);
             }
 
             $originalName = '';
@@ -104,7 +104,7 @@ final class PlaceImage extends Model
                 $originalName = trim((string) $fileItem['name']);
             }
 
-            if ($errorCode === UPLOAD_ERR_NO_FILE && $tmpName === '' && $originalName === '') {
+            if ($errorCode === UPLOAD_ERR_NO_FILE && $temporaryFileName === '' && $originalName === '') {
                 continue;
             }
 
@@ -141,108 +141,18 @@ final class PlaceImage extends Model
         try {
             foreach ($providedItems as $itemIndex => $fileItem) {
                 $slotNumber = $itemIndex + 1;
-
-                $errorCode = UPLOAD_ERR_NO_FILE;
-                if (isset($fileItem['error'])) {
-                    $errorCode = (int) $fileItem['error'];
+                $validatedFile = $this->validateSingleUploadedImage(
+                    $fileItem,
+                    $slotNumber,
+                    $requireHttpUploadedFile,
+                    $fileInformationHandle,
+                    $errors
+                );
+                if ($validatedFile !== null) {
+                    // Chỉ ảnh hợp lệ mới chiếm một vị trí trong danh sách kết quả.
+                    $validatedFile['sort_order'] = count($validatedFiles) + 1;
+                    $validatedFiles[] = $validatedFile;
                 }
-
-                $tmpPath = '';
-                if (isset($fileItem['tmp_name'])) {
-                    $tmpPath = trim((string) $fileItem['tmp_name']);
-                }
-
-                $originalName = 'Ảnh #' . $slotNumber;
-                if (isset($fileItem['name']) && trim((string) $fileItem['name']) !== '') {
-                    $originalName = trim((string) $fileItem['name']);
-                }
-
-                if ($errorCode !== UPLOAD_ERR_OK) {
-                    $errors[] = $this->mapUploadErrorMessage($errorCode, $slotNumber);
-                    continue;
-                }
-
-                if ($tmpPath === '' || is_file($tmpPath) === false || is_readable($tmpPath) === false) {
-                    $errors[] = 'Không đọc được tệp tải lên ở vị trí ảnh #' . $slotNumber . '.';
-                    continue;
-                }
-
-                if ($requireHttpUploadedFile && is_uploaded_file($tmpPath) === false) {
-                    $errors[] = 'Tệp ở vị trí ảnh #' . $slotNumber . ' không phải tệp tải lên qua HTTP hợp lệ.';
-                    continue;
-                }
-
-                $actualFileSize = filesize($tmpPath);
-                $reportedFileSize = 0;
-                if (isset($fileItem['size']) && is_numeric($fileItem['size'])) {
-                    $reportedFileSize = (int) $fileItem['size'];
-                }
-
-                if ($actualFileSize === false || $actualFileSize <= 0) {
-                    $errors[] = 'Tệp ở vị trí ảnh #' . $slotNumber . ' bị rỗng hoặc không hợp lệ.';
-                    continue;
-                }
-
-                if ($reportedFileSize > 0 && $reportedFileSize !== $actualFileSize) {
-                    $errors[] = 'Kích thước tệp ở vị trí ảnh #' . $slotNumber . ' không khớp dữ liệu tải lên.';
-                    continue;
-                }
-
-                if ($actualFileSize > self::MAX_FILE_SIZE_BYTES) {
-                    $errors[] = 'Ảnh #' . $slotNumber . ' vượt quá dung lượng tối đa 5MB.';
-                    continue;
-                }
-
-                $detectedMimeType = '';
-                if ($fileInformationHandle !== false && $fileInformationHandle !== null) {
-                    $finfoResult = finfo_file($fileInformationHandle, $tmpPath);
-                    if (is_string($finfoResult)) {
-                        $detectedMimeType = strtolower(trim($finfoResult));
-                    }
-                }
-
-                if (isset(self::ALLOWED_MIME_EXTENSIONS[$detectedMimeType]) === false) {
-                    $errors[] = 'Ảnh #' . $slotNumber . ' không đúng định dạng cho phép (chỉ nhận JPG, PNG, WebP).';
-                    continue;
-                }
-
-                // Đối chiếu khả năng đọc cấu trúc ảnh thực tế và khớp MIME.
-                $imageSizeInfo = @getimagesize($tmpPath);
-                if (is_array($imageSizeInfo) === false) {
-                    $errors[] = 'Ảnh #' . $slotNumber . ' không phải tệp hình ảnh hợp lệ hoặc dữ liệu ảnh bị hỏng.';
-                    continue;
-                }
-
-                $imageWidth = 0;
-                if (isset($imageSizeInfo[0])) {
-                    $imageWidth = (int) $imageSizeInfo[0];
-                }
-
-                $imageHeight = 0;
-                if (isset($imageSizeInfo[1])) {
-                    $imageHeight = (int) $imageSizeInfo[1];
-                }
-
-                $imageMimeFromHeader = '';
-                if (isset($imageSizeInfo['mime'])) {
-                    $imageMimeFromHeader = strtolower(trim((string) $imageSizeInfo['mime']));
-                }
-
-                if ($imageWidth <= 0 || $imageHeight <= 0 || $imageMimeFromHeader !== $detectedMimeType) {
-                    $errors[] = 'Nội dung ảnh #' . $slotNumber . ' không khớp định dạng hình ảnh hợp lệ.';
-                    continue;
-                }
-
-                $safeExtension = self::ALLOWED_MIME_EXTENSIONS[$detectedMimeType];
-
-                $validatedFiles[] = [
-                    'tmp_name' => $tmpPath,
-                    'original_name' => $originalName,
-                    'mime_type' => $detectedMimeType,
-                    'extension' => $safeExtension,
-                    'size_bytes' => $actualFileSize,
-                    'sort_order' => count($validatedFiles) + 1,
-                ];
             }
         } finally {
             if ($fileInformationHandle !== false && $fileInformationHandle !== null && function_exists('finfo_close')) {
@@ -262,6 +172,116 @@ final class PlaceImage extends Model
             'valid' => true,
             'errors' => [],
             'files' => $validatedFiles,
+        ];
+    }
+
+    // Kiểm tra từng ảnh; lỗi được gom vào danh sách chung, ảnh sai trả về null.
+    private function validateSingleUploadedImage(
+        array $fileItem,
+        int $slotNumber,
+        bool $requireHttpUploadedFile,
+        mixed $fileInformationHandle,
+        array &$errors
+    ): ?array {
+        $errorCode = UPLOAD_ERR_NO_FILE;
+        if (isset($fileItem['error'])) {
+            $errorCode = (int) $fileItem['error'];
+        }
+
+        $temporaryFilePath = '';
+        if (isset($fileItem['tmp_name'])) {
+            $temporaryFilePath = trim((string) $fileItem['tmp_name']);
+        }
+
+        $originalName = 'Ảnh #' . $slotNumber;
+        if (isset($fileItem['name']) && trim((string) $fileItem['name']) !== '') {
+            $originalName = trim((string) $fileItem['name']);
+        }
+
+        if ($errorCode !== UPLOAD_ERR_OK) {
+            $errors[] = $this->mapUploadErrorMessage($errorCode, $slotNumber);
+            return null;
+        }
+
+        if ($temporaryFilePath === '' || is_file($temporaryFilePath) === false || is_readable($temporaryFilePath) === false) {
+            $errors[] = 'Không đọc được tệp tải lên ở vị trí ảnh #' . $slotNumber . '.';
+            return null;
+        }
+
+        if ($requireHttpUploadedFile && is_uploaded_file($temporaryFilePath) === false) {
+            $errors[] = 'Tệp ở vị trí ảnh #' . $slotNumber . ' không phải tệp tải lên qua HTTP hợp lệ.';
+            return null;
+        }
+
+        $actualFileSize = filesize($temporaryFilePath);
+        $reportedFileSize = 0;
+        if (isset($fileItem['size']) && is_numeric($fileItem['size'])) {
+            $reportedFileSize = (int) $fileItem['size'];
+        }
+
+        if ($actualFileSize === false || $actualFileSize <= 0) {
+            $errors[] = 'Tệp ở vị trí ảnh #' . $slotNumber . ' bị rỗng hoặc không hợp lệ.';
+            return null;
+        }
+
+        if ($reportedFileSize > 0 && $reportedFileSize !== $actualFileSize) {
+            $errors[] = 'Kích thước tệp ở vị trí ảnh #' . $slotNumber . ' không khớp dữ liệu tải lên.';
+            return null;
+        }
+
+        if ($actualFileSize > self::MAX_FILE_SIZE_BYTES) {
+            $errors[] = 'Ảnh #' . $slotNumber . ' vượt quá dung lượng tối đa 5MB.';
+            return null;
+        }
+
+        $detectedMimeType = '';
+        if ($fileInformationHandle !== false && $fileInformationHandle !== null) {
+            $detectedMimeValue = finfo_file($fileInformationHandle, $temporaryFilePath);
+            if (is_string($detectedMimeValue)) {
+                $detectedMimeType = strtolower(trim($detectedMimeValue));
+            }
+        }
+
+        if (isset(self::ALLOWED_MIME_EXTENSIONS[$detectedMimeType]) === false) {
+            $errors[] = 'Ảnh #' . $slotNumber . ' không đúng định dạng cho phép (chỉ nhận JPG, PNG, WebP).';
+            return null;
+        }
+
+        // Đối chiếu khả năng đọc cấu trúc ảnh thực tế và khớp MIME.
+        $imageSizeInfo = @getimagesize($temporaryFilePath);
+        if (is_array($imageSizeInfo) === false) {
+            $errors[] = 'Ảnh #' . $slotNumber . ' không phải tệp hình ảnh hợp lệ hoặc dữ liệu ảnh bị hỏng.';
+            return null;
+        }
+
+        $imageWidth = 0;
+        if (isset($imageSizeInfo[0])) {
+            $imageWidth = (int) $imageSizeInfo[0];
+        }
+
+        $imageHeight = 0;
+        if (isset($imageSizeInfo[1])) {
+            $imageHeight = (int) $imageSizeInfo[1];
+        }
+
+        $imageMimeFromHeader = '';
+        if (isset($imageSizeInfo['mime'])) {
+            $imageMimeFromHeader = strtolower(trim((string) $imageSizeInfo['mime']));
+        }
+
+        if ($imageWidth <= 0 || $imageHeight <= 0 || $imageMimeFromHeader !== $detectedMimeType) {
+            $errors[] = 'Nội dung ảnh #' . $slotNumber . ' không khớp định dạng hình ảnh hợp lệ.';
+            return null;
+        }
+
+        $safeExtension = self::ALLOWED_MIME_EXTENSIONS[$detectedMimeType];
+
+        return [
+            'tmp_name' => $temporaryFilePath,
+            'original_name' => $originalName,
+            'mime_type' => $detectedMimeType,
+            'extension' => $safeExtension,
+            'size_bytes' => $actualFileSize,
         ];
     }
 
@@ -299,9 +319,9 @@ final class PlaceImage extends Model
 
         try {
             foreach ($validatedFiles as $index => $fileItem) {
-                $tmpPath = '';
+                $temporaryFilePath = '';
                 if (isset($fileItem['tmp_name'])) {
-                    $tmpPath = trim((string) $fileItem['tmp_name']);
+                    $temporaryFilePath = trim((string) $fileItem['tmp_name']);
                 }
 
                 $mimeType = '';
@@ -331,12 +351,12 @@ final class PlaceImage extends Model
 
                 $moveSucceeded = false;
                 if ($useMoveUploadedFile) {
-                    if (is_uploaded_file($tmpPath)) {
-                        $moveSucceeded = @move_uploaded_file($tmpPath, $destinationFullPath);
+                    if (is_uploaded_file($temporaryFilePath)) {
+                        $moveSucceeded = @move_uploaded_file($temporaryFilePath, $destinationFullPath);
                     }
                 } else {
-                    if (is_file($tmpPath)) {
-                        $moveSucceeded = @copy($tmpPath, $destinationFullPath);
+                    if (is_file($temporaryFilePath)) {
+                        $moveSucceeded = @copy($temporaryFilePath, $destinationFullPath);
                     }
                 }
 
@@ -487,144 +507,59 @@ final class PlaceImage extends Model
             return [];
         }
 
-        // Trường hợp cấu trúc chuẩn $_FILES['images'] khi input có name="images[]".
+        // Input images[]: ghép các cột của $_FILES thành từng file riêng.
         if (isset($filesInput['name']) && is_array($filesInput['name'])) {
-            $normalizedList = [];
-            $names = $filesInput['name'];
-
-            $types = [];
-            if (isset($filesInput['type']) && is_array($filesInput['type'])) {
-                $types = $filesInput['type'];
+            $fileColumns = [];
+            foreach (['type', 'tmp_name', 'error', 'size'] as $fieldName) {
+                $fileColumns[$fieldName] = [];
+                if (isset($filesInput[$fieldName]) && is_array($filesInput[$fieldName])) {
+                    $fileColumns[$fieldName] = $filesInput[$fieldName];
+                }
             }
 
-            $tmpNames = [];
-            if (isset($filesInput['tmp_name']) && is_array($filesInput['tmp_name'])) {
-                $tmpNames = $filesInput['tmp_name'];
+            $normalizedFiles = [];
+            foreach ($filesInput['name'] as $fileIndex => $originalName) {
+                $fileItem = ['name' => $originalName];
+                foreach ($fileColumns as $fieldName => $columnValues) {
+                    $fileItem[$fieldName] = $columnValues[$fileIndex] ?? null;
+                }
+                $normalizedFiles[] = $this->normalizeSingleFile($fileItem);
             }
-
-            $errors = [];
-            if (isset($filesInput['error']) && is_array($filesInput['error'])) {
-                $errors = $filesInput['error'];
-            }
-
-            $sizes = [];
-            if (isset($filesInput['size']) && is_array($filesInput['size'])) {
-                $sizes = $filesInput['size'];
-            }
-
-            foreach ($names as $key => $rawName) {
-                $nameText = '';
-                if (is_scalar($rawName)) {
-                    $nameText = (string) $rawName;
-                }
-
-                $typeText = '';
-                if (isset($types[$key]) && is_scalar($types[$key])) {
-                    $typeText = (string) $types[$key];
-                }
-
-                $tmpNameText = '';
-                if (isset($tmpNames[$key]) && is_scalar($tmpNames[$key])) {
-                    $tmpNameText = (string) $tmpNames[$key];
-                }
-
-                $errorCode = UPLOAD_ERR_NO_FILE;
-                if (isset($errors[$key]) && is_numeric($errors[$key])) {
-                    $errorCode = (int) $errors[$key];
-                }
-
-                $sizeValue = 0;
-                if (isset($sizes[$key]) && is_numeric($sizes[$key])) {
-                    $sizeValue = (int) $sizes[$key];
-                }
-
-                $normalizedList[] = [
-                    'name' => $nameText,
-                    'type' => $typeText,
-                    'tmp_name' => $tmpNameText,
-                    'error' => $errorCode,
-                    'size' => $sizeValue,
-                ];
-            }
-
-            return $normalizedList;
+            return $normalizedFiles;
         }
 
-        // Trường hợp $_FILES['images'] là 1 file đơn.
+        // Input một file đơn vẫn trả về danh sách có một phần tử.
         if (isset($filesInput['name']) && is_scalar($filesInput['name'])) {
-            $typeText = '';
-            if (isset($filesInput['type']) && is_scalar($filesInput['type'])) {
-                $typeText = (string) $filesInput['type'];
-            }
-
-            $tmpNameText = '';
-            if (isset($filesInput['tmp_name']) && is_scalar($filesInput['tmp_name'])) {
-                $tmpNameText = (string) $filesInput['tmp_name'];
-            }
-
-            $errorCode = UPLOAD_ERR_NO_FILE;
-            if (isset($filesInput['error']) && is_numeric($filesInput['error'])) {
-                $errorCode = (int) $filesInput['error'];
-            }
-
-            $sizeValue = 0;
-            if (isset($filesInput['size']) && is_numeric($filesInput['size'])) {
-                $sizeValue = (int) $filesInput['size'];
-            }
-
-            return [
-                [
-                    'name' => (string) $filesInput['name'],
-                    'type' => $typeText,
-                    'tmp_name' => $tmpNameText,
-                    'error' => $errorCode,
-                    'size' => $sizeValue,
-                ],
-            ];
+            return [$this->normalizeSingleFile($filesInput)];
         }
 
-        // Trường hợp danh sách các phần tử file đã tách sẵn.
-        $normalizedList = [];
-        foreach ($filesInput as $item) {
-            if (is_array($item) === false) {
-                continue;
+        // Danh sách đã tách sẵn dùng cùng quy tắc chuẩn hóa với $_FILES.
+        $normalizedFiles = [];
+        foreach ($filesInput as $fileItem) {
+            if (is_array($fileItem)) {
+                $normalizedFiles[] = $this->normalizeSingleFile($fileItem);
             }
-
-            $nameText = '';
-            if (isset($item['name']) && is_scalar($item['name'])) {
-                $nameText = (string) $item['name'];
-            }
-
-            $typeText = '';
-            if (isset($item['type']) && is_scalar($item['type'])) {
-                $typeText = (string) $item['type'];
-            }
-
-            $tmpNameText = '';
-            if (isset($item['tmp_name']) && is_scalar($item['tmp_name'])) {
-                $tmpNameText = (string) $item['tmp_name'];
-            }
-
-            $errorCode = UPLOAD_ERR_NO_FILE;
-            if (isset($item['error']) && is_numeric($item['error'])) {
-                $errorCode = (int) $item['error'];
-            }
-
-            $sizeValue = 0;
-            if (isset($item['size']) && is_numeric($item['size'])) {
-                $sizeValue = (int) $item['size'];
-            }
-
-            $normalizedList[] = [
-                'name' => $nameText,
-                'type' => $typeText,
-                'tmp_name' => $tmpNameText,
-                'error' => $errorCode,
-                'size' => $sizeValue,
-            ];
         }
+        return $normalizedFiles;
+    }
 
-        return $normalizedList;
+    // Giữ tên khóa theo chuẩn PHP; chỉ chuyển kiểu các giá trị đầu vào hợp lệ.
+    private function normalizeSingleFile(array $fileItem): array
+    {
+        $normalizedFile = ['name' => '', 'type' => '', 'tmp_name' => '',
+            'error' => UPLOAD_ERR_NO_FILE, 'size' => 0];
+        foreach (['name', 'type', 'tmp_name'] as $fieldName) {
+            if (isset($fileItem[$fieldName]) && is_scalar($fileItem[$fieldName])) {
+                $normalizedFile[$fieldName] = (string) $fileItem[$fieldName];
+            }
+        }
+        if (isset($fileItem['error']) && is_numeric($fileItem['error'])) {
+            $normalizedFile['error'] = (int) $fileItem['error'];
+        }
+        if (isset($fileItem['size']) && is_numeric($fileItem['size'])) {
+            $normalizedFile['size'] = (int) $fileItem['size'];
+        }
+        return $normalizedFile;
     }
 
     // Chuyển mã lỗi upload của PHP thành thông báo tiếng Việt rõ ràng.

@@ -744,7 +744,8 @@ if (function_exists('mb_strlen')) {
         </div>
     </div>
 </section>
-<script src="assets/js/place-form.js?v=20261107-08" defer></script>
+<script src="assets/js/locations.js?v=20261107-error-handling" defer></script>
+<script src="assets/js/place-form.js?v=20261107-locations" defer></script>
 <script src="assets/vendor/leaflet-1.9.4/leaflet.js" defer></script>
-<script src="assets/js/map.js?v=20261107-08" defer></script>
+<script src="assets/js/map.js?v=20261107-07-review" defer></script>
 <script src="assets/js/ai-description.js?v=2" defer></script>
