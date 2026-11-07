@@ -152,7 +152,13 @@
             }
             try {
                 var pair = coordinates();
-                map = window.L.map(container, { scrollWheelZoom: false }).setView(pair || [16.0471, 108.2068], pair ? 16 : 5);
+                var initialCenter = [16.0471, 108.2068];
+                var initialZoom = 5;
+                if (pair) {
+                    initialCenter = pair;
+                    initialZoom = 16;
+                }
+                map = window.L.map(container, { scrollWheelZoom: false }).setView(initialCenter, initialZoom);
                 var tiles = window.L.tileLayer(container.getAttribute('data-tile-url'), { maxZoom: 19,
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors' });
                 tiles.on('tileerror', function () {

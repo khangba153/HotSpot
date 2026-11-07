@@ -767,4 +767,4 @@ if (function_exists('mb_strlen')) {
 </section>
 <script src="assets/js/place-form.js?v=20261107-08" defer></script>
 <script src="assets/vendor/leaflet-1.9.4/leaflet.js" defer></script>
-<script src="assets/js/map.js?v=20261107-08" defer></script>
+<script src="assets/js/map.js?v=20261107-07-review" defer></script>

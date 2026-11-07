@@ -1,0 +1,185 @@
+{
+  "checkedDate": "2026-11-07",
+  "task": "TV3-07",
+  "baseCommit": "f69f8ac",
+  "php": "8.4.27",
+  "passed": 37,
+  "total": 37,
+  "sourceHashNormalization": "UTF-8, CRLF to LF",
+  "sourceHashes": {
+    "app/controllers/PlaceController.php": "235291c9535228ffb8fcbeddce10202cabf284b21247dc434dcd80b483d6bad9",
+    "app/models/Place.php": "905a02dbcaaf9f41d26540128173dd3d8273d5c74c9c0731491cb924406436f9",
+    "app/models/PlaceImage.php": "932ef50fefaad370d1ebd5c3605c3ba7fbaad9b2bdcd562d07fb52c67306a885",
+    "app/routes.php": "e7b88c5773ca20f50c556c78960484a86254aea46800906c76dcec5fc2d9769a",
+    "app/views/places/form.php": "2a32bdb9e3d47041d24f5ed98e8014847057a9cab97619ee69c017c97cac8a09",
+    "app/views/places/show.php": "f666cbfcd6afa7b629a7ce154fdf2e215601b067ba574653726544d2ed99f750",
+    "app/views/places/_gallery.php": "66b06d0105e9d2ba35d6f6fd91d0dcb7b716aecb00de5e7bc7601ec0b68581c4",
+    "app/views/ai/_review_summary.php": "687a34033bb5d561882c2b50d18e1aeaf4128dc3ee3b81c8c869c570abb2f5a2",
+    "public/assets/js/gallery.js": "bad370c18083b36af3440f6ad86059e926511f919361d7d04f65a3cd044b2ace",
+    "public/assets/js/map.js": "3922b3d35569f1163f4cb28f66cf5f91c67577e3138451ae33b1b6c18caf80c2",
+    "public/assets/css/place-detail.css": "80268061c952d18f66cbed8da4ea641a87821e215cc3b1775a6bcca4c0072854"
+  },
+  "mockScope": "Tile-image responses only for interaction checks; real Leaflet and application endpoints. AI uses real QA cache, no Claude call.",
+  "liveProbe": {
+    "loadedTiles": 0,
+    "attempted": true,
+    "errors": [
+      "net::ERR_NAME_NOT_RESOLVED"
+    ]
+  },
+  "results": [
+    {
+      "name": "Three real uploaded images render in saved order",
+      "passed": true
+    },
+    {
+      "name": "Thumbnail click changes photo, counter and active state",
+      "passed": true
+    },
+    {
+      "name": "Thumbnail keyboard arrows wrap and move focus",
+      "passed": true
+    },
+    {
+      "name": "Full-image dialog cycles previous/next with wrap and keyboard",
+      "passed": true
+    },
+    {
+      "name": "Native modal blocks background focus; Escape closes and restores opener",
+      "passed": true
+    },
+    {
+      "name": "Close button and backdrop both close the dialog",
+      "passed": true
+    },
+    {
+      "name": "One-photo detail disables previous/next and needs no coordinates",
+      "passed": true
+    },
+    {
+      "name": "No image records produce a visible local fallback image",
+      "passed": true
+    },
+    {
+      "name": "Missing actual image file falls back in main image and dialog",
+      "passed": true
+    },
+    {
+      "name": "Both original and fallback missing show bounded messages without loading loop",
+      "passed": true
+    },
+    {
+      "name": "Leaflet marker uses exact saved coordinates and local marker image",
+      "passed": true
+    },
+    {
+      "name": "Attribution, saved-location link and zoom work without wheel zoom",
+      "passed": true
+    },
+    {
+      "name": "Legacy coordinates both NULL do not create a map or load Leaflet",
+      "passed": true
+    },
+    {
+      "name": "Legacy coordinates half NULL do not create a map or load Leaflet",
+      "passed": true
+    },
+    {
+      "name": "Legacy coordinates fake 0/0 do not create a map or load Leaflet",
+      "passed": true
+    },
+    {
+      "name": "Legacy coordinates latitude out of range do not create a map or load Leaflet",
+      "passed": true
+    },
+    {
+      "name": "Legacy coordinates longitude out of range do not create a map or load Leaflet",
+      "passed": true
+    },
+    {
+      "name": "Single-zero legitimate pair 0,106 keeps correct marker",
+      "passed": true
+    },
+    {
+      "name": "Single-zero legitimate pair 10,0 keeps correct marker",
+      "passed": true
+    },
+    {
+      "name": "HTML-like title is plain text in heading, modal and marker popup",
+      "passed": true
+    },
+    {
+      "name": "Desktop, tablet and 375px mobile layouts and modal fit viewport",
+      "passed": true
+    },
+    {
+      "name": "Mobile map is lazy and initialized once after scrolling into view",
+      "passed": true
+    },
+    {
+      "name": "Tile failure retains marker, location link and readable error message",
+      "passed": true
+    },
+    {
+      "name": "Blocked Leaflet still allows gallery, Detail and external map link",
+      "passed": true
+    },
+    {
+      "name": "No JavaScript still exposes original image and external location link",
+      "passed": true
+    },
+    {
+      "name": "Private detail remains owner/admin only, no Favorite/Review/AI actions",
+      "passed": true
+    },
+    {
+      "name": "Favorite/Review/AI partials and scripts coexist despite missing photo and failed tiles",
+      "passed": true
+    },
+    {
+      "name": "Favorite real AJAX toggles and persists with gallery/map errors present",
+      "passed": true
+    },
+    {
+      "name": "Review real AJAX saves and reloads correctly despite visual-resource failures",
+      "passed": true
+    },
+    {
+      "name": "AI button uses real cached endpoint and renders plain text with resource failures",
+      "passed": true
+    },
+    {
+      "name": "AI network error recovers button and leaves gallery/Favorite/Review usable",
+      "passed": true
+    },
+    {
+      "name": "Hidden review stays hidden and is not exposed in AI or guest list",
+      "passed": true
+    },
+    {
+      "name": "Shared map picker without coordinates uses explicit default center/zoom and no marker",
+      "passed": true
+    },
+    {
+      "name": "Shared map picker with saved coordinates uses zoom 16 and exact marker",
+      "passed": true
+    },
+    {
+      "name": "Live OSM tile probe and desktop/mobile screenshots record actual network availability",
+      "passed": true
+    },
+    {
+      "name": "No uncaught JS errors across main Detail and integration interactions",
+      "passed": true
+    },
+    {
+      "name": "Main table hashes unchanged; QA database and sessions removed",
+      "passed": true
+    }
+  ],
+  "cleanup": {
+    "mainDataHashesUnchanged": true,
+    "qaDatabaseRemoved": true,
+    "sessionsDestroyed": true
+  }
+}
