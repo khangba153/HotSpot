@@ -28,6 +28,7 @@ $router->add('GET', 'api/places/search', $placeSearchController, 'search');
 // Trang chi tiết địa điểm (C01: card Home link tới places/show&id=...).
 $router->add('GET', 'places/show', $placeController, 'show');
 $router->add('GET', 'places/create', $placeController, 'create');
+$router->add('POST', 'places/store', $placeController, 'store');
 $router->add('GET', 'places/mine', $placeController, 'mine');
 $router->add('GET', 'profile', $profileController, 'index');
 $router->add('GET', 'admin', $adminController, 'dashboard');

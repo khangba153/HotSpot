@@ -5,9 +5,53 @@ namespace HotSpot\Models;
 
 use HotSpot\Core\Model;
 use PDO;
+use RuntimeException;
 
 final class Place extends Model
 {
+    // Tạo bài PENDING trong giao dịch do Controller quản lý cùng ảnh và nhãn.
+    public function submitPendingPlace(int $ownerId, array $placeData): int
+    {
+        $databaseConnection = self::getConnection();
+        if ($databaseConnection->inTransaction() === false) {
+            throw new RuntimeException('Phải mở giao dịch trước khi lưu địa điểm.');
+        }
+
+        $preparedStatement = $databaseConnection->prepare(
+            'CALL CTH_SUBMIT_PLACE(:owner_id, :category_id, :province_code, :ward_code,
+                :title, :description, :address, :latitude, :longitude)'
+        );
+        $preparedStatement->bindValue(':owner_id', $ownerId, PDO::PARAM_INT);
+        $preparedStatement->bindValue(':category_id', $placeData['category_id'], PDO::PARAM_INT);
+        $preparedStatement->bindValue(':province_code', $placeData['province_code'], PDO::PARAM_STR);
+        $preparedStatement->bindValue(':title', $placeData['title'], PDO::PARAM_STR);
+        $preparedStatement->bindValue(':description', $placeData['description'], PDO::PARAM_STR);
+        $preparedStatement->bindValue(':address', $placeData['address'], PDO::PARAM_STR);
+
+        foreach (['ward_code', 'latitude', 'longitude'] as $optionalField) {
+            if ($placeData[$optionalField] === null) {
+                $preparedStatement->bindValue(':' . $optionalField, null, PDO::PARAM_NULL);
+            } else {
+                $preparedStatement->bindValue(':' . $optionalField, $placeData[$optionalField], PDO::PARAM_STR);
+            }
+        }
+
+        try {
+            $preparedStatement->execute();
+            $placeId = (int) $preparedStatement->fetchColumn();
+            while ($preparedStatement->nextRowset()) {
+            }
+        } finally {
+            $preparedStatement->closeCursor();
+        }
+
+        if ($placeId <= 0) {
+            throw new RuntimeException('Không nhận được mã địa điểm mới.');
+        }
+
+        return $placeId;
+    }
+
     // Lấy chi tiết một địa điểm kèm tên danh mục, tỉnh, phường và trạng thái.
     // Không lọc trạng thái ở đây; Controller quyết định ai được xem.
     public function findDetailById(int $placeId): ?array

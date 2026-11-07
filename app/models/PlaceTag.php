@@ -115,7 +115,7 @@ final class PlaceTag extends Model
      * @param array<int, int> $tagIds
      * @return array<int, int>
      */
-    public function findActiveTagIdsByIds(array $tagIds): array
+    public function findActiveTagIdsByIds(array $tagIds, bool $lockForUpdate = false): array
     {
         $cleanIds = [];
         foreach ($tagIds as $rawId) {
@@ -140,6 +140,12 @@ final class PlaceTag extends Model
                        AND is_active = 1';
 
         $databaseConnection = self::getConnection();
+        if ($lockForUpdate) {
+            if ($databaseConnection->inTransaction() === false) {
+                throw new RuntimeException('Phải mở giao dịch trước khi khóa nhãn.');
+            }
+            $sqlQuery .= ' FOR UPDATE';
+        }
         $preparedStatement = $databaseConnection->prepare($sqlQuery);
 
         foreach ($cleanIds as $parameterIndex => $tagId) {
@@ -195,6 +201,12 @@ final class PlaceTag extends Model
         $databaseConnection = self::getConnection();
         if ($databaseConnection->inTransaction() === false) {
             throw new RuntimeException('Thao tác gắn nhãn địa điểm phải được thực hiện trong một giao dịch (transaction) đang mở.');
+        }
+
+        // Kiểm tra lại và khóa nhãn đến khi commit, tránh nhãn bị ngừng trong lúc lưu ảnh.
+        $activeTagIds = $this->findActiveTagIdsByIds($distinctTagIds, true);
+        if (count($activeTagIds) !== count($distinctTagIds)) {
+            throw new \InvalidArgumentException('Nhãn đã chọn không tồn tại hoặc đã ngừng hoạt động.');
         }
 
         $preparedStatement = $databaseConnection->prepare(

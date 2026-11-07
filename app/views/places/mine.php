@@ -36,6 +36,11 @@ $userFullName = (string) ($userInformation['full_name'] ?? 'Thành viên');
 
 <div class="hs-place-mine-page">
     <div class="container">
+        <?php if (isset($viewData['successMessage']) && $viewData['successMessage'] !== '') { ?>
+            <div class="alert alert-success" role="status">
+                <?php echo escapeHtml((string) $viewData['successMessage']); ?>
+            </div>
+        <?php } ?>
         <div class="row g-3 g-xl-4 hs-place-mine-layout">
             <div class="col-12 col-lg-3 hs-place-mine-layout__sidebar">
                 <aside class="hs-place-mine-sidebar" aria-label="Điều hướng tài khoản">

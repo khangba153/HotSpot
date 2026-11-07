@@ -161,6 +161,7 @@ if (function_exists('mb_strlen')) {
                         <?php } ?>
                     <?php } ?>
                 </ul>
+                <p class="mb-0 mt-2">Thông tin đã nhập được giữ lại. Vui lòng chọn lại ảnh trước khi gửi.</p>
             </div>
         <?php } ?>
 
@@ -718,4 +719,4 @@ if (function_exists('mb_strlen')) {
         </div>
     </div>
 </section>
-<script src="assets/js/place-form.js?v=20261107" defer></script>
+<script src="assets/js/place-form.js?v=20261107-04" defer></script>

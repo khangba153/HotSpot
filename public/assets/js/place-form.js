@@ -854,6 +854,13 @@
             if (statusBanner) {
                 statusBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
+            return;
+        }
+
+        var submitButton = document.getElementById('place-submit-btn');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Đang gửi địa điểm...';
         }
     });
 
