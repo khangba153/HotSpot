@@ -69,7 +69,7 @@ if ($isLoginPage) {
     <link rel="stylesheet" href="assets/css/reviews.css?v=1">
     <link rel="stylesheet" href="assets/css/admin.css?v=2">
     <link rel="stylesheet" href="assets/css/favorites.css?v=4">
-    <link rel="stylesheet" href="assets/css/ai.css?v=3">
+    <link rel="stylesheet" href="assets/css/ai.css?v=5">
 </head>
 
 <body class="hs-body d-flex flex-column min-vh-100<?php echo $isAdminPage ? ' admin-layout' : ''; ?>">
@@ -198,7 +198,7 @@ if ($isLoginPage) {
         </div>
         <div class="hs-container hs-footer__bottom">
             <span>© 2026 Hot Spot. Bản demo đồ án Phát triển Web.</span>
-            <span>Khám phá Việt Nam, một địa điểm mỗi lần.</span>
+            <span>Khám phá Việt Nam, một địa điểm mỗi lần. <a href="assets/images/photo-credits.html" target="_blank" rel="noopener noreferrer">Nguồn ảnh</a></span>
         </div>
     </footer><?php } ?>
     <script src="assets/vendor/bootstrap.bundle.min.js"></script>

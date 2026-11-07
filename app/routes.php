@@ -42,6 +42,13 @@ $router->add(
     'draftPlaceDescription'
 );
 
+$router->add(
+    'POST',
+    'api/ai/place-recommendations',
+    $aiController,
+    'recommendPlaces'
+);
+
 // Các trang hiển thị.
 $router->add('GET', 'home', $homeController, 'index');
 $router->add('GET', 'api/places/search', $placeSearchController, 'search');

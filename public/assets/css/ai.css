@@ -105,7 +105,234 @@
     font-size: 11px;
 }
 
+.hs-home-search-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hs-home-search-tools .hs-search-shell {
+    flex: 1;
+    min-width: 0;
+}
+
+.hs-ai-launch {
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid #ff603e;
+    border-radius: 999px;
+    background: #fff;
+    color: #c63819;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.hs-ai-launch[hidden] {
+    display: none;
+}
+
+.hs-ai-launch:hover {
+    background: #fff1e9;
+}
+
+.hs-ai-launch:focus-visible,
+.hs-ai-recommendations__close:focus-visible {
+    outline: 3px solid #ffb49e;
+    outline-offset: 3px;
+}
+
+.hs-ai-dialog-open {
+    overflow: hidden;
+}
+
+.hs-ai-recommendations {
+    width: min(860px, calc(100% - 40px));
+    max-width: none;
+    max-height: calc(100dvh - 48px);
+    margin: auto;
+    padding: 28px;
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 1px solid #edf0f3;
+    border-radius: 16px;
+    background: #fff;
+    color: var(--hs-ink, #172c40);
+    box-shadow: 0 24px 90px #09223840;
+}
+
+.hs-ai-recommendations::backdrop {
+    background: #0a1c2d80;
+}
+
+.hs-ai-recommendations__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 8px;
+}
+
+.hs-ai-recommendations h2 {
+    margin: 0;
+    color: var(--hs-ink, #172c40);
+    font-size: clamp(20px, 2vw, 26px);
+    font-weight: 700;
+}
+
+.hs-ai-recommendations__close {
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: #fff;
+    color: #526477;
+    font: inherit;
+    font-size: 13px;
+}
+
+.hs-ai-recommendations__close:hover {
+    background: #fff1e9;
+    color: #c63819;
+}
+
+.hs-ai-recommendations__label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.hs-ai-recommendations textarea {
+    min-height: 66px;
+    padding: 12px;
+    border-color: #e9dace;
+    border-radius: 10px;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.hs-ai-recommendations textarea:focus {
+    border-color: #ff805d;
+    box-shadow: 0 0 0 3px #ff512f1a;
+}
+
+.hs-ai-recommendations__submit {
+    min-height: 66px;
+    background: var(--hs-orange, #ff512f);
+    color: #fff;
+}
+
+.hs-ai-recommendations__submit:hover {
+    background: #e33f21;
+}
+
+.hs-ai-recommendations__counter {
+    display: block;
+    margin: 6px 0;
+}
+
+.hs-ai-recommendations__footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #edf0f3;
+    text-align: center;
+}
+
+.hs-ai-recommendations__filters {
+    margin: 16px 0 12px;
+    color: #233b50;
+    font-size: 13px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.hs-ai-recommendations__warning {
+    padding: 12px;
+    margin: 0 0 16px;
+    border: 1px solid #f1d093;
+    border-radius: 8px;
+    background: #fff8e7;
+    color: #79500e;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.hs-ai-place-card {
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid #e7e9ec;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.hs-ai-place-card__picture {
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.hs-ai-place-card__picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hs-ai-place-card__body {
+    padding: 16px;
+}
+
+.hs-ai-place-card h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.hs-ai-place-card h3 a {
+    color: var(--hs-ink, #172c40);
+    text-decoration: none;
+}
+
+.hs-ai-place-card h3 a:hover {
+    color: #c63819;
+}
+
+.hs-ai-place-card__address {
+    margin: 8px 0 14px;
+    color: #526477;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
 @media (max-width: 575px) {
+    .hs-ai-recommendations {
+        width: calc(100% - 24px);
+        max-height: calc(100dvh - 24px);
+        padding: 18px;
+    }
+
+    .hs-home-search-tools {
+        flex-wrap: wrap;
+    }
+
+    .hs-home-search-tools .hs-search-shell {
+        flex-basis: 100%;
+    }
+
+    .hs-ai-launch {
+        min-height: 36px;
+        padding: 0 14px;
+        font-size: 11px;
+    }
+
+    .hs-ai-recommendations__submit {
+        min-height: 42px;
+    }
+
     .hs-ai-summary__button {
         width: 100%;
     }
