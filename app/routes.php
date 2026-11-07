@@ -10,6 +10,7 @@ use HotSpot\Controllers\PlaceSearchController;
 use HotSpot\Controllers\AdminController;
 use HotSpot\Controllers\FavoriteController;
 use HotSpot\Controllers\ReviewController;
+use HotSpot\Controllers\AiController;
 
 $router = new Router();
 
@@ -21,6 +22,15 @@ $authController = new AuthController();
 $adminController = new AdminController();
 $favoriteController = new FavoriteController();
 $reviewController = new ReviewController();
+$aiController = new AiController();
+
+// Nhận yêu cầu tóm tắt đánh giá bằng AI.
+$router->add(
+    'POST',
+    'api/ai/review-summary',
+    $aiController,
+    'summarizeReviews'
+);
 
 // Các trang hiển thị.
 $router->add('GET', 'home', $homeController, 'index');
