@@ -11,6 +11,7 @@ if (isset($viewData['title']) && is_string($viewData['title'])) {
 $homePageUrl = createRouteUrl('home');
 $loginPageUrl = createRouteUrl('login');
 $profilePageUrl = createRouteUrl('profile');
+$createPlacePageUrl = createRouteUrl('places/create');
 
 $favoritePageUrl = createRouteUrl('favorites');
 
@@ -19,6 +20,7 @@ $favoriteLinkClass = 'hs-main-nav__link hs-main-nav__link--heart';
 
 if (isset($_SESSION['user_id']) === false) {
     $favoritePageUrl = $loginPageUrl;
+    $createPlacePageUrl = $loginPageUrl;
 }
 
 if (
@@ -67,7 +69,7 @@ if ($isLoginPage) {
     <link rel="stylesheet" href="assets/css/reviews.css?v=1">
     <link rel="stylesheet" href="assets/css/admin.css?v=2">
     <link rel="stylesheet" href="assets/css/favorites.css?v=4">
-    <link rel="stylesheet" href="assets/css/ai.css?v=1">
+    <link rel="stylesheet" href="assets/css/ai.css?v=3">
 </head>
 
 <body class="hs-body d-flex flex-column min-vh-100<?php echo $isAdminPage ? ' admin-layout' : ''; ?>">
@@ -95,7 +97,11 @@ if ($isLoginPage) {
                     href="<?php echo escapeHtml($homePageUrl); ?>">
                     Khám phá
                 </a>
-                <span class="hs-main-nav__link" aria-disabled="true">Đăng địa điểm</span>
+                <a
+                    class="hs-main-nav__link"
+                    href="<?php echo escapeHtml($createPlacePageUrl); ?>">
+                    Đăng địa điểm
+                </a>
                 <a
                     class="<?php echo escapeHtml($favoriteLinkClass); ?>"
                     href="<?php echo escapeHtml($favoritePageUrl); ?>">

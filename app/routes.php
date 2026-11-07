@@ -32,6 +32,14 @@ $router->add(
     'summarizeReviews'
 );
 
+// Nhận yêu cầu viết bản nháp giới thiệu địa điểm.
+$router->add(
+    'POST',
+    'api/ai/place-description',
+    $aiController,
+    'draftPlaceDescription'
+);
+
 // Các trang hiển thị.
 $router->add('GET', 'home', $homeController, 'index');
 $router->add('GET', 'api/places/search', $placeSearchController, 'search');

@@ -81,6 +81,30 @@
     overflow-wrap: anywhere;
 }
 
+.hs-ai-description {
+    min-width: 0;
+}
+
+.hs-ai-description__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.hs-ai-description__toolbar .form-label {
+    margin-bottom: 0;
+}
+
+.hs-ai-description__toolbar .hs-ai-summary__button {
+    width: auto;
+    min-height: 30px;
+    padding: 5px 10px;
+    font-size: 11px;
+}
+
 @media (max-width: 575px) {
     .hs-ai-summary__button {
         width: 100%;
