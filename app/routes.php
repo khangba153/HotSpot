@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use HotSpot\Controllers\AuthController;
 use HotSpot\Controllers\HomeController;
+use HotSpot\Controllers\LocationController;
 use HotSpot\Controllers\PlaceController;
 use HotSpot\Controllers\ProfileController;
 use HotSpot\Core\Router;
@@ -17,6 +18,7 @@ $router = new Router();
 $homeController = new HomeController();
 $profileController = new ProfileController();
 $placeSearchController = new PlaceSearchController();
+$locationController = new LocationController();
 $placeController = new PlaceController();
 $authController = new AuthController();
 $adminController = new AdminController();
@@ -40,9 +42,17 @@ $router->add(
     'draftPlaceDescription'
 );
 
+$router->add(
+    'POST',
+    'api/ai/place-recommendations',
+    $aiController,
+    'recommendPlaces'
+);
+
 // Các trang hiển thị.
 $router->add('GET', 'home', $homeController, 'index');
 $router->add('GET', 'api/places/search', $placeSearchController, 'search');
+$router->add('GET', 'api/locations/wards', $locationController, 'wards');
 // Trang chi tiết địa điểm (C01: card Home link tới places/show&id=...).
 $router->add('GET', 'places/show', $placeController, 'show');
 $router->add('GET', 'places/create', $placeController, 'create');

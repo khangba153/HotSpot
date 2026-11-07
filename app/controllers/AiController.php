@@ -11,6 +11,8 @@ use Throwable;
 use HotSpot\Core\ClaudeClient;
 use HotSpot\Models\Review;
 use HotSpot\Core\AiSummaryCache;
+use HotSpot\Services\AiPlaceRecommendation;
+use InvalidArgumentException;
 
 final class AiController extends Controller
 {
@@ -213,7 +215,7 @@ final class AiController extends Controller
                 return;
             }
 
-                       $cacheKey = 'place-description-v1:'
+            $cacheKey = 'place-description-v1:'
                 . $userId
                 . ':'
                 . json_encode([
@@ -283,6 +285,118 @@ final class AiController extends Controller
                 500,
                 false,
                 'Chưa thể tạo bản nháp. Vui lòng thử lại sau.'
+            );
+        }
+    }
+
+    // Nhận nhu cầu và trả về các địa điểm công khai phù hợp.
+    public function recommendPlaces(): void
+    {
+        $userId = $this->validateAiSession();
+
+        if ($userId === null) {
+            return;
+        }
+
+        $requestText = $_POST['request_text'] ?? '';
+
+        if (is_string($requestText) === false) {
+            $this->respond(422, false, 'Nội dung tìm kiếm không hợp lệ.');
+            return;
+        }
+
+        $recommendationService = new AiPlaceRecommendation();
+
+        try {
+            $requestText = $recommendationService->validateRequest(
+                $requestText
+            );
+        } catch (InvalidArgumentException $exception) {
+            $this->respond(422, false, $exception->getMessage());
+            return;
+        }
+
+        try {
+            $userModel = new User();
+            $userInformation = $userModel->findById($userId);
+
+            if ($userInformation === null) {
+                $this->respond(401, false, 'Vui lòng đăng nhập lại.');
+                return;
+            }
+
+            $searchFilters = $recommendationService->readCachedFilters(
+                $requestText,
+                $userId
+            );
+
+            $isCached = $searchFilters !== null;
+
+            if ($searchFilters === null) {
+                $currentTime = time();
+                $lastRequestTime = $_SESSION['ai_requested_at'] ?? 0;
+
+                if ($currentTime - $lastRequestTime < 60) {
+                    $this->respond(
+                        429,
+                        false,
+                        'Vui lòng chờ 60 giây giữa các lần yêu cầu AI.'
+                    );
+                    return;
+                }
+
+                $_SESSION['ai_requested_at'] = $currentTime;
+
+                $searchFilters = $recommendationService->interpretRequest(
+                    $requestText
+                );
+
+                $cacheSaved = $recommendationService->cacheFilters(
+                    $requestText,
+                    $userId,
+                    $searchFilters
+                );
+
+                if ($cacheSaved === false) {
+                    error_log('AI recommendation cache could not be saved.');
+                }
+            }
+
+            $searchResult = $recommendationService->findMatchingPlaces(
+                $searchFilters
+            );
+
+            $message = 'Đã tìm địa điểm theo các bộ lọc xác định được.';
+
+            if ($searchResult['needs_clarification']) {
+                $message = 'Vui lòng nêu rõ tên địa điểm, danh mục, '
+                    . 'tỉnh/thành hoặc nhãn bạn muốn tìm.';
+            } elseif ($searchResult['total_count'] === 0) {
+                $message = 'Chưa tìm thấy địa điểm phù hợp trong dữ liệu.';
+            }
+
+            $this->respond(
+                200,
+                true,
+                $message,
+                [
+                    'filters' => $searchFilters,
+                    'places' => $searchResult['places'],
+                    'total_count' => $searchResult['total_count'],
+                    'needs_clarification' =>
+                    $searchResult['needs_clarification'],
+                    'cached' => $isCached,
+                ]
+            );
+        } catch (Throwable $exception) {
+            error_log(
+                'AI recommendation error: ' . get_class($exception)
+            );
+
+            $this->respond(
+                500,
+                false,
+                'Chưa thể gợi ý địa điểm. Vui lòng thử lại sau.'
             );
         }
     }
