@@ -119,24 +119,28 @@ $hasActiveFilters = $keyword !== ''
 
                 <input type="hidden" name="route" value="home">
 
-                <div class="hs-search-shell">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="10.8" cy="10.8" r="6.8"></circle>
-                        <path d="m16 16 4.4 4.4"></path>
-                    </svg>
+                <div class="hs-home-search-tools">
+                    <div class="hs-search-shell">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="10.8" cy="10.8" r="6.8"></circle>
+                            <path d="m16 16 4.4 4.4"></path>
+                        </svg>
 
-                    <input
-                        class="hs-search-shell__input"
-                        type="search"
-                        name="keyword"
-                        value="<?php echo escapeHtml($keyword); ?>"
-                        placeholder="Tìm địa điểm, món ăn, quán cà phê, trải nghiệm..."
-                        maxlength="100"
-                        aria-label="Từ khóa tìm kiếm">
+                        <input
+                            class="hs-search-shell__input"
+                            type="search"
+                            name="keyword"
+                            value="<?php echo escapeHtml($keyword); ?>"
+                            placeholder="Tìm địa điểm, món ăn, quán cà phê, trải nghiệm..."
+                            maxlength="100"
+                            aria-label="Từ khóa tìm kiếm">
 
-                    <button class="hs-search-shell__button" type="submit">
-                        Tìm kiếm
-                    </button>
+                        <button class="hs-search-shell__button" type="submit">
+                            Tìm kiếm
+                        </button>
+                    </div>
+                    <button type="button" class="hs-ai-launch" data-ai-dialog-open
+                        aria-haspopup="dialog" aria-controls="ai-place-dialog" hidden>Gợi ý bằng AI</button>
                 </div>
 
                 <div class="hs-hero__filters" aria-label="Bộ lọc tìm kiếm">
@@ -336,4 +340,6 @@ $hasActiveFilters = $keyword !== ''
     </section>
 </div>
 
+<?php require dirname(__DIR__) . '/ai/_place_recommendations.php'; ?>
 <script src="assets/js/search.js?v=5" defer></script>
+<script src="assets/js/ai-recommendations.js?v=2" defer></script>
