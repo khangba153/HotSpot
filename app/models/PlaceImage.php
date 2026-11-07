@@ -45,6 +45,22 @@ final class PlaceImage extends Model
         return $imageList;
     }
 
+    // Xóa bản ghi ảnh trong giao dịch; file cũ chỉ được dọn sau khi Controller commit.
+    public function removeRecordsForPlace(int $placeId): void
+    {
+        $databaseConnection = self::getConnection();
+        if ($databaseConnection->inTransaction() === false) {
+            throw new RuntimeException('Phải mở giao dịch trước khi thay ảnh địa điểm.');
+        }
+        $statement = $databaseConnection->prepare('DELETE FROM place_images WHERE place_id = :place_id');
+        $statement->bindValue(':place_id', $placeId, PDO::PARAM_INT);
+        try {
+            $statement->execute();
+        } finally {
+            $statement->closeCursor();
+        }
+    }
+
     /**
      * Kiểm tra lô file ảnh tải lên (TV3-04): số lượng 1–3, dung lượng thực tế, MIME thật và khả năng đọc ảnh.
      *

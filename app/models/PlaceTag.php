@@ -224,6 +224,23 @@ final class PlaceTag extends Model
         }
     }
 
+    // Thay bộ nhãn trong giao dịch; khi có lỗi rollback sẽ khôi phục cả nhãn cũ.
+    public function replaceTagsForPlace(int $placeId, array $tagIds): void
+    {
+        $databaseConnection = self::getConnection();
+        if ($databaseConnection->inTransaction() === false) {
+            throw new RuntimeException('Phải mở giao dịch trước khi thay nhãn địa điểm.');
+        }
+        $statement = $databaseConnection->prepare('DELETE FROM place_tags WHERE place_id = :place_id');
+        $statement->bindValue(':place_id', $placeId, PDO::PARAM_INT);
+        try {
+            $statement->execute();
+        } finally {
+            $statement->closeCursor();
+        }
+        $this->attachTagsToPlace($placeId, $tagIds);
+    }
+
     // Chuyển một giá trị đầu vào thành số nguyên dương; trả về 0 nếu sai định dạng.
     private function parsePositiveTagId(mixed $rawValue): int
     {

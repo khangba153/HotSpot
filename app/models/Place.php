@@ -22,19 +22,7 @@ final class Place extends Model
                 :title, :description, :address, :latitude, :longitude)'
         );
         $preparedStatement->bindValue(':owner_id', $ownerId, PDO::PARAM_INT);
-        $preparedStatement->bindValue(':category_id', $placeData['category_id'], PDO::PARAM_INT);
-        $preparedStatement->bindValue(':province_code', $placeData['province_code'], PDO::PARAM_STR);
-        $preparedStatement->bindValue(':title', $placeData['title'], PDO::PARAM_STR);
-        $preparedStatement->bindValue(':description', $placeData['description'], PDO::PARAM_STR);
-        $preparedStatement->bindValue(':address', $placeData['address'], PDO::PARAM_STR);
-
-        foreach (['ward_code', 'latitude', 'longitude'] as $optionalField) {
-            if ($placeData[$optionalField] === null) {
-                $preparedStatement->bindValue(':' . $optionalField, null, PDO::PARAM_NULL);
-            } else {
-                $preparedStatement->bindValue(':' . $optionalField, $placeData[$optionalField], PDO::PARAM_STR);
-            }
-        }
+        $this->bindPlaceData($preparedStatement, $placeData);
 
         try {
             $preparedStatement->execute();
@@ -50,6 +38,111 @@ final class Place extends Model
         }
 
         return $placeId;
+    }
+
+    // Khóa bài trước khi kiểm quyền ở POST để trạng thái không đổi giữa lúc kiểm tra và lưu.
+    public function lockById(int $placeId): ?array
+    {
+        $databaseConnection = self::getConnection();
+        if ($databaseConnection->inTransaction() === false) {
+            throw new RuntimeException('Phải mở giao dịch trước khi khóa địa điểm.');
+        }
+        $statement = $databaseConnection->prepare('SELECT * FROM places WHERE place_id = :place_id FOR UPDATE');
+        $statement->bindValue(':place_id', $placeId, PDO::PARAM_INT);
+        try {
+            $statement->execute();
+            $place = $statement->fetch(PDO::FETCH_ASSOC);
+        } finally {
+            $statement->closeCursor();
+        }
+        if ($place === false) {
+            return null;
+        }
+        return $place;
+    }
+
+    // Sửa nội dung giữ nguyên trạng thái; gửi lại mới dùng routine chuyển về PENDING.
+    public function updateOwnedPlace(int $ownerId, array $lockedPlace, array $placeData, bool $resubmit): void
+    {
+        $databaseConnection = self::getConnection();
+        if ($databaseConnection->inTransaction() === false) {
+            throw new RuntimeException('Phải mở giao dịch trước khi sửa địa điểm.');
+        }
+        $this->validateEditReferences($placeData, (int) $lockedPlace['category_id']);
+        if ($resubmit) {
+            $sqlQuery = 'CALL CTH_RESUBMIT_PLACE(:owner_id, :place_id, :category_id, :province_code,
+                :ward_code, :title, :description, :address, :latitude, :longitude)';
+        } else {
+            $sqlQuery = "UPDATE places SET category_id = :category_id, province_code = :province_code,
+                ward_code = :ward_code, title = :title, description = :description, address = :address,
+                latitude = :latitude, longitude = :longitude
+                WHERE place_id = :place_id AND owner_id = :owner_id AND status_code IN ('PENDING', 'REJECTED')";
+        }
+        $statement = $databaseConnection->prepare($sqlQuery);
+        $statement->bindValue(':owner_id', $ownerId, PDO::PARAM_INT);
+        $statement->bindValue(':place_id', (int) $lockedPlace['place_id'], PDO::PARAM_INT);
+        $this->bindPlaceData($statement, $placeData);
+        try {
+            $statement->execute();
+            while ($statement->nextRowset()) {
+            }
+        } finally {
+            $statement->closeCursor();
+        }
+    }
+
+    // Cho giữ danh mục cũ đã ngừng, nhưng không được chuyển sang danh mục không hoạt động khác.
+    private function validateEditReferences(array $placeData, int $oldCategoryId): void
+    {
+        $databaseConnection = self::getConnection();
+        $statement = $databaseConnection->prepare('SELECT category_id FROM categories
+            WHERE category_id = ? AND (is_active = 1 OR category_id = ?) FOR UPDATE');
+        try {
+            $statement->execute([$placeData['category_id'], $oldCategoryId]);
+            if ($statement->fetchColumn() === false) {
+                throw new \InvalidArgumentException('Danh mục đã chọn không khả dụng.');
+            }
+        } finally {
+            $statement->closeCursor();
+        }
+        $statement = $databaseConnection->prepare('SELECT province_code FROM provinces
+            WHERE province_code = ? AND is_active = 1 FOR UPDATE');
+        try {
+            $statement->execute([$placeData['province_code']]);
+            if ($statement->fetchColumn() === false) {
+                throw new \InvalidArgumentException('Tỉnh/thành đã chọn không khả dụng.');
+            }
+        } finally {
+            $statement->closeCursor();
+        }
+        if ($placeData['ward_code'] !== null) {
+            $statement = $databaseConnection->prepare('SELECT ward_code FROM wards
+                WHERE ward_code = ? AND province_code = ? AND is_active = 1 FOR UPDATE');
+            try {
+                $statement->execute([$placeData['ward_code'], $placeData['province_code']]);
+                if ($statement->fetchColumn() === false) {
+                    throw new \InvalidArgumentException('Phường/xã không thuộc tỉnh/thành đã chọn.');
+                }
+            } finally {
+                $statement->closeCursor();
+            }
+        }
+    }
+
+    // Dùng chung tham số cho tạo mới, sửa và gửi duyệt lại.
+    private function bindPlaceData(\PDOStatement $statement, array $placeData): void
+    {
+        $statement->bindValue(':category_id', $placeData['category_id'], PDO::PARAM_INT);
+        foreach (['province_code', 'title', 'description', 'address'] as $fieldName) {
+            $statement->bindValue(':' . $fieldName, $placeData[$fieldName], PDO::PARAM_STR);
+        }
+        foreach (['ward_code', 'latitude', 'longitude'] as $optionalField) {
+            if ($placeData[$optionalField] === null) {
+                $statement->bindValue(':' . $optionalField, null, PDO::PARAM_NULL);
+            } else {
+                $statement->bindValue(':' . $optionalField, $placeData[$optionalField], PDO::PARAM_STR);
+            }
+        }
     }
 
     // Lấy chi tiết một địa điểm kèm tên danh mục, tỉnh, phường và trạng thái.

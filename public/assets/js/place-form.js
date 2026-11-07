@@ -12,6 +12,8 @@
     if (!formElement) {
         return;
     }
+    var isEditing = formElement.getAttribute('data-editing') === 'true';
+    var existingImageCount = Number(formElement.getAttribute('data-existing-image-count') || '0');
 
     var titleInput = document.getElementById('place-title');
     var descriptionInput = document.getElementById('place-description');
@@ -441,7 +443,11 @@
         revokePreviewUrls();
 
         if (imageCountElement) {
-            imageCountElement.textContent = String(selectedImageFiles.length);
+            var displayedCount = selectedImageFiles.length;
+            if (isEditing && displayedCount === 0) {
+                displayedCount = existingImageCount;
+            }
+            imageCountElement.textContent = String(displayedCount);
         }
 
         if (!imagePreviewsContainer) {
@@ -454,6 +460,9 @@
             var emptyPlaceholder = document.createElement('div');
             emptyPlaceholder.className = 'hs-place-form__preview-placeholder';
             emptyPlaceholder.textContent = 'Chưa có hình ảnh nào được chọn. Hãy chọn từ 1 đến 3 ảnh minh họa địa điểm.';
+            if (isEditing && existingImageCount > 0) {
+                emptyPlaceholder.textContent = 'Chưa chọn ảnh thay thế. Bộ ảnh hiện tại sẽ được giữ nguyên.';
+            }
             imagePreviewsContainer.appendChild(emptyPlaceholder);
             return;
         }
@@ -634,7 +643,11 @@
             markInvalid(latitudeInput);
         }
 
-        if (selectedImageFiles.length < MIN_IMAGES || selectedImageFiles.length > MAX_IMAGES) {
+        var finalImageCount = selectedImageFiles.length;
+        if (isEditing && finalImageCount === 0) {
+            finalImageCount = existingImageCount;
+        }
+        if (finalImageCount < MIN_IMAGES || finalImageCount > MAX_IMAGES) {
             setFieldError(
                 'place-images-feedback',
                 'Vui lòng chọn từ ' + MIN_IMAGES + ' đến ' + MAX_IMAGES + ' hình ảnh hợp lệ cho địa điểm.'
@@ -857,10 +870,15 @@
             return;
         }
 
-        var submitButton = document.getElementById('place-submit-btn');
-        if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.textContent = 'Đang gửi địa điểm...';
+        if (event.submitter && event.submitter.hasAttribute('formaction')) {
+            formElement.action = event.submitter.getAttribute('formaction');
+        }
+        var submitButtons = formElement.querySelectorAll('button[type="submit"]');
+        for (var buttonIndex = 0; buttonIndex < submitButtons.length; buttonIndex++) {
+            submitButtons[buttonIndex].disabled = true;
+        }
+        if (event.submitter) {
+            event.submitter.textContent = 'Đang lưu địa điểm...';
         }
     });
 

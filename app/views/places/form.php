@@ -90,11 +90,24 @@ if (isset($viewData['isStoreReady']) && $viewData['isStoreReady'] === true) {
 }
 
 $homePageUrl = createRouteUrl('home');
+$isEditing = ($viewData['isEditing'] ?? false) === true;
+$isRejected = ($viewData['isRejected'] ?? false) === true;
+$existingImageUrls = $viewData['existingImageUrls'] ?? [];
+$existingImageCount = (int) ($viewData['existingImageCount'] ?? 0);
+$cancelPageUrl = $homePageUrl;
+$submitLabel = 'Gửi địa điểm chờ duyệt';
+if ($isEditing) {
+    $cancelPageUrl = createRouteUrl('places/mine');
+    $submitLabel = 'Lưu thay đổi';
+}
 $createPageUrl = createRouteUrl('places/create');
 $formActionUrl = $createPageUrl;
 $storeReadyAttribute = 'false';
 if ($isStoreReady) {
     $formActionUrl = createRouteUrl('places/store');
+    if ($isEditing) {
+        $formActionUrl = createRouteUrl('places/update');
+    }
     $storeReadyAttribute = 'true';
 }
 if ($isStoreReady && isset($viewData['formAction']) && is_string($viewData['formAction']) && trim($viewData['formAction']) !== '') {
@@ -161,7 +174,11 @@ if (function_exists('mb_strlen')) {
                         <?php } ?>
                     <?php } ?>
                 </ul>
-                <p class="mb-0 mt-2">Thông tin đã nhập được giữ lại. Vui lòng chọn lại ảnh trước khi gửi.</p>
+                <?php if ($isEditing) { ?>
+                    <p class="mb-0 mt-2">Ảnh hiện tại vẫn được giữ. Nếu muốn thay ảnh, vui lòng chọn lại ảnh mới.</p>
+                <?php } else { ?>
+                    <p class="mb-0 mt-2">Thông tin đã nhập được giữ lại. Vui lòng chọn lại ảnh trước khi gửi.</p>
+                <?php } ?>
             </div>
         <?php } ?>
 
@@ -182,7 +199,20 @@ if (function_exists('mb_strlen')) {
                     enctype="multipart/form-data"
                     data-wards-url="<?php echo escapeHtml($wardsApiUrl); ?>"
                     data-store-ready="<?php echo $storeReadyAttribute; ?>"
+                    data-editing="<?php if ($isEditing) { echo 'true'; } else { echo 'false'; } ?>"
+                    data-existing-image-count="<?php echo $existingImageCount; ?>"
                     novalidate>
+
+                    <?php if ($isEditing) { ?>
+                        <input type="hidden" name="place_id" value="<?php echo (int) $viewData['placeId']; ?>">
+                        <?php if ($isRejected) { ?>
+                            <div class="alert alert-warning" role="note">
+                                <strong>Lý do từ chối:</strong>
+                                <?php echo escapeHtml((string) ($viewData['editingPlace']['rejection_reason'] ?? '')); ?>
+                                <p class="mb-0 mt-2">Lưu thay đổi sẽ giữ trạng thái bị từ chối. Chọn Gửi duyệt lại khi bạn đã chỉnh sửa xong.</p>
+                            </div>
+                        <?php } ?>
+                    <?php } ?>
 
                     <input
                         type="hidden"
@@ -580,10 +610,19 @@ if (function_exists('mb_strlen')) {
                                 Hình ảnh địa điểm <span class="hs-place-form__required" aria-hidden="true">*</span>
                             </h2>
                             <small class="hs-place-form__counter ms-auto" id="place-image-counter">
-                                <span data-place-image-count>0</span>/3 hình ảnh
+                                <span data-place-image-count><?php echo $existingImageCount; ?></span>/3 hình ảnh
                             </small>
                         </div>
 
+                        <?php if ($isEditing) { ?>
+                            <p class="hs-place-form__hint">Không chọn ảnh mới sẽ giữ bộ ảnh hiện tại. Chọn 1–3 ảnh mới để thay toàn bộ ảnh cũ.</p>
+                            <div id="place-current-images" class="hs-place-form__previews mb-3">
+                                <?php foreach ($existingImageUrls as $imageUrl) { ?>
+                                    <img class="hs-place-form__preview-img" src="<?php echo escapeHtml($imageUrl); ?>"
+                                        alt="Ảnh hiện tại của địa điểm" loading="lazy">
+                                <?php } ?>
+                            </div>
+                        <?php } ?>
                         <div class="row g-3 align-items-center">
                             <div class="col-12 col-md-5">
                                 <input
@@ -646,13 +685,19 @@ if (function_exists('mb_strlen')) {
                     <?php } ?>
 
                     <div class="hs-place-form__actions">
-                        <a href="<?php echo escapeHtml($homePageUrl); ?>" class="btn hs-place-form__cancel-btn">
+                        <a href="<?php echo escapeHtml($cancelPageUrl); ?>" class="btn hs-place-form__cancel-btn">
                             Hủy bỏ
                         </a>
                         <?php if ($isStoreReady) { ?>
                             <button type="submit" id="place-submit-btn" class="btn hs-place-form__submit-btn">
-                                Gửi địa điểm chờ duyệt
+                                <?php echo escapeHtml($submitLabel); ?>
                             </button>
+                            <?php if ($isEditing && $isRejected) { ?>
+                                <button type="submit" id="place-resubmit-btn" class="btn hs-place-form__submit-btn"
+                                    formaction="<?php echo escapeHtml(createRouteUrl('places/resubmit')); ?>">
+                                    Gửi duyệt lại
+                                </button>
+                            <?php } ?>
                         <?php } else { ?>
                             <button type="button" id="place-check-btn" class="btn hs-place-form__check-btn">
                                 Kiểm tra thông tin đã nhập
@@ -719,4 +764,4 @@ if (function_exists('mb_strlen')) {
         </div>
     </div>
 </section>
-<script src="assets/js/place-form.js?v=20261107-04" defer></script>
+<script src="assets/js/place-form.js?v=20261107-06" defer></script>

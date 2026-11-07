@@ -476,31 +476,25 @@ $userFullName = (string) ($userInformation['full_name'] ?? 'Thành viên');
 
                                                 <?php if ($isEditableStatus) { ?>
                                                     <?php if ($statusCode === 'REJECTED') { ?>
-                                                        <button
-                                                            type="button"
+                                                        <a
                                                             class="btn hs-place-mine-btn-resubmit"
-                                                            disabled
-                                                            aria-disabled="true"
-                                                            title="Chức năng chỉnh sửa và gửi duyệt lại đang được hoàn thiện.">
+                                                            href="<?php echo escapeHtml(createRouteUrl('places/edit') . '&id=' . (int) $placeItem['place_id'] . '#place-resubmit-btn'); ?>">
                                                             <svg class="hs-place-mine-svg hs-place-mine-svg--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                                                                 <polyline points="23 4 23 10 17 10"></polyline>
                                                                 <polyline points="1 20 1 14 7 14"></polyline>
                                                                 <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                                                             </svg>
                                                             <span>Gửi duyệt lại</span>
-                                                        </button>
+                                                        </a>
                                                     <?php } else { ?>
-                                                        <button
-                                                            type="button"
+                                                        <a
                                                             class="btn hs-place-mine-btn-edit"
-                                                            disabled
-                                                            aria-disabled="true"
-                                                            title="Chức năng chỉnh sửa đang được hoàn thiện.">
+                                                            href="<?php echo escapeHtml(createRouteUrl('places/edit') . '&id=' . (int) $placeItem['place_id']); ?>">
                                                             <svg class="hs-place-mine-svg hs-place-mine-svg--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                                                                 <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                                                             </svg>
                                                             <span>Chỉnh sửa</span>
-                                                        </button>
+                                                        </a>
                                                     <?php } ?>
                                                 <?php } else { ?>
                                                     <span class="hs-place-mine-lock-label">
