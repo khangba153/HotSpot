@@ -1,6 +1,8 @@
 (function () {
     'use strict';
 
+    var WARD_REQUEST_TIMEOUT_MS = 10000;
+
     function bindWardSelect(provinceSelect, wardSelect, wardHint, apiUrl, initialWardCode) {
         if (!provinceSelect || !wardSelect) {
             return;
@@ -53,8 +55,15 @@
             wardState.wardHint.textContent = 'Đang tải danh sách phường/xã...';
         }
 
-        var requestUrl = new URL(wardState.apiUrl, window.location.href);
-        requestUrl.searchParams.set('province_code', provinceCode);
+        var requestUrl;
+
+        try {
+            requestUrl = new URL(wardState.apiUrl, window.location.href);
+            requestUrl.searchParams.set('province_code', provinceCode);
+        } catch (error) {
+            showWardLoadError(wardState);
+            return;
+        }
 
         var fetchOptions = {
             method: 'GET',
@@ -64,12 +73,34 @@
             }
         };
 
+        var requestController = null;
+
         if (typeof AbortController !== 'undefined') {
-            wardState.requestController = new AbortController();
-            fetchOptions.signal = wardState.requestController.signal;
+            requestController = new AbortController();
+            wardState.requestController = requestController;
+            fetchOptions.signal = requestController.signal;
         }
 
-        fetch(requestUrl.toString(), fetchOptions)
+        var requestTimedOut = false;
+        var timeoutId = null;
+        var timeoutPromise = new Promise(function (resolve, reject) {
+            timeoutId = window.setTimeout(function () {
+                requestTimedOut = true;
+
+                var timeoutError = new Error('Yêu cầu tải phường/xã đã hết thời gian chờ.');
+                timeoutError.name = 'TimeoutError';
+                reject(timeoutError);
+
+                if (requestController) {
+                    requestController.abort();
+                }
+            }, WARD_REQUEST_TIMEOUT_MS);
+        });
+
+        var requestPromise = Promise.resolve()
+            .then(function () {
+                return fetch(requestUrl.toString(), fetchOptions);
+            })
             .then(function (response) {
                 return response.json().then(function (payload) {
                     if (response.ok === false || !payload || payload.success !== true) {
@@ -82,8 +113,12 @@
 
                     return payload;
                 });
-            })
+            });
+
+        Promise.race([requestPromise, timeoutPromise])
             .then(function (payload) {
+                window.clearTimeout(timeoutId);
+
                 if (currentSequence !== wardState.requestSequence) {
                     return;
                 }
@@ -92,21 +127,27 @@
                 wardState.requestController = null;
             })
             .catch(function (error) {
-                if (error && error.name === 'AbortError') {
-                    return;
-                }
+                window.clearTimeout(timeoutId);
 
                 if (currentSequence !== wardState.requestSequence) {
                     return;
                 }
 
-                wardState.requestController = null;
-                resetWardSelect(wardState, 'Chưa tải được phường/xã (không bắt buộc)');
-
-                if (wardState.wardHint) {
-                    wardState.wardHint.textContent = 'Chưa tải được danh sách phường/xã. Bạn vẫn có thể tiếp tục và để trống trường này.';
+                if (error && error.name === 'AbortError' && requestTimedOut === false) {
+                    return;
                 }
+
+                showWardLoadError(wardState);
             });
+    }
+
+    function showWardLoadError(wardState) {
+        wardState.requestController = null;
+        resetWardSelect(wardState, 'Chưa tải được phường/xã (không bắt buộc)');
+
+        if (wardState.wardHint) {
+            wardState.wardHint.textContent = 'Chưa tải được danh sách phường/xã. Bạn vẫn có thể tiếp tục và để trống trường này.';
+        }
     }
 
     function resetWardSelect(wardState, placeholderText) {
