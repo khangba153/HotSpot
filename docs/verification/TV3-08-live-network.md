@@ -2,6 +2,20 @@
 
 Kiểm tra ngày **07/11/2026**, source `10b2cbb`, theo góp ý leader trên TV3-08. SHA-256 và kết quả chi tiết nằm trong [TV3-08-live-network-results.json](TV3-08-live-network-results.json).
 
+## Cập nhật sau khi Thành đổi mạng
+
+Kiểm tra lại trên source `4cca6d4` (các file nghiệp vụ giữ nguyên SHA-256): **đã gỡ blocker DNS local**. Các phần mô tả lỗi DNS và cấu hình QA bên dưới là lịch sử của mạng cũ.
+
+- DNS mặc định trên mạng mới phân giải được Nominatim và tile OSM. PHP cURL truy cập hai host đều HTTP 200, errno 0, giữ xác minh TLS, không cấu hình resolver riêng.
+- Service `PlaceGeocoder` thật chạy bằng **Apache `apache2handler`** trên workspace nhận HTTP 200 và trả đúng Hồ Hoàn Kiếm `21.0288313, 105.8525357`. Cache chưa có trước lượt gọi; sau đó file cache được tạo, nội dung khớp response và gọi lặp dùng cache.
+- PHP Apache kiểm tra ghi/đọc/khóa/xóa file cache đều đạt trên mạng mới.
+- Chrome headless dùng DNS mặc định tải **24 tile OSM thật** qua module `map.js` sản phẩm trên trang kiểm tra module cục bộ. Không thay resolver, không mock tile; đây không phải lần chạy lại toàn bộ form/upload. Bằng chứng đầy đủ chọn kết quả/kéo ghim/lưu bài nằm ở lượt QA trước trong báo cáo này.
+- Không thay cấu hình DNS của máy, không tắt TLS và không ghi database. Các probe HTTP, trang kiểm tra và profile Chrome tạm đã được dọn. Không còn cần lệnh đổi DNS Administrator trên mạng mới.
+
+TV3-08 hiện chỉ còn điều kiện triển khai: kiểm quyền cache bằng đúng user PHP của hosting khi có môi trường hosting. Không tự đổi trạng thái review/board.
+
+![Module map.js với DNS mặc định sau đổi mạng](images/TV3-08-default-network-map.png)
+
 ## Kết quả thực tế
 
 Đã chạy Chrome headless với form, Router, Controller, Service và upload thật trên snapshot khớp source workspace. Database thử sao chép 15 bảng và 18 routine, tài khoản/session/upload riêng.
@@ -13,7 +27,7 @@ Kiểm tra ngày **07/11/2026**, source `10b2cbb`, theo góp ý leader trên TV3
 - **8/8 kiểm tra Chrome với ranh giới mạng có kiểm soát đạt**: script tích hợp, empty, timeout trình duyệt 8 giây, đổi địa chỉ lúc chờ, offline, xóa tọa độ, phục hồi mạng rồi multipart lưu NULL/NULL và không có lỗi JavaScript chưa xử lý. Không gọi các response có kiểm soát này là response thật từ Nominatim.
 - Đối chiếu mọi bảng database chính trước/sau: số dòng và SHA-256 của **15/15 bảng không đổi**. Hai phép đối chiếu riêng xác nhận bài sau offline lưu NULL/NULL và bài từ Nominatim lưu đúng tọa độ kéo.
 
-## Phạm vi DNS của phép thử
+## Phạm vi DNS của phép thử trước khi đổi mạng
 
 DNS mặc định của Wi-Fi (`192.168.1.1`, `123.26.26.26`) trả NXDOMAIN cho cả Nominatim và tile OSM; xóa cache DNS không giải quyết được. Cùng thời điểm, hai resolver `1.1.1.1` và `8.8.8.8` đều trả địa chỉ hợp lệ, kiểm tra DNS-over-HTTPS cũng có kết quả.
 
@@ -41,7 +55,7 @@ InterfaceIndex 2 áp dụng cho Wi-Fi máy Thành tại thời điểm kiểm tr
 
 Probe HTTP bằng **PHP Apache `apache2handler` thật** trên `storage/cache/geocoding`: thư mục, ghi, đọc, `flock` độc quyền và xóa file đều đạt. Probe công khai và file dữ liệu probe đã được xóa ngay sau kiểm tra. Đối với hosting, vẫn phải chạy kiểm tra bằng đúng user PHP của hosting; lượt này không có môi trường hosting để nghiệm thu.
 
-Chưa tự đóng review hay đổi trạng thái TV3-08. Còn hai điều kiện môi trường: sửa DNS mặc định của máy để thao tác bình thường không cần cấu hình QA, và xác minh quyền cache ở hosting khi triển khai. Code TV3 không cần thay nhà cung cấp hoặc tắt kiểm tra TLS để né lỗi DNS.
+Tại lượt QA trước khi đổi mạng, còn hai điều kiện môi trường: DNS mặc định của máy và quyền cache ở hosting. Cập nhật đầu báo cáo đã xác nhận DNS local hoạt động sau đổi mạng; hosting vẫn chưa có môi trường để kiểm tra. Code TV3 không cần thay nhà cung cấp hoặc tắt kiểm tra TLS để né lỗi DNS. Chưa tự đóng review hay đổi trạng thái task.
 
 Sau kiểm tra đã dừng server QA, xóa database thử, dọn script test, dependency, session, snapshot và cấu hình riêng. Chỉ giữ báo cáo/JSON/ảnh minh chứng; `vendor` thật của dự án được giữ nguyên. Không đưa cấu hình database/app hay bản sao DNS vào Git.
 

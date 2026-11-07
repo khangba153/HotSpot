@@ -241,8 +241,7 @@
   "systemDnsChanged": false,
   "hostingVerified": false,
   "remaining": [
-    "System DNS still returns NXDOMAIN; administrator action required for persistent local repair",
-    "Hosting PHP-user cache permissions cannot be verified without a hosting deployment"
+    "Hosting PHP-user cache permissions still require verification on the deployed environment"
   ],
   "temporaryRuntimeCleaned": true,
   "cleanup": {
@@ -250,5 +249,60 @@
     "runtimeRemoved": true,
     "originalVendorPreserved": true,
     "temporaryPublicProbeRemoved": true
-  }
+  },
+  "networkSwitchVerification": {
+    "checkedDate": "2026-11-07",
+    "sourceCommit": "4cca6d4",
+    "networkChangedByUser": true,
+    "dns": "System default on the new network; no application, cURL or Chrome resolver overrides; no TLS verification disabled",
+    "transport": [
+      {
+        "host": "nominatim.openstreetmap.org",
+        "httpStatus": 200,
+        "curlErrno": 0,
+        "resultCount": 1
+      },
+      {
+        "host": "tile.openstreetmap.org",
+        "httpStatus": 200,
+        "curlErrno": 0,
+        "bytes": 30094
+      }
+    ],
+    "apache": {
+      "sapi": "apache2handler",
+      "provider": "https://nominatim.openstreetmap.org/search",
+      "dns": "system default; no per-request overrides",
+      "cacheFileExistedBefore": false,
+      "firstRequestMilliseconds": 717,
+      "status": 200,
+      "results": [
+        {
+          "latitude": 21.0288313,
+          "longitude": 105.8525357,
+          "label": "Hồ Hoàn Kiếm, Phường Hoàn Kiếm, Hà Nội, 11024, Việt Nam"
+        }
+      ],
+      "cacheCreated": true,
+      "secondRequestMatchesCache": true,
+      "cacheContainsExpectedResults": true,
+      "apacheCachePermissions": {
+        "write": true,
+        "read": true,
+        "lock": true,
+        "cleanup": true
+      }
+    },
+    "browser": {
+      "MapReady": true,
+      "LoadedTileImages": 24,
+      "ScreenshotExists": true,
+      "ResolverOverrides": false,
+      "Scope": "Real production map.js on a temporary local module page; no database writes"
+    },
+    "temporaryProfileRemoved": true,
+    "temporaryPublicProbesRemoved": true,
+    "databaseWrites": 0
+  },
+  "productionDefaultDnsVerified": true
 }
