@@ -1,0 +1,254 @@
+{
+  "checkedDate": "2026-11-07",
+  "sourceCommit": "10b2cbb",
+  "sourceHashNormalization": "UTF-8 with CRLF normalized to LF",
+  "sourceHashes": {
+    "app/controllers/PlaceController.php": "b58ef964ca5148012b32502775de7c35abdf948c1bd2403b1c9186dd2038d20b",
+    "app/services/PlaceGeocoder.php": "44e49f9dd3f1af9be3cfb7de66056b99e013d7e2961a2e95e1c1a52d77cd9b1d",
+    "app/views/places/form.php": "410dc0bafc07e087b05d653e7a0047b0a396c253c42e5d9f744cac85586ab3bd",
+    "public/assets/js/place-form.js": "63d804d509833a2132e3bfb4f03e415fefb9b684cd74e3bbbd567577cd1ae17c",
+    "public/assets/js/map.js": "3922b3d35569f1163f4cb28f66cf5f91c67577e3138451ae33b1b6c18caf80c2",
+    "public/assets/js/locations.js": "c9fabf504f5aa80eb630c97e30f254b7d87fe979a24303877d940c87f683dfbf"
+  },
+  "apacheCache": {
+    "sapi": "apache2handler",
+    "directory": true,
+    "write": true,
+    "read": true,
+    "lock": true,
+    "cleanup": true
+  },
+  "controlledBrowser": {
+    "sourceCommit": "10b2cbb",
+    "passed": 8,
+    "total": 8,
+    "scope": "Real Chrome, real application and cloned DB; empty/timeout/stale/offline responses controlled at browser network boundary; no claim of public-provider success",
+    "results": [
+      {
+        "name": "five scripts load once in dependency order",
+        "passed": true
+      },
+      {
+        "name": "empty result keeps coordinates optional and unlocks search",
+        "passed": true
+      },
+      {
+        "name": "browser timeout displays the timeout message and unlocks search",
+        "passed": true
+      },
+      {
+        "name": "address change discards an in-flight response",
+        "passed": true
+      },
+      {
+        "name": "offline search reports failure without requiring coordinates",
+        "passed": true
+      },
+      {
+        "name": "coordinates can be cleared together",
+        "passed": true
+      },
+      {
+        "name": "after connection returns, real multipart save succeeds with NULL coordinates",
+        "passed": true
+      },
+      {
+        "name": "no uncaught browser JavaScript errors",
+        "passed": true
+      }
+    ]
+  },
+  "realProviderBrowser": {
+    "sourceCommit": "10b2cbb",
+    "passed": 10,
+    "total": 10,
+    "dnsScope": "QA-only server cURL resolution and Chrome tile resolution use current public DNS addresses; production source and system DNS unchanged; TLS verification remains enabled; no provider/tile response mocked",
+    "providerResults": [
+      {
+        "latitude": 21.0288313,
+        "longitude": 105.8525357,
+        "label": "Hồ Hoàn Kiếm, Phường Hoàn Kiếm, Hà Nội, 11024, Việt Nam"
+      }
+    ],
+    "selected": {
+      "latitude": "21.0288313",
+      "longitude": "105.8525357"
+    },
+    "dragged": {
+      "latitude": "21.0283904",
+      "longitude": "105.8535719"
+    },
+    "successfulTileCount": 6,
+    "upstreamCalls": 2,
+    "results": [
+      {
+        "name": "Real Nominatim through application endpoint returns success",
+        "passed": true
+      },
+      {
+        "name": "Search does not automatically populate coordinates",
+        "passed": true
+      },
+      {
+        "name": "Selecting public-provider result fills matching coordinates",
+        "passed": true
+      },
+      {
+        "name": "Dragging Leaflet marker updates coordinate inputs",
+        "passed": true
+      },
+      {
+        "name": "Real OpenStreetMap tiles load over HTTPS",
+        "passed": true
+      },
+      {
+        "name": "Real multipart create after selecting and dragging succeeds",
+        "passed": true
+      },
+      {
+        "name": "Real public-provider empty search returns optional empty state",
+        "passed": true
+      },
+      {
+        "name": "Repeated public query uses application cache without another upstream call",
+        "passed": true
+      },
+      {
+        "name": "Mobile 375px form has no horizontal overflow",
+        "passed": true
+      },
+      {
+        "name": "No uncaught browser JavaScript errors",
+        "passed": true
+      }
+    ]
+  },
+  "database": {
+    "offlineSavedPendingWithNullCoordinates": true,
+    "liveSavedPendingWithDraggedCoordinates": true,
+    "qaPlaces": [
+      {
+        "title": "TV3 live followup offline optional coordinates",
+        "status_code": "PENDING",
+        "latitude": null,
+        "longitude": null,
+        "ward_code": null
+      },
+      {
+        "title": "TV3 live Nominatim selected and dragged",
+        "status_code": "PENDING",
+        "latitude": "21.0283904",
+        "longitude": "105.8535719",
+        "ward_code": null
+      }
+    ],
+    "mainDatabaseTablesUnchanged": 15,
+    "mainDatabaseFingerprint": {
+      "categories": {
+        "count": 6,
+        "sha256": "6e164025531eb679b3b24963f8b45275cf2aac0a06e60168f294dc080c5a094b"
+      },
+      "favorites": {
+        "count": 18,
+        "sha256": "32b41e45e3b7112ce3d84191b306c565236a323b0b1b72058c947f31ae6901a9"
+      },
+      "place_images": {
+        "count": 24,
+        "sha256": "f93a06d18b1210e9c18b2301ccf81fe6d09d0a0c4707b40cf7b68604b3f5860c"
+      },
+      "place_statuses": {
+        "count": 4,
+        "sha256": "94064a834d3617f3ade12ed697c6a5acaeaff403d6b77cc39a11e67cd622e25b"
+      },
+      "place_tags": {
+        "count": 24,
+        "sha256": "71f55f9fd47733ac7c3f3adca4011823021241d6a0d2e4bf1a15f8820e05ae25"
+      },
+      "places": {
+        "count": 24,
+        "sha256": "1d249f1a9cce9b9f550e4fde86491eef14ded1c30b30ae342fca79a63f6f9623"
+      },
+      "provinces": {
+        "count": 34,
+        "sha256": "0e02d2732ab64e5057af561d499c69520bfb5fd69c0e6193549a13e3f0f3f889"
+      },
+      "review_statuses": {
+        "count": 2,
+        "sha256": "b9af94dc58d4cce8eac87fb64c6aa2b1b7d1af9e7a0aa790799f0bf98a0ce62b"
+      },
+      "reviews": {
+        "count": 18,
+        "sha256": "1b0acf4606aeafe690045febe0ac3f49659ebeffa461a96683e080e13afe6ab3"
+      },
+      "roles": {
+        "count": 2,
+        "sha256": "2b63fa0ade09665f08dbd25c6020ad9b4860e9fed72e91ec6e09290fe814ab0d"
+      },
+      "tags": {
+        "count": 8,
+        "sha256": "297f72c5655df7c6459c9264aa28641c56bd79cf90019f2ba52ab1d4f84e0992"
+      },
+      "user_password_reset_tokens": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "user_remember_tokens": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "users": {
+        "count": 5,
+        "sha256": "85c9f1c85334338547a7cab9497da68eee4d6d517e97b7f45d4fefa1979617fe"
+      },
+      "wards": {
+        "count": 3321,
+        "sha256": "f6e78ec01537660f78451a2c58608c4e94ca8f4e2d696b24afc8c00c33a571c5"
+      }
+    }
+  },
+  "upstreamTransport": {
+    "httpStatus": 200,
+    "curlErrno": 0,
+    "error": "",
+    "tlsVerification": true,
+    "dnsScope": "Temporary per-request resolution from public resolver, not system DNS or production code",
+    "result": [
+      {
+        "place_id": 237930222,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 19331651,
+        "lat": "21.0323032",
+        "lon": "105.8506925",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 12,
+        "importance": 0.24007283054856182,
+        "addresstype": "suburb",
+        "name": "Phường Hoàn Kiếm",
+        "display_name": "Phường Hoàn Kiếm, Thành phố Hà Nội, 11024, Việt Nam",
+        "boundingbox": [
+          "21.0244069",
+          "21.0408299",
+          "105.8425565",
+          "105.8601913"
+        ]
+      }
+    ]
+  },
+  "upstreamRequestCount": 2,
+  "upstreamMinimumIntervalSeconds": 5.2217490673065186,
+  "systemDnsChanged": false,
+  "hostingVerified": false,
+  "remaining": [
+    "System DNS still returns NXDOMAIN; administrator action required for persistent local repair",
+    "Hosting PHP-user cache permissions cannot be verified without a hosting deployment"
+  ],
+  "temporaryRuntimeCleaned": true,
+  "cleanup": {
+    "qaDatabaseRemoved": true,
+    "runtimeRemoved": true,
+    "originalVendorPreserved": true,
+    "temporaryPublicProbeRemoved": true
+  }
+}
