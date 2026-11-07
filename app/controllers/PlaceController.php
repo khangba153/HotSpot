@@ -98,9 +98,15 @@ final class PlaceController extends Controller
 
         $hasLocation = false;
 
-        // Chỉ coi là có vị trí khi cả vĩ độ và kinh độ đều có giá trị.
-        if ($placeInformation['latitude'] !== null && $placeInformation['longitude'] !== null) {
-            $hasLocation = true;
+        // Chỉ hiện marker với cặp tọa độ hợp lệ; không biến NULL hoặc dữ liệu lỗi thành 0,0.
+        if (is_numeric($placeInformation['latitude']) && is_numeric($placeInformation['longitude'])) {
+            $latitude = (float) $placeInformation['latitude'];
+            $longitude = (float) $placeInformation['longitude'];
+            if (is_finite($latitude) && is_finite($longitude)
+                && $latitude >= -90 && $latitude <= 90 && $longitude >= -180 && $longitude <= 180
+                && ($latitude != 0 || $longitude != 0)) {
+                $hasLocation = true;
+            }
         }
 
         // Chuẩn bị dữ liệu cho widget yêu thích của Khang.
