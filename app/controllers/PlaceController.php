@@ -528,8 +528,8 @@ final class PlaceController extends Controller
             throw new HttpException(401, 'Tài khoản không tồn tại. Vui lòng đăng nhập lại.');
         }
 
-        if ($userInformation['role_code'] !== 'MEMBER') {
-            throw new HttpException(403, 'Chỉ thành viên được đăng địa điểm.');
+        if (in_array($userInformation['role_code'], ['MEMBER', 'ADMIN'], true) === false) {
+            throw new HttpException(403, 'Tài khoản không có quyền đăng địa điểm.');
         }
 
         if (isset($_SESSION['csrf_token']) === false) {

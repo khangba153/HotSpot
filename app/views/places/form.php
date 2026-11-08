@@ -688,7 +688,7 @@ if (function_exists('mb_strlen')) {
                                 class="btn hs-place-form__submit-btn"
                                 disabled
                                 aria-disabled="true">
-                                Gửi địa điểm (Chưa hỗ trợ)
+                                Hiện chưa thể gửi địa điểm
                             </button>
                         <?php } ?>
                     </div>

@@ -10,16 +10,7 @@ $hiddenReviewCount = (int) $counts['hidden_reviews'];
 $categoryCount = (int) $counts['total_categories'];
 ?>
 <div class="admin-shell admin-list-shell admin-dashboard">
-    <aside class="admin-sidebar">
-        <small>QUẢN LÝ HỆ THỐNG</small>
-        <a class="active" href="<?php echo escapeHtml(createRouteUrl('admin')); ?>">Tổng quan</a>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Chờ duyệt địa điểm</a>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin/places') . '&view=managed'); ?>">Quản lý địa điểm</a>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin/reviews')); ?>">Quản lý đánh giá</a>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin/categories')); ?>">Quản lý danh mục</a>
-        <a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">Quay về trang chủ</a>
-    </aside>
-    <main class="admin-content">
+    <section class="admin-content">
         <div class="admin-heading"><div><small>HOT SPOT / QUẢN TRỊ</small><h1>Tổng quan quản trị</h1><p>Theo dõi hoạt động cộng đồng và những việc cần xử lý</p></div></div>
         <div class="dashboard-stats">
             <div><span>Tổng địa điểm</span><strong><?php echo $totalPlaces; ?></strong></div>
@@ -43,5 +34,5 @@ $categoryCount = (int) $counts['total_categories'];
             </section>
             <section><h2 class="dashboard-section-title">Hoạt động tổng quan</h2><div class="dashboard-overview"><h3>Cần xử lý</h3><p><strong>Địa điểm</strong><span><?php echo $pendingCount; ?> bài đang chờ duyệt</span></p><p><strong>Đánh giá</strong><span><?php echo $hiddenReviewCount; ?> đánh giá đã ẩn</span></p><p><strong>Danh mục</strong><span><?php echo $categoryCount; ?> danh mục đang quản lý</span></p></div></section>
         </div>
-    </main>
+    </section>
 </div>

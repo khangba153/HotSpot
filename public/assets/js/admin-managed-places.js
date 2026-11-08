@@ -32,22 +32,14 @@ function filterManagedPlaces() {
         matchingRows[rowIndex].hidden = false;
     }
     var pagination = document.getElementById('managed-pagination');
-    pagination.textContent = '';
-    for (var pageNumber = 1; pageNumber <= pageCount; pageNumber++) {
-        var pageButton = document.createElement('button');
-        pageButton.type = 'button';
-        pageButton.textContent = String(pageNumber);
-        pageButton.dataset.page = String(pageNumber);
-        pageButton.setAttribute('aria-label', 'Trang ' + pageNumber);
-        if (pageNumber === currentPage) {
-            pageButton.classList.add('selected');
-            pageButton.setAttribute('aria-current', 'page');
-        }
-        pageButton.addEventListener('click', selectManagedPage);
-        pagination.appendChild(pageButton);
-    }
+    renderAdminPagination(pagination, currentPage, pageCount, selectManagedPage);
     document.getElementById('managed-empty').hidden = matchingRows.length !== 0;
-    document.getElementById('managed-summary').textContent = 'Hiển thị ' + (lastIndex - firstIndex) + ' trong ' + matchingRows.length + ' địa điểm phù hợp';
+    var summaryText = 'Không có địa điểm phù hợp.';
+    if (matchingRows.length > 0) {
+        summaryText = 'Hiển thị ' + (firstIndex + 1) + '–' + lastIndex
+            + ' trên tổng ' + matchingRows.length + ' địa điểm phù hợp';
+    }
+    document.getElementById('managed-summary').textContent = summaryText;
 }
 
 function selectManagedPage(event) {
