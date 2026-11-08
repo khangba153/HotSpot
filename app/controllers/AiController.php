@@ -16,6 +16,7 @@ use InvalidArgumentException;
 
 final class AiController extends Controller
 {
+    private const REQUEST_INTERVAL_SECONDS = 10;
 
     // Kiểm tra người dùng và địa điểm trước khi xử lý tóm tắt.
     public function summarizeReviews(): void
@@ -121,11 +122,11 @@ final class AiController extends Controller
             $currentTime = time();
             $lastRequestTime = $_SESSION['ai_requested_at'] ?? 0;
 
-            if ($currentTime - $lastRequestTime < 60) {
+            if ($currentTime - $lastRequestTime < self::REQUEST_INTERVAL_SECONDS) {
                 $this->respond(
                     429,
                     false,
-                    'Vui lòng chờ 60 giây giữa các lần yêu cầu AI.'
+                    'Vui lòng chờ 10 giây giữa các lần yêu cầu AI.'
                 );
                 return;
             }
@@ -242,11 +243,11 @@ final class AiController extends Controller
             $currentTime = time();
             $lastRequestTime = $_SESSION['ai_requested_at'] ?? 0;
 
-            if ($currentTime - $lastRequestTime < 60) {
+            if ($currentTime - $lastRequestTime < self::REQUEST_INTERVAL_SECONDS) {
                 $this->respond(
                     429,
                     false,
-                    'Vui lòng chờ 60 giây giữa các lần yêu cầu AI.'
+                    'Vui lòng chờ 10 giây giữa các lần yêu cầu AI.'
                 );
                 return;
             }
@@ -336,11 +337,11 @@ final class AiController extends Controller
                 $currentTime = time();
                 $lastRequestTime = $_SESSION['ai_requested_at'] ?? 0;
 
-                if ($currentTime - $lastRequestTime < 60) {
+                if ($currentTime - $lastRequestTime < self::REQUEST_INTERVAL_SECONDS) {
                     $this->respond(
                         429,
                         false,
-                        'Vui lòng chờ 60 giây giữa các lần yêu cầu AI.'
+                        'Vui lòng chờ 10 giây giữa các lần yêu cầu AI.'
                     );
                     return;
                 }
@@ -370,7 +371,7 @@ final class AiController extends Controller
 
             if ($searchResult['needs_clarification']) {
                 $message = 'Vui lòng nêu rõ tên địa điểm, danh mục, '
-                    . 'tỉnh/thành hoặc nhãn bạn muốn tìm.';
+                    . 'tỉnh/thành, nhãn hoặc tiêu chí xếp hạng bạn muốn tìm.';
             } elseif ($searchResult['total_count'] === 0) {
                 $message = 'Chưa tìm thấy địa điểm phù hợp trong dữ liệu.';
             }

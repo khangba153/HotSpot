@@ -9,7 +9,7 @@ use HotSpot\Models\Category;
 use HotSpot\Models\Province;
 use HotSpot\Models\Tag;
 use RuntimeException;
-use HotSpot\Models\PlaceSearch;
+use HotSpot\Models\AiPlaceSearch;
 use HotSpot\Core\ClaudeClient;
 use HotSpot\Core\AiSummaryCache;
 
@@ -78,6 +78,11 @@ final class AiPlaceRecommendation
             );
         }
 
+        // Chỉ gỡ khối Markdown bao toàn bộ JSON, vẫn kiểm tra đủ schema bên dưới.
+        if (preg_match('/\A```(?:json)?\s*\R(.*?)\R?```\z/is', $responseText, $matches) === 1) {
+            $responseText = trim($matches[1]);
+        }
+
         $searchFilters = json_decode($responseText, true);
 
         if (
@@ -94,7 +99,14 @@ final class AiPlaceRecommendation
             'keyword',
             'category_id',
             'province_code',
-            'tag_slug',
+            'tag_slugs',
+            'min_rating',
+            'min_reviews',
+            'min_favorites',
+            'sort',
+            'created_within_days',
+            'has_coordinates',
+            'limit',
             'unsupported',
         ];
 
@@ -117,10 +129,10 @@ final class AiPlaceRecommendation
     // Kiểm tra kiểu dữ liệu và giới hạn các giá trị AI trả về.
     public function validateFilterValues(array $searchFilters): array
     {
+        $searchFilters = $this->decodeSearchFilters(json_encode($searchFilters, JSON_THROW_ON_ERROR));
         $textLimits = [
             'keyword' => 100,
             'province_code' => 10,
-            'tag_slug' => 100,
         ];
 
         foreach ($textLimits as $fieldName => $maximumLength) {
@@ -159,6 +171,44 @@ final class AiPlaceRecommendation
                     'Mã danh mục phải là số nguyên dương hoặc null.'
                 );
             }
+        }
+
+        $tagSlugs = $searchFilters['tag_slugs'];
+        if (!is_array($tagSlugs) || !array_is_list($tagSlugs) || count($tagSlugs) > 5) {
+            throw new RuntimeException('Chỉ nhận tối đa 5 nhãn.');
+        }
+        $normalizedTagSlugs = [];
+        foreach ($tagSlugs as $tagSlug) {
+            if (!is_string($tagSlug) || trim($tagSlug) === '' || strlen($tagSlug) > 100) {
+                throw new RuntimeException('Nhãn tìm kiếm không hợp lệ.');
+            }
+            $normalizedTagSlugs[] = trim($tagSlug);
+        }
+        $searchFilters['tag_slugs'] = array_values(array_unique($normalizedTagSlugs));
+
+        $minimumRating = $searchFilters['min_rating'];
+        if ($minimumRating !== null) {
+            if ((!is_int($minimumRating) && !is_float($minimumRating))
+                || !is_finite((float) $minimumRating) || $minimumRating < 1 || $minimumRating > 5) {
+                throw new RuntimeException('Điểm tối thiểu phải từ 1 đến 5.');
+            }
+        }
+        $integerLimits = ['min_reviews' => 10000, 'min_favorites' => 10000, 'created_within_days' => 3650];
+        foreach ($integerLimits as $fieldName => $maximumValue) {
+            $value = $searchFilters[$fieldName];
+            if ($value !== null && (!is_int($value) || $value < 1 || $value > $maximumValue)) {
+                throw new RuntimeException('Giá trị ' . $fieldName . ' không hợp lệ.');
+            }
+        }
+        $allowedSorts = ['default', 'rating_desc', 'reviews_desc', 'favorites_desc', 'newest', 'oldest', 'updated_desc'];
+        if (!is_string($searchFilters['sort']) || !in_array($searchFilters['sort'], $allowedSorts, true)) {
+            throw new RuntimeException('Cách sắp xếp không hợp lệ.');
+        }
+        if (!is_bool($searchFilters['has_coordinates'])) {
+            throw new RuntimeException('Điều kiện tọa độ phải là boolean.');
+        }
+        if (!is_int($searchFilters['limit']) || $searchFilters['limit'] < 1 || $searchFilters['limit'] > 12) {
+            throw new RuntimeException('Chỉ hiển thị từ 1 đến 12 địa điểm.');
         }
 
         $unsupportedCriteria = $searchFilters['unsupported'];
@@ -250,73 +300,38 @@ final class AiPlaceRecommendation
             }
         }
 
-        if ($searchFilters['tag_slug'] !== null) {
-            if (
-                in_array(
-                    $searchFilters['tag_slug'],
-                    $allowedTagSlugs,
-                    true
-                ) === false
-            ) {
-                throw new RuntimeException(
-                    'AI trả về nhãn không có trong danh sách.'
-                );
+        foreach ($searchFilters['tag_slugs'] as $tagSlug) {
+            if (!in_array($tagSlug, $allowedTagSlugs, true)) {
+                throw new RuntimeException('AI trả về nhãn không có trong danh sách.');
             }
         }
 
         return $searchFilters;
     }
 
-    // Tìm tối đa 6 địa điểm công khai bằng nguồn tìm kiếm của Thuần.
+    // Tìm và sắp xếp trên dữ liệu công khai; không dùng SQL do AI tạo.
     public function findMatchingPlaces(array $searchFilters): array
     {
         $searchFilters = $this->validateFilterValues($searchFilters);
-
-        $currentCatalog = $this->getSearchCatalog();
-        $searchFilters = $this->validateCatalogFilters(
-            $searchFilters,
-            $currentCatalog
-        );
-
+        $searchFilters = $this->validateCatalogFilters($searchFilters, $this->getSearchCatalog());
         $hasSearchCondition = false;
-
-        $searchFields = [
-            'keyword',
-            'category_id',
-            'province_code',
-            'tag_slug',
-        ];
-
-        foreach ($searchFields as $fieldName) {
+        foreach (['keyword', 'category_id', 'province_code', 'min_rating', 'min_reviews',
+            'min_favorites', 'created_within_days'] as $fieldName) {
             if ($searchFilters[$fieldName] !== null) {
                 $hasSearchCondition = true;
-                break;
             }
         }
-
-        if ($hasSearchCondition === false) {
-            return [
-                'places' => [],
-                'total_count' => 0,
-                'needs_clarification' => true,
-            ];
+        if ($searchFilters['tag_slugs'] !== [] || $searchFilters['has_coordinates']
+            || $searchFilters['sort'] !== 'default' || $searchFilters['limit'] !== 6) {
+            $hasSearchCondition = true;
         }
-
-        $placeSearchModel = new PlaceSearch();
-
-        $searchResult = $placeSearchModel->searchApprovedForHome(
-            $searchFilters['keyword'],
-            $searchFilters['category_id'],
-            $searchFilters['province_code'],
-            null,
-            $searchFilters['tag_slug'],
-            1,
-            6
-        );
-
-        $searchResult['needs_clarification'] = false;
-
-        return $searchResult;
+        if (!$hasSearchCondition) {
+            return ['places' => [], 'total_count' => 0, 'needs_clarification' => true];
+        }
+        $searchModel = new AiPlaceSearch();
+        $result = $searchModel->search($searchFilters);
+        $result['needs_clarification'] = false;
+        return $result;
     }
 
     // Phân tích nhu cầu và chỉ trả về bộ lọc đã được kiểm tra.
@@ -355,9 +370,14 @@ final class AiPlaceRecommendation
             return null;
         }
 
-        $searchFilters = $this->decodeSearchFilters($cachedText);
-
-        return $this->validateFilterValues($searchFilters);
+        // Cache có thể cũ khi Admin ngừng sử dụng danh mục hoặc nhãn.
+        try {
+            $searchFilters = $this->decodeSearchFilters($cachedText);
+            $searchFilters = $this->validateFilterValues($searchFilters);
+            return $this->validateCatalogFilters($searchFilters, $this->getSearchCatalog());
+        } catch (RuntimeException $exception) {
+            return null;
+        }
     }
 
     // Lưu bộ lọc đã kiểm tra để tái sử dụng trong một giờ.
@@ -383,7 +403,7 @@ final class AiPlaceRecommendation
         string $requestText,
         int $userId
     ): string {
-        return 'place-recommendation-v1:'
+        return 'place-recommendation-v2:'
             . $userId
             . ':'
             . $requestText;
