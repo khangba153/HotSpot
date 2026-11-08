@@ -93,6 +93,7 @@ final class HomeController extends Controller
             'totalCount' => $searchResult['total_count'],
             'keyword' => $keyword,
             'categories' => $categoryList,
+            'categoryCardLabels' => $categoryModel->findCardLabelImages(),
             'provinces' => $provinceList,
             'tags' => $tagList,
             'selectedCategoryId' => $categoryId === null ? '' : (string) $categoryId,

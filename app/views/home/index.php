@@ -1,6 +1,7 @@
 <?php
 /** @var array<string, mixed> $viewData */
 $places = $viewData['places'] ?? [];
+$categoryCardLabels = $viewData['categoryCardLabels'] ?? [];
 $categories = $viewData['categories'] ?? [];
 $provinces = $viewData['provinces'] ?? [];
 $tags = $viewData['tags'] ?? [];
@@ -70,19 +71,6 @@ if (!is_numeric($totalCount) || (int) $totalCount < 0) {
 } else {
     $totalCount = (int) $totalCount;
 }
-
-/*
- * Ảnh minh họa cho dữ liệu seed.
- * Ảnh riêng của địa điểm được ưu tiên trong _place_cards.php.
- */
-$categoryVisuals = [
-    1 => ['image' => 'assets/images/home/food.webp', 'icon' => 'food', 'subtitle' => 'Món ngon địa phương'],
-    2 => ['image' => 'assets/images/home/coffee.webp', 'icon' => 'coffee', 'subtitle' => 'Quán cà phê đáng thử'],
-    3 => ['image' => 'assets/images/home/travel.webp', 'icon' => 'travel', 'subtitle' => 'Điểm đến nổi bật'],
-    4 => ['image' => 'assets/images/home/fun.webp', 'icon' => 'fun', 'subtitle' => 'Đi chơi cuối tuần'],
-    5 => ['image' => 'assets/images/home/nature.webp', 'icon' => 'nature', 'subtitle' => 'Gần gũi thiên nhiên'],
-    6 => ['image' => 'assets/images/home/culture.webp', 'icon' => 'culture', 'subtitle' => 'Văn hóa và di sản'],
-];
 
 $featuredPlaces = array_slice($places, 0, 12);
 $hasActiveFilters = $keyword !== ''
@@ -209,9 +197,7 @@ $hasActiveFilters = $keyword !== ''
                 <h2 id="popular-categories-heading">Danh mục phổ biến</h2>
             </div>
 
-            <span class="hs-section-link">
-                Xem tất cả danh mục
-            </span>
+
         </div>
 
         <?php if ($categories === []) : ?>
@@ -221,41 +207,28 @@ $hasActiveFilters = $keyword !== ''
                 <?php foreach ($categories as $category) :
                     $categoryId = (int) ($category['category_id'] ?? 0);
                     $categoryName = trim((string) ($category['name'] ?? 'Danh mục'));
-                    $visual = $categoryVisuals[$categoryId] ?? $categoryVisuals[3];
+                    $categoryImage = trim((string) ($category['image_path'] ?? ''));
+                    if ($categoryImage === '') {
+                        $categoryImage = 'assets/images/categories/travel.jpg';
+                    }
+                    $categoryDescription = trim((string) ($category['description'] ?? ''));
                 ?>
-                    <article class="hs-category-card">
+                    <a class="hs-category-card" href="<?php echo escapeHtml(createRouteUrl('home') . '&category_id=' . $categoryId); ?>#featured-places">
                         <div class="hs-category-card__image">
                             <img
-                                src="<?php echo escapeHtml($visual['image']); ?>"
+                                src="<?php echo escapeHtml($categoryImage); ?>"
                                 alt=""
                                 loading="lazy"
                                 decoding="async">
                         </div>
 
                         <div class="hs-category-card__body">
-                            <span
-                                class="hs-category-card__icon hs-category-card__icon--<?php echo escapeHtml($visual['icon']); ?>"
-                                aria-hidden="true">
-                                <?php
-                                $categorySymbol = [
-                                    1 => '♨',
-                                    2 => '☕',
-                                    3 => '▲',
-                                    4 => '★',
-                                    5 => '♧',
-                                    6 => '⌂',
-                                ][$categoryId] ?? '•';
-
-                                echo escapeHtml($categorySymbol);
-                                ?>
-                            </span>
-
                             <div class="hs-category-card__text">
                                 <strong><?php echo escapeHtml($categoryName); ?></strong>
-                                <span><?php echo escapeHtml($visual['subtitle']); ?></span>
+                                <span><?php echo escapeHtml($categoryDescription); ?></span>
                             </div>
                         </div>
-                    </article>
+                    </a>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
@@ -275,24 +248,7 @@ $hasActiveFilters = $keyword !== ''
                 ?></h2>
             </div>
 
-            <div
-                class="hs-featured-tools"
-                id="home-featured-tools"
-                aria-label="Các cách xem địa điểm"
-                <?php echo $hasActiveFilters ? 'hidden' : ''; ?>>
-
-                <span class="hs-sort-pill hs-sort-pill--active">Được yêu thích</span>
-                <span class="hs-sort-pill">Mới cập nhật</span>
-                <span class="hs-sort-pill">Đánh giá cao</span>
-            </div>
-
-            <span
-                class="hs-section-link"
-                id="home-featured-all-link"
-                <?php echo $hasActiveFilters ? 'hidden' : ''; ?>>
-
-                Xem tất cả địa điểm
-            </span>
+            <span class="hs-result-count"><?php echo escapeHtml(number_format($totalCount)); ?> địa điểm</span>
         </div>
 
         <p
@@ -341,5 +297,5 @@ $hasActiveFilters = $keyword !== ''
 </div>
 
 <?php require dirname(__DIR__) . '/ai/_place_recommendations.php'; ?>
-<script src="assets/js/search.js?v=5" defer></script>
-<script src="assets/js/ai-recommendations.js?v=2" defer></script>
+<script src="assets/js/search.js?v=20261108" defer></script>
+<script src="assets/js/ai-recommendations.js?v=20261108-filters2" defer></script>

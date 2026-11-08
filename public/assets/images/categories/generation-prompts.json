@@ -1,0 +1,29 @@
+{
+  "tool": "built-in image_gen",
+  "items": [
+    {
+      "name": "food",
+      "prompt": "Use case: ads-marketing. Create ONE polished landscape 3:2 category poster for the Vietnamese Hot Spot travel discovery website. Cohesive editorial flat illustration, bold simple silhouettes, delicate paper grain, warm ivory background, coral orange accents with dark navy line details. Large centered subject with generous breathing room, readable at tiny card size. No lettering, no words, no watermarks, no interface, no collage. Subject: Vietnamese cuisine: a beautiful bowl of pho with chopsticks, herbs and lime, muted terracotta and sage accents."
+    },
+    {
+      "name": "coffee",
+      "prompt": "Use case: ads-marketing. Create ONE polished landscape 3:2 category poster for the Vietnamese Hot Spot travel discovery website. Cohesive editorial flat illustration, bold simple silhouettes, delicate paper grain, warm ivory background, coral orange accents with dark navy line details. Large centered subject with generous breathing room, readable at tiny card size. No lettering, no words, no watermarks, no interface, no collage. Subject: Vietnamese coffee culture: a phin drip filter on a glass coffee cup with a small coffee branch, warm caramel and cream accents."
+    },
+    {
+      "name": "travel",
+      "prompt": "Use case: ads-marketing. Create ONE polished landscape 3:2 category poster for the Vietnamese Hot Spot travel discovery website. Cohesive editorial flat illustration, bold simple silhouettes, delicate paper grain, warm ivory background, coral orange accents with dark navy line details. Large centered subject with generous breathing room, readable at tiny card size. No lettering, no words, no watermarks, no interface, no collage. Subject: Travel and exploration: a travel suitcase, folded map and compass with an abstract sun, turquoise and peach accents."
+    },
+    {
+      "name": "nature",
+      "prompt": "Use case: ads-marketing. Create ONE polished landscape 3:2 category poster for the Vietnamese Hot Spot travel discovery website. Cohesive editorial flat illustration, bold simple silhouettes, delicate paper grain, warm ivory background, coral orange accents with dark navy line details. Large centered subject with generous breathing room, readable at tiny card size. No lettering, no words, no watermarks, no interface, no collage. Subject: Nature outdoors: elegant layered mountains with a winding river and two trees, forest green and sage accents."
+    },
+    {
+      "name": "culture",
+      "prompt": "Use case: ads-marketing. Create ONE polished landscape 3:2 category poster for the Vietnamese Hot Spot travel discovery website. Cohesive editorial flat illustration, bold simple silhouettes, delicate paper grain, warm ivory background, coral orange accents with dark navy line details. Large centered subject with generous breathing room, readable at tiny card size. No lettering, no words, no watermarks, no interface, no collage. Subject: Vietnamese culture and heritage: a traditional Vietnamese pavilion roof and a stylized lotus, muted burgundy and golden ochre accents."
+    },
+    {
+      "name": "entertainment",
+      "prompt": "Use case: ads-marketing. Create ONE polished landscape 3:2 category poster for the Vietnamese Hot Spot travel discovery website. Cohesive editorial flat illustration, bold simple silhouettes, delicate paper grain, warm ivory background, coral orange accents with dark navy line details. Large centered subject with generous breathing room, readable at tiny card size. No lettering, no words, no watermarks, no interface, no collage. Subject: Leisure and fun: an elegant Ferris wheel with a ticket and a small balloon, lavender and coral accents."
+    }
+  ]
+}

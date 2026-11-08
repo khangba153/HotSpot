@@ -27,6 +27,7 @@ if ($places === []) :
 
             $categoryId = (int) ($place['category_id'] ?? 0);
             $categoryName = trim((string) ($place['category_name'] ?? ''));
+            $categoryLabelImage = $categoryCardLabels[$categoryId] ?? '';
             $provinceName = trim((string) ($place['province_name'] ?? ''));
             $address = trim((string) ($place['address'] ?? ''));
             $description = trim((string) ($place['description'] ?? ''));
@@ -65,12 +66,15 @@ if ($places === []) :
                         loading="lazy"
                         decoding="async"
                         onerror="this.onerror=null;this.src='<?php echo escapeHtml($demoImage); ?>';">
-                    <span class="hs-place-card__favorite" aria-hidden="true">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M20.8 8.8c0 5-8.8 11-8.8 11s-8.8-6-8.8-11A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7Z"></path>
-                        </svg>
-                    </span>
-                </a>
+</a>
+                <?php if ($categoryName !== '') : ?>
+                    <div class="hs-place-card__label">
+                        <?php if ($categoryLabelImage !== '') : ?>
+                            <img class="hs-place-card__label-image" src="<?php echo escapeHtml($categoryLabelImage); ?>" alt="" loading="lazy" decoding="async" onerror="this.hidden=true;">
+                        <?php endif; ?>
+                        <span><?php echo escapeHtml($categoryName); ?></span>
+                    </div>
+                <?php endif; ?>
                 <div class="hs-place-card__body">
                     <h3 class="hs-place-card__title">
                         <a href="<?php echo escapeHtml($detailUrl); ?>"><?php echo escapeHtml($title); ?></a>
@@ -87,16 +91,9 @@ if ($places === []) :
                         <?php if ($reviewCount > 0) : ?>
                             <span class="hs-review-count">(<?php echo escapeHtml(number_format($reviewCount)); ?>)</span>
                         <?php endif; ?>
-                        <?php if ($categoryName !== '') : ?>
-                            <span class="hs-meta-divider" aria-hidden="true">·</span>
-                            <span class="hs-place-card__category"><?php echo escapeHtml($categoryName); ?></span>
-                        <?php endif; ?>
+
                     </div>
                     <p class="hs-place-card__location">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M19 10.2c0 5-7 10.3-7 10.3S5 15.2 5 10.2a7 7 0 1 1 14 0Z"></path>
-                            <circle cx="12" cy="10" r="2.2"></circle>
-                        </svg>
                         <?php
                         $locationParts = [];
 
@@ -117,9 +114,7 @@ if ($places === []) :
                     </p>
                     <p class="hs-place-card__description"><?php echo escapeHtml($description); ?></p>
                     <div class="hs-place-card__bottom">
-                        <?php if ($categoryName !== '') : ?>
-                            <span class="hs-place-tag"><?php echo escapeHtml($categoryName); ?></span>
-                        <?php endif; ?>
+
                         <a class="hs-place-card__more" href="<?php echo escapeHtml($detailUrl); ?>">Chi tiết </a>
                     </div>
                 </div>

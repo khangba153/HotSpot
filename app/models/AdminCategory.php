@@ -10,7 +10,7 @@ final class AdminCategory extends Model
     // Lấy danh mục và số địa điểm thật, kể cả danh mục chưa có địa điểm.
     public function findAll(): array
     {
-        $statement = self::getConnection()->prepare('SELECT c.category_id, c.name, c.description, c.is_active, COUNT(p.place_id) AS place_count FROM categories c LEFT JOIN places p ON p.category_id = c.category_id GROUP BY c.category_id, c.name, c.description, c.is_active ORDER BY c.category_id');
+        $statement = self::getConnection()->prepare('SELECT c.category_id, c.name, c.description, c.image_path, c.card_label_image_path, c.is_active, COUNT(p.place_id) AS place_count FROM categories c LEFT JOIN places p ON p.category_id = c.category_id GROUP BY c.category_id, c.name, c.description, c.image_path, c.card_label_image_path, c.is_active ORDER BY c.category_id');
         $statement->execute();
         $categories = $statement->fetchAll(PDO::FETCH_ASSOC);
         $statement->closeCursor();
@@ -29,17 +29,17 @@ final class AdminCategory extends Model
         return $exists;
     }
 
-    public function create(string $name, ?string $description): void
+    public function create(string $name, ?string $description, ?string $imagePath, ?string $cardLabelImagePath): void
     {
-        $statement = self::getConnection()->prepare('INSERT INTO categories (name, description, is_active) VALUES (:name, :description, 1)');
-        $statement->execute([':name' => $name, ':description' => $description]);
+        $statement = self::getConnection()->prepare('INSERT INTO categories (name, description, image_path, card_label_image_path, is_active) VALUES (:name, :description, :image_path, :card_label_image_path, 1)');
+        $statement->execute([':name' => $name, ':description' => $description, ':image_path' => $imagePath, ':card_label_image_path' => $cardLabelImagePath]);
         $statement->closeCursor();
     }
 
-    public function update(int $id, string $name, ?string $description): bool
+    public function update(int $id, string $name, ?string $description, ?string $imagePath, ?string $cardLabelImagePath): bool
     {
-        $statement = self::getConnection()->prepare('UPDATE categories SET name = :name, description = :description WHERE category_id = :id');
-        $statement->execute([':name' => $name, ':description' => $description, ':id' => $id]);
+        $statement = self::getConnection()->prepare('UPDATE categories SET name = :name, description = :description, image_path = :image_path, card_label_image_path = :card_label_image_path WHERE category_id = :id');
+        $statement->execute([':name' => $name, ':description' => $description, ':image_path' => $imagePath, ':card_label_image_path' => $cardLabelImagePath, ':id' => $id]);
         $statement->closeCursor();
         return $this->exists($id);
     }
@@ -54,7 +54,7 @@ final class AdminCategory extends Model
         return $this->exists($id);
     }
 
-    private function exists(int $id): bool
+    public function exists(int $id): bool
     {
         $statement = self::getConnection()->prepare('SELECT 1 FROM categories WHERE category_id = :id');
         $statement->bindValue(':id', $id, PDO::PARAM_INT);

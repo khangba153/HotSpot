@@ -266,10 +266,15 @@ final class AdminController extends Controller
     {
         $this->requireAdmin();
         $this->checkCategoryToken();
-        $id = $editing ? $this->categoryId() : 0;
+        $categoryId = 0;
+        if ($editing) {
+            $categoryId = $this->categoryId();
+        }
         $name = $_POST['name'] ?? '';
         $description = $_POST['description'] ?? '';
-        if (!is_string($name) || !is_string($description)) {
+        $imagePath = $_POST['image_path'] ?? '';
+        $cardLabelImagePath = $_POST['card_label_image_path'] ?? '';
+        if (!is_string($name) || !is_string($description) || !is_string($imagePath) || !is_string($cardLabelImagePath)) {
             throw new HttpException(400, 'Dữ liệu danh mục không hợp lệ.');
         }
         $name = trim($name);
@@ -277,25 +282,54 @@ final class AdminController extends Controller
         if ($name === '' || mb_strlen($name, 'UTF-8') > 100 || mb_strlen($description, 'UTF-8') > 300) {
             $this->redirectCategory('Tên bắt buộc, tối đa 100 ký tự; mô tả tối đa 300 ký tự.', 'danger');
         }
+        $storedDescription = null;
+        if ($description !== '') {
+            $storedDescription = $description;
+        }
+        $imageService = new \HotSpot\Services\CategoryImage();
+        $uploadedImagePath = '';
+        $uploadedLabelImagePath = '';
         try {
-            $model = new AdminCategory();
-            if ($model->nameExists($name, $id)) {
+            $categoryModel = new AdminCategory();
+            if ($editing && !$categoryModel->exists($categoryId)) {
+                $this->redirectCategory('Không tìm thấy danh mục.', 'danger');
+            }
+            if ($categoryModel->nameExists($name, $categoryId)) {
                 $this->redirectCategory('Tên danh mục đã tồn tại.', 'danger');
+            }
+            $uploadedFile = $_FILES['category_image'] ?? null;
+            if (is_array($uploadedFile) && ($uploadedFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                $uploadedImagePath = $imageService->saveUpload($uploadedFile);
+                $storedImagePath = $uploadedImagePath;
+            } else {
+                $storedImagePath = $imageService->validatePath($imagePath);
+            }
+            $uploadedLabelFile = $_FILES['category_card_label_image'] ?? null;
+            if (is_array($uploadedLabelFile) && ($uploadedLabelFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                $uploadedLabelImagePath = $imageService->saveUpload($uploadedLabelFile);
+                $storedLabelImagePath = $uploadedLabelImagePath;
+            } else {
+                $storedLabelImagePath = $imageService->validatePath($cardLabelImagePath);
             }
             if ($editing) {
-                if (!$model->update($id, $name, $description === '' ? null : $description)) {
-                    $this->redirectCategory('Không tìm thấy danh mục.', 'danger');
-                }
+                $categoryModel->update($categoryId, $name, $storedDescription, $storedImagePath, $storedLabelImagePath);
             } else {
-                $model->create($name, $description === '' ? null : $description);
+                $categoryModel->create($name, $storedDescription, $storedImagePath, $storedLabelImagePath);
             }
         } catch (\PDOException $exception) {
-            if (($exception->errorInfo[1] ?? null) === 1062) {
-                $this->redirectCategory('Tên danh mục đã tồn tại.', 'danger');
-            }
-            $this->redirectCategory('Không thể lưu danh mục. Vui lòng thử lại.', 'danger');
+            $imageService->removeFailedUpload($uploadedImagePath);
+            $imageService->removeFailedUpload($uploadedLabelImagePath);
+            $this->redirectCategory('Không thể lưu danh mục. Kiểm tra tên trùng và kết nối database.', 'danger');
+        } catch (\RuntimeException $exception) {
+            $imageService->removeFailedUpload($uploadedImagePath);
+            $imageService->removeFailedUpload($uploadedLabelImagePath);
+            $this->redirectCategory($exception->getMessage(), 'danger');
         }
-        $this->redirectCategory($editing ? 'Đã cập nhật danh mục.' : 'Đã thêm danh mục.', 'success');
+        $message = 'Đã thêm danh mục.';
+        if ($editing) {
+            $message = 'Đã cập nhật danh mục.';
+        }
+        $this->redirectCategory($message, 'success');
     }
 
     public function updateCategoryStatus(): void

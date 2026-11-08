@@ -36,6 +36,26 @@ final class Category extends Model
         }
     }
 
+    // Giữ nhãn cho cả địa điểm thuộc danh mục đã ngừng nhận bài mới.
+    public function findCardLabelImages(): array
+    {
+        $preparedStatement = self::getConnection()->prepare(
+            'SELECT category_id, card_label_image_path FROM categories'
+        );
+        try {
+            $preparedStatement->execute();
+            $categoryList = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
+            $labelImages = [];
+            foreach ($categoryList as $categoryInformation) {
+                $categoryId = (int) $categoryInformation['category_id'];
+                $labelImages[$categoryId] = trim((string) $categoryInformation['card_label_image_path']);
+            }
+            return $labelImages;
+        } finally {
+            $preparedStatement->closeCursor();
+        }
+    }
+
     public function isActiveCategory(int $categoryId): bool
     {
         if ($categoryId <= 0) {
