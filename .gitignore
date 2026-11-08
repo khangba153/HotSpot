@@ -30,3 +30,5 @@ __pycache__/
 /vendor/
 /node_modules/
 /storage/cache/ai/
+/public/uploads/categories/*
+!/public/uploads/categories/.gitkeep
