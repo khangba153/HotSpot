@@ -31,84 +31,18 @@ $logoutUrl = createRouteUrl('logout');
 $userFullName = (string) ($userInformation['full_name'] ?? 'Thành viên');
 ?>
 
-<section class="hs-place-mine-hero" aria-label="Ảnh bìa Địa điểm của tôi">
-    <div class="hs-place-mine-hero__overlay"></div>
-    <div class="container hs-place-mine-hero__inner">
-        <div class="hs-place-mine-hero__slogan">
-            <span class="hs-place-mine-hero__script">Việt Nam ơi !</span>
-            <p class="hs-place-mine-hero__sub mb-0">
-                Khám phá <em>nhiều hơn</em> cùng Hot Spot
-            </p>
+<div class="profile-cover" role="img" aria-label="Phong cảnh vịnh Hạ Long"></div>
+<div class="container account-places-page py-4">
+    <div class="row g-4">
+        <div class="col-12 col-lg-3">
+            <?php $activeAccountSection = 'places'; require __DIR__ . '/../profile/_sidebar.php'; ?>
         </div>
-    </div>
-</section>
-
-<div class="hs-place-mine-page">
-    <div class="container">
-        <?php if (isset($viewData['successMessage']) && $viewData['successMessage'] !== '') { ?>
-            <div class="alert alert-success" role="status">
-                <?php echo escapeHtml((string) $viewData['successMessage']); ?>
-            </div>
-        <?php } ?>
-        <div class="row g-3 g-xl-4 hs-place-mine-layout">
-            <div class="col-12 col-lg-3 hs-place-mine-layout__sidebar">
-                <aside class="hs-place-mine-sidebar" aria-label="Điều hướng tài khoản">
-                    <div class="hs-place-mine-account">
-                        <img
-                            class="hs-place-mine-account__avatar"
-                            src="assets/images/default-avatar.svg"
-                            alt="Ảnh đại diện của <?php echo escapeHtml($userFullName); ?>"
-                            width="64"
-                            height="64">
-                        <strong class="hs-place-mine-account__name">
-                            <?php echo escapeHtml($userFullName); ?>
-                        </strong>
-                        <a class="hs-place-mine-account__link" href="<?php echo escapeHtml($profilePageUrl); ?>">
-                            <span>Xem hồ sơ cá nhân</span>
-                        </a>
-                    </div>
-
-                    <nav class="hs-place-mine-menu" aria-label="Menu cá nhân">
-                        <a class="hs-place-mine-menu__item" href="<?php echo escapeHtml($profilePageUrl); ?>">
-                            <span>Tổng quan</span>
-                        </a>
-
-                        <a
-                            class="hs-place-mine-menu__item is-active"
-                            href="<?php echo escapeHtml($myPlacesUrl); ?>"
-                            aria-current="page">
-                            <span>Địa điểm của tôi</span>
-                        </a>
-
-                        <a class="hs-place-mine-menu__item" href="<?php echo escapeHtml($favoritesPageUrl); ?>">
-                            <span>Yêu thích</span>
-                        </a>
-
-                        <a class="hs-place-mine-menu__item" href="<?php echo escapeHtml($profilePageUrl . '&tab=reviews'); ?>">
-                            <span>Đánh giá của tôi</span>
-                        </a>
-
-                        <a class="hs-place-mine-menu__item" href="<?php echo escapeHtml($profilePageUrl); ?>">
-                            <span>Cài đặt tài khoản</span>
-                        </a>
-                    </nav>
-
-                    <form
-                        method="post"
-                        action="<?php echo escapeHtml($logoutUrl); ?>"
-                        class="hs-place-mine-logout-form">
-                        <input
-                            type="hidden"
-                            name="csrf_token"
-                            value="<?php echo escapeHtml($csrfToken); ?>">
-                        <button type="submit" class="hs-place-mine-logout-btn">
-                            <span>Đăng xuất</span>
-                        </button>
-                    </form>
-                </aside>
-            </div>
-
-            <div class="col-12 col-lg-9 hs-place-mine-layout__main">
+        <div class="col-12 col-lg-9">
+            <?php if (isset($viewData['successMessage']) && $viewData['successMessage'] !== '') { ?>
+                <div class="alert alert-success" role="status">
+                    <?php echo escapeHtml((string) $viewData['successMessage']); ?>
+                </div>
+            <?php } ?>
                 <header class="hs-place-mine-header">
                     <div class="hs-place-mine-header__top">
                         <div class="hs-place-mine-heading">
@@ -382,7 +316,6 @@ $userFullName = (string) ($userInformation['full_name'] ?? 'Thành viên');
                         </div>
                     </section>
                 <?php } ?>
-            </div>
         </div>
     </div>
 </div>

@@ -842,206 +842,6 @@
    ========================================================================== */
 
 /* Hero ảnh bìa Vịnh Hạ Long — sáng rõ, lớp phủ mỏng phía trái */
-.hs-place-mine-hero {
-  position: relative;
-  isolation: isolate;
-  min-height: 162px;
-  display: flex;
-  align-items: center;
-  color: #fff;
-  background-color: #1f5c6e;
-  background-image: url("../images/home/hero-vietnam.webp");
-  background-size: cover;
-  background-position: center 42%;
-}
-
-.hs-place-mine-hero__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(
-      90deg,
-      rgb(7 32 43 / 44%) 0%,
-      rgb(9 39 51 / 20%) 35%,
-      rgb(9 39 51 / 0%) 66%
-    );
-}
-
-.hs-place-mine-hero__inner {
-  max-width: 1320px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-}
-
-.hs-place-mine-hero__slogan {
-  max-width: 400px;
-  padding-left: 8px;
-}
-
-.hs-place-mine-hero__script {
-  display: inline-block;
-  margin-bottom: 2px;
-  font-family: "Segoe Print", "Comic Sans MS", cursive;
-  font-size: clamp(24px, 2.6vw, 33px);
-  font-style: italic;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #ffe484;
-  text-shadow: 0 2px 10px rgb(0 0 0 / 38%);
-}
-
-.hs-place-mine-hero__sub {
-  font-size: 15px;
-  font-weight: 500;
-  color: #fff;
-  text-shadow: 0 1px 8px rgb(0 0 0 / 35%);
-}
-
-.hs-place-mine-page {
-  background: #f8f9fb;
-  padding: 20px 0 48px;
-}
-
-.hs-place-mine-page > .container {
-  max-width: 1320px;
-}
-
-@media (min-width: 1200px) {
-  .hs-place-mine-layout__sidebar {
-    flex: 0 0 244px;
-    max-width: 244px;
-  }
-
-  .hs-place-mine-layout__main {
-    flex: 1 1 0%;
-    max-width: calc(100% - 244px);
-  }
-}
-
-/* Sidebar tài khoản bên trái — căn trái, gọn khoảng trống */
-.hs-place-mine-sidebar {
-  padding: 16px 12px 12px;
-  border: 1px solid var(--hs-line);
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 2px 10px rgb(24 37 50 / 3%);
-}
-
-.hs-place-mine-account {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  padding: 2px 6px 12px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid #eef2f5;
-}
-
-.hs-place-mine-account__avatar {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 8px;
-  border: 2px solid #fff3ee;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 3px 8px rgb(24 37 50 / 8%);
-}
-
-.hs-place-mine-account__name {
-  margin-bottom: 2px;
-  color: var(--hs-ink);
-  font-size: 15.5px;
-  font-weight: 800;
-  line-height: 1.3;
-  word-break: break-word;
-}
-
-.hs-place-mine-account__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--hs-orange);
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.hs-place-mine-account__link:hover {
-  text-decoration: underline;
-}
-
-.hs-place-mine-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.hs-place-mine-menu__item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 9px;
-  color: #364552;
-  font-size: 13.5px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.hs-place-mine-menu__item:hover {
-  background: #f5f8fa;
-  color: var(--hs-ink);
-}
-
-.hs-place-mine-menu__item.is-active {
-  background: #fff1eb;
-  color: var(--hs-orange);
-  font-weight: 700;
-}
-
-.hs-place-mine-menu__item.is-active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 6px;
-  bottom: 6px;
-  width: 3.5px;
-  border-radius: 0 4px 4px 0;
-  background: var(--hs-orange);
-}
-
-.hs-place-mine-logout-form {
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid #eef2f5;
-}
-
-.hs-place-mine-logout-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 9px 12px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: #364552;
-  font-size: 13.5px;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.hs-place-mine-logout-btn:hover {
-  background: #fff2f0;
-  color: #c92a2a;
-}
-
-/* Header & thanh tab lọc trạng thái */
 .hs-place-mine-header {
   margin-bottom: 12px;
 }
@@ -1594,4 +1394,25 @@
   .hs-place-mine-actions {
     flex-direction: column;
   }
+}
+
+/* Dùng khung Hồ sơ, giữ riêng nội dung quản lý địa điểm. */
+.account-places-page { padding-bottom: 48px !important; }
+.account-places-page .hs-place-mine-heading { padding-left: 14px; }
+.account-places-page .hs-place-mine-heading::before { width: 5px; border-radius: 0; }
+.account-places-page .hs-place-mine-title { font-size: 22px; font-weight: 700; line-height: 1.4; }
+.account-places-page .hs-place-mine-subtitle { font-size: 14px; }
+.account-places-page .hs-place-mine-header__top { align-items: flex-start; }
+
+/* Khi cột nội dung hẹp, chuyển từng địa điểm thành thẻ để không cắt nút. */
+@media (min-width: 992px) and (max-width: 1399.98px) {
+    .account-places-page .hs-place-mine-thead { display: none !important; }
+    .account-places-page .hs-place-mine-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+    .account-places-page .hs-place-mine-col--place,
+    .account-places-page .hs-place-mine-actions { grid-column: 1 / -1; }
+    .account-places-page .hs-place-mine-col__mobile-label { display: block !important; margin-bottom: 6px; }
+    .account-places-page .hs-place-mine-actions { flex-direction: row; flex-wrap: wrap; }
 }

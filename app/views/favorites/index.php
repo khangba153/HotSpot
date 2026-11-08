@@ -10,46 +10,11 @@ $myPlacesUrl = createRouteUrl('places/mine');
 $userInformation = $viewData['userInformation'];
 ?>
 
+<div class="profile-cover" role="img" aria-label="Phong cảnh vịnh Hạ Long"></div>
 <div class="container favorites-page py-4">
-    <div class="row">
-        <div class="col-12">
-            <nav class="favorites-breadcrumb" aria-label="Đường dẫn trang">
-                <a href="<?php echo escapeHtml($homePageUrl); ?>">Trang chủ</a>
-                <span aria-hidden="true">/</span>
-                <a href="<?php echo escapeHtml($profilePageUrl); ?>">Trang cá nhân</a>
-                <span aria-hidden="true">/</span>
-                <span aria-current="page">Yêu thích</span>
-            </nav>
-        </div>
-    </div>
     <div class="row g-4">
         <div class="col-12 col-lg-3">
-            <aside class="favorites-sidebar" aria-label="Điều hướng tài khoản">
-                <div class="favorites-account">
-                    <img src="assets/images/default-avatar.svg" alt="" width="56" height="56">
-                    <div>
-                        <strong><?php echo escapeHtml($userInformation['full_name']); ?></strong>
-                        <a href="<?php echo escapeHtml($profilePageUrl); ?>">Xem hồ sơ cá nhân</a>
-                    </div>
-                </div>
-                <nav class="favorites-account-menu" aria-label="Menu cá nhân">
-                    <a href="<?php echo escapeHtml($profilePageUrl); ?>">
-                        <span>Tổng quan</span>
-                    </a>
-                    <a href="<?php echo escapeHtml($myPlacesUrl); ?>">
-                        <span>Địa điểm của tôi</span>
-                    </a>
-                    <a class="favorites-menu-active" href="<?php echo escapeHtml($favoritePageUrl); ?>" aria-current="page">
-                        <span>Yêu thích</span>
-                    </a>
-                    <a href="<?php echo escapeHtml($profilePageUrl . '&tab=reviews'); ?>">
-                        <span>Đánh giá của tôi</span>
-                    </a>
-                    <a href="<?php echo escapeHtml($profilePageUrl); ?>">
-                        <span>Thông tin tài khoản</span>
-                    </a>
-                </nav>
-            </aside>
+            <?php $activeAccountSection = 'favorites'; require __DIR__ . '/../profile/_sidebar.php'; ?>
         </div>
         <div class="col-12 col-lg-9">
             <div class="row">
@@ -92,7 +57,7 @@ $userInformation = $viewData['userInformation'];
                         $detailPageUrl = createRouteUrl('places/show');
                         $detailPageUrl = $detailPageUrl . '&id=' . $placeId;
                     ?>
-                        <div class="col-12 col-md-6 col-xl-4">
+                        <div class="col-12 col-md-6 col-xxl-4">
                             <article class="card favorite-card h-100">
                                 <a
                                     class="favorite-card-image-link"
@@ -179,4 +144,4 @@ $userInformation = $viewData['userInformation'];
     </div>
 </div>
 
-<script src="assets/js/favorite.js?v=2" defer></script>
+<script src="assets/js/favorite.js?v=20261108" defer></script>
