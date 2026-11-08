@@ -352,3 +352,8 @@
         font-size: 23px;
     }
 }
+
+/* Trên điện thoại, đưa tác vụ đăng nhập lên trước nội dung giới thiệu. */
+@media(max-width:991.98px) { .auth-introduction { display:none; } .auth-form-panel { padding:32px 24px; } .auth-welcome { margin-bottom:24px; } .login-page { padding-block:20px; } }
+.auth-form-panel label,.auth-form-panel .form-control { font-size:15px; }
+.auth-options,.auth-register,.auth-register-note { font-size:13px; }

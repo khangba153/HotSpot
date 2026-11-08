@@ -19,22 +19,14 @@ sort($categories);
 sort($provinces);
 ?>
 <div class="admin-shell admin-list-shell">
-    <aside class="admin-sidebar">
-        <small>QUẢN LÝ HỆ THỐNG</small>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin')); ?>">Tổng quan</a>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Chờ duyệt địa điểm</a>
-        <a class="active" href="<?php echo escapeHtml(createRouteUrl('admin/places') . '&view=managed'); ?>">Quản lý địa điểm</a>
-        <a href="<?php echo escapeHtml(createRouteUrl('admin/reviews')); ?>">Quản lý đánh giá</a><a href="<?php echo escapeHtml(createRouteUrl('admin/categories')); ?>">Quản lý danh mục</a>
-        <a class="admin-back" href="<?php echo escapeHtml(createRouteUrl('home')); ?>">Quay về trang chủ</a>
-    </aside>
-    <main class="admin-content">
+    <section class="admin-content">
         <div class="container-fluid px-0"><div class="row"><div class="col-12">
-        <div class="admin-heading"><div><small>HOT SPOT / QUẢN TRỊ</small><h1>Quản lý địa điểm</h1><p>Theo dõi các bài đã duyệt, tạm ẩn hoặc khôi phục địa điểm công khai.</p></div></div>
+        <div class="admin-heading"><div><small>HOT SPOT / QUẢN TRỊ</small><h1>Quản lý địa điểm</h1><p>Theo dõi các bài đã duyệt, tạm ẩn hoặc khôi phục địa điểm công khai.</p></div><a class="category-primary" href="<?php echo escapeHtml(createRouteUrl('places/create')); ?>">Đăng địa điểm</a></div>
         <?php if ($adminMessage !== '') { ?><div class="admin-flash admin-flash--<?php echo escapeHtml($adminMessageType); ?>" role="status"><?php echo escapeHtml($adminMessage); ?></div><?php } ?>
         <div class="admin-management-tabs" aria-label="Lọc trạng thái">
-            <button type="button" class="selected" data-status-filter="">Tất cả địa điểm <?php echo count($managedPlaces); ?></button>
-            <button type="button" data-status-filter="APPROVED">Đã duyệt <?php echo $approvedCount; ?></button>
-            <button type="button" data-status-filter="HIDDEN">Đã ẩn <?php echo $hiddenCount; ?></button>
+            <button type="button" class="selected" data-status-filter=""><span>Tất cả địa điểm</span><strong><?php echo count($managedPlaces); ?></strong></button>
+            <button type="button" data-status-filter="APPROVED"><span>Đã duyệt</span><strong><?php echo $approvedCount; ?></strong></button>
+            <button type="button" data-status-filter="HIDDEN"><span>Đã ẩn</span><strong><?php echo $hiddenCount; ?></strong></button>
         </div>
         <div class="admin-toolbar">
             <label class="admin-search"><input id="managed-search" type="search" placeholder="Tìm theo tên địa điểm..." aria-label="Tìm theo tên địa điểm"></label>
@@ -55,7 +47,7 @@ sort($provinces);
         <tr class="managed-place-row" data-title="<?php echo escapeHtml((string) $place['title']); ?>" data-category="<?php echo escapeHtml((string) $place['category_name']); ?>" data-province="<?php echo escapeHtml((string) $place['province_name']); ?>" data-status="<?php echo escapeHtml((string) $place['status_code']); ?>">
             <td><?php echo $index + 1; ?></td><td><div class="admin-place-name"><img src="<?php echo escapeHtml($imagePath); ?>" alt=""><strong><?php echo escapeHtml((string) $place['title']); ?></strong></div></td>
             <td><?php echo escapeHtml((string) $place['category_name']); ?></td><td><?php echo escapeHtml((string) $place['province_name']); ?></td>
-            <td><span class="admin-status <?php echo $isApproved ? 'admin-status-approved' : 'admin-status-hidden'; ?>">● <?php echo $isApproved ? 'Đã duyệt' : 'Đã ẩn'; ?></span></td>
+            <td><span class="admin-status <?php echo $isApproved ? 'admin-status-approved' : 'admin-status-hidden'; ?>"><?php echo $isApproved ? 'Đã duyệt' : 'Đã ẩn'; ?></span></td>
             <td><?php echo $approvalDate === false ? '—' : escapeHtml(date('d/m/Y', $approvalDate)); ?></td>
             <td><form method="post" action="<?php echo escapeHtml(createRouteUrl('admin/places/status')); ?>">
                 <input type="hidden" name="csrf_token" value="<?php echo escapeHtml($csrfToken); ?>"><input type="hidden" name="place_id" value="<?php echo (int) $place['place_id']; ?>">
@@ -69,6 +61,6 @@ sort($provinces);
         <p class="admin-table-summary" id="managed-summary"></p>
         <p class="admin-management-note">Chỉ chuyển trạng thái APPROVED ↔ HIDDEN. Địa điểm ẩn không hiển thị công khai.</p>
         </div></div></div>
-    </main>
+    </section>
 </div>
-<script src="assets/js/admin-managed-places.js"></script>
+<script src="assets/js/admin-managed-places.js?v=20261108-pagination" defer></script>

@@ -13,13 +13,13 @@ $favoriteUrl = createRouteUrl('favorites/set');
 $loginUrl = createRouteUrl('login');
 
 $desiredState = '1';
-$buttonText = '♡ Lưu địa điểm';
+$buttonText = 'Lưu địa điểm';
 $buttonClass = 'btn btn-outline-danger';
 $ariaPressed = 'false';
 
 if ($isFavorited) {
     $desiredState = '0';
-    $buttonText = '♥ Đã lưu địa điểm';
+    $buttonText = 'Đã lưu địa điểm';
     $buttonClass = 'btn btn-danger';
     $ariaPressed = 'true';
 }
@@ -62,6 +62,6 @@ if ($isFavorited) {
     <a
         class="btn btn-outline-danger"
         href="<?php echo escapeHtml($loginUrl); ?>">
-        ♡ Đăng nhập để lưu
+        Đăng nhập để lưu
     </a>
 <?php } ?>

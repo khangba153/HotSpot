@@ -90,14 +90,14 @@ async function submitFavorite(event) {
         button.classList.remove('btn-danger', 'btn-outline-danger');
 
         if (isFavorited) {
-            buttonText = '♥ Đã lưu địa điểm';
+            buttonText = 'Đã lưu địa điểm';
             button.classList.add('btn-danger');
             button.setAttribute('aria-pressed', 'true');
             desiredStateInput.value = '0';
 
             messageElement.textContent = 'Đã lưu địa điểm.';
         } else {
-            buttonText = '♡ Lưu địa điểm';
+            buttonText = 'Lưu địa điểm';
             button.classList.add('btn-outline-danger');
             button.setAttribute('aria-pressed', 'false');
             desiredStateInput.value = '1';

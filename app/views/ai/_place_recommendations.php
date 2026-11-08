@@ -31,7 +31,7 @@ $recommendationCatalog = [
                         <div class="row g-2 align-items-start">
                             <div class="col-12 col-sm">
                                 <textarea id="ai-place-request" name="request_text" rows="2" maxlength="500" required
-                                    class="form-control" placeholder="Ví dụ: Tìm quán cà phê ở Đà Nẵng"
+                                    class="form-control" placeholder="Ví dụ: Top 3 quán ăn điểm cao nhất Đà Nẵng, từ 4 sao"
                                     aria-describedby="ai-place-request-help ai-place-request-count"></textarea>
                             </div>
                             <div class="col-12 col-sm-auto">
@@ -39,7 +39,7 @@ $recommendationCatalog = [
                             </div>
                         </div>
                         <small id="ai-place-request-count" class="hs-ai-summary__note hs-ai-recommendations__counter" data-ai-request-count>0/500 ký tự</small>
-                        <p id="ai-place-request-help" class="hs-ai-summary__note">Có thể tìm theo từ khóa, danh mục, tỉnh/thành và nhãn. Tiêu chí chưa hỗ trợ sẽ được thông báo trong kết quả.</p>
+                        <p id="ai-place-request-help" class="hs-ai-summary__note">Hỗ trợ danh mục, tỉnh/thành, nhiều nhãn, điểm và số lượt đánh giá, lượt lưu, ngày đăng, tọa độ và top 1–12. Tiêu chí chưa có dữ liệu sẽ được báo rõ.</p>
                     </form>
                 <?php } ?>
             </div>
@@ -50,7 +50,7 @@ $recommendationCatalog = [
             <p class="hs-ai-recommendations__warning" data-ai-unsupported hidden></p>
             <div class="row g-3" data-ai-recommendations-cards></div>
         </div>
-        <p class="hs-ai-summary__note hs-ai-recommendations__footer">Kết quả lấy từ các địa điểm đã được duyệt trên Hot Spot.</p>
+        <p class="hs-ai-summary__note hs-ai-recommendations__footer">Kết quả và điểm đánh giá lấy từ dữ liệu đã duyệt trên Hot Spot, không phải xếp hạng Google Maps.</p>
         <noscript><p class="hs-ai-summary__note mt-2">Vui lòng bật JavaScript để nhận gợi ý bằng AI.</p></noscript>
     </div>
 </dialog>

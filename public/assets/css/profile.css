@@ -357,3 +357,17 @@
         padding: 16px;
     }
 }
+
+/* Menu tài khoản gọn trên mobile để form không bị đẩy xuống quá sâu. */
+.profile-statistic { gap:0; }
+@media(max-width:991.98px) { .profile-cover { height:130px; } .profile-sidebar { padding:18px; margin-top:0; } .profile-sidebar .profile-avatar { width:64px; height:64px; } .profile-name { font-size:20px; margin-block:10px; } .profile-description { display:none; } .profile-menu { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin-top:14px; } .profile-menu-item { margin:0; padding:10px 12px; font-size:14px; } .profile-sidebar form.mt-4 { margin-top:12px !important; } .profile-sidebar .btn { padding:8px 12px; } }
+
+@media(max-width:991.98px) {
+ .profile-cover { height:90px; }
+ .profile-sidebar>.text-center { display:flex; align-items:center; gap:14px; text-align:left !important; }
+ .profile-sidebar .profile-avatar { width:52px; height:52px; }
+ .profile-sidebar .profile-name { margin:0; font-size:18px; }
+ .profile-main-content { display:flex; flex-direction:column; }
+ .profile-main-content>.profile-information { order:1; }
+ .profile-main-content>.profile-overview { order:2; margin-top:24px; }
+}

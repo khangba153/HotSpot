@@ -215,7 +215,7 @@ $homePageUrl = createRouteUrl('home');
         </div>
     </div>
 </section>
-<script src="assets/js/favorite.js" defer></script>
+<script src="assets/js/favorite.js?v=20261108" defer></script>
 <script src="assets/js/gallery.js?v=20261107" defer></script>
 <?php if ($hasLocation) { ?>
     <script src="assets/vendor/leaflet-1.9.4/leaflet.js" defer></script>

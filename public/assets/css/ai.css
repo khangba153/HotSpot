@@ -118,7 +118,7 @@
 
 .hs-ai-launch {
     flex-shrink: 0;
-    min-height: 44px;
+    min-height: 56px;
     padding: 0 16px;
     border: 1px solid #ff603e;
     border-radius: 999px;
@@ -324,7 +324,7 @@
     }
 
     .hs-ai-launch {
-        min-height: 36px;
+        min-height: 44px;
         padding: 0 14px;
         font-size: 11px;
     }
@@ -337,3 +337,5 @@
         width: 100%;
     }
 }
+
+.hs-ai-place-card__statistics { font-size:13px; font-weight:600; color:#314b60; margin-bottom:10px; }

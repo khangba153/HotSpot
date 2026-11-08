@@ -101,6 +101,8 @@ final class PlaceSearchController extends Controller
                 );
             }
 
+            $categoryModel = new Category();
+            $categoryCardLabels = $categoryModel->findCardLabelImages();
             $places = $searchResult['places'];
             $selectedCategoryIdForResponse = $categoryId;
             $selectedCategoryId = $categoryId === null ? '' : (string) $categoryId;

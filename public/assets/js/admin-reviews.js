@@ -23,19 +23,18 @@ function showReviews() {
     var end = Math.min(start + reviewsPerPage, matching.length);
     for (var rowIndex = start; rowIndex < end; rowIndex++) { matching[rowIndex].hidden = false; }
     var pagination = document.getElementById('review-pagination');
-    pagination.textContent = '';
-    for (var page = 1; page <= pages; page++) {
-        var button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = String(page);
-        button.dataset.page = String(page);
-        button.setAttribute('aria-label', 'Trang ' + page);
-        if (page === reviewPage) { button.classList.add('selected'); button.setAttribute('aria-current', 'page'); }
-        button.addEventListener('click', function (event) { reviewPage = Number(event.currentTarget.dataset.page); showReviews(); });
-        pagination.appendChild(button);
-    }
+    renderAdminPagination(pagination, reviewPage, pages, selectReviewPage);
     document.getElementById('review-empty').hidden = matching.length !== 0;
-    document.getElementById('review-summary').textContent = 'Hiển thị ' + (end - start) + ' trong ' + matching.length + ' đánh giá phù hợp';
+    var summaryText = 'Không có đánh giá phù hợp.';
+    if (matching.length > 0) {
+        summaryText = 'Hiển thị ' + (start + 1) + '–' + end
+            + ' trên tổng ' + matching.length + ' đánh giá phù hợp';
+    }
+    document.getElementById('review-summary').textContent = summaryText;
+}
+function selectReviewPage(event) {
+    reviewPage = Number(event.currentTarget.dataset.page);
+    showReviews();
 }
 function resetReviewPage() { reviewPage = 1; showReviews(); }
 reviewSearch.addEventListener('input', resetReviewPage);

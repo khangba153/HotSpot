@@ -9,6 +9,13 @@ require_once dirname(__DIR__) . '/app/bootstrap.php';
 header('Content-Type: text/html; charset=UTF-8');
 
 try {
+    // PHP có thể bỏ toàn bộ POST khi request vượt giới hạn máy chủ.
+    $postLimit = ini_parse_quantity((string) ini_get('post_max_size'));
+    $requestLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+    if ($postLimit > 0 && $requestLength > $postLimit) {
+        throw new HttpException(413, 'Tổng dung lượng tải lên quá lớn. Vui lòng giảm dung lượng ảnh rồi gửi lại.');
+    }
+
     $routeName = 'home';
 
     // Khôi phục phiên từ cookie trước khi xử lý route.

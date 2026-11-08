@@ -27,14 +27,6 @@ $activeTab = $viewData['activeTab'];
 $profilePageUrl = createRouteUrl('profile');
 $myPlacesUrl = createRouteUrl('places/mine');
 $reviewHistoryUrl = $profilePageUrl . '&tab=reviews';
-$overviewLinkClass = 'profile-menu-item';
-$reviewLinkClass = 'profile-menu-item';
-
-if ($activeTab === 'reviews') {
-    $reviewLinkClass = $reviewLinkClass . ' active';
-} else {
-    $overviewLinkClass = $overviewLinkClass . ' active';
-}
 ?>
 
 <div
@@ -46,70 +38,10 @@ if ($activeTab === 'reviews') {
     <div class="row g-4">
 
         <div class="col-12 col-lg-3">
-            <aside class="profile-sidebar">
-                <div class="text-center">
-                    <img
-                        src="assets/images/default-avatar.svg"
-                        alt="Ảnh đại diện mặc định"
-                        class="profile-avatar"
-                        width="160"
-                        height="160">
-
-                    <h2 class="profile-name">
-                        <?php echo escapeHtml($userInformation['full_name']); ?>
-                    </h2>
-
-                    <p class="profile-description">
-                        <?php if ($biography === '') { ?>
-                            Chưa có thông tin giới thiệu.
-                        <?php } else { ?>
-                            <?php echo escapeHtml($biography); ?>
-                        <?php } ?>
-                    </p>
-                </div>
-                <nav class="profile-menu" aria-label="Menu hồ sơ">
-                    <a
-                        class="<?php echo escapeHtml($overviewLinkClass); ?>"
-                        href="<?php echo escapeHtml($profilePageUrl); ?>"
-                        <?php if ($activeTab === 'overview') { ?>aria-current="page"<?php } ?>>
-                        Hồ sơ
-                    </a>
-
-                    <a class="profile-menu-item" href="<?php echo escapeHtml($myPlacesUrl); ?>">
-                        Địa điểm của tôi
-                    </a>
-
-                    <a class="profile-menu-item" href="<?php echo escapeHtml(createRouteUrl('favorites')); ?>">
-                        Yêu thích
-                    </a>
-
-                    <a
-                        class="<?php echo escapeHtml($reviewLinkClass); ?>"
-                        href="<?php echo escapeHtml($reviewHistoryUrl); ?>"
-                        <?php if ($activeTab === 'reviews') { ?>aria-current="page"<?php } ?>>
-                        Đã đánh giá
-                    </a>
-                </nav>
-
-                <form
-                    method="post"
-                    action="<?php echo escapeHtml($logoutUrl); ?>"
-                    class="mt-4">
-                    <input
-                        type="hidden"
-                        name="csrf_token"
-                        value="<?php echo escapeHtml($csrfToken); ?>">
-
-                    <button
-                        type="submit"
-                        class="btn btn-outline-danger w-100">
-                        Đăng xuất
-                    </button>
-                </form>
-            </aside>
+            <?php $activeAccountSection = $activeTab; require __DIR__ . '/_sidebar.php'; ?>
         </div>
 
-        <div class="col-12 col-lg-9">
+        <div class="col-12 col-lg-9 profile-main-content">
             <?php if ($activeTab === 'reviews') { ?>
                 <?php require __DIR__ . '/_review-history.php'; ?>
             <?php } else { ?>
@@ -121,10 +53,6 @@ if ($activeTab === 'reviews') {
                 <div class="row g-3">
                     <div class="col-6 col-xl-3">
                         <div class="profile-statistic">
-                            <span class="statistic-icon statistic-favorite" aria-hidden="true">
-                                ♥
-                            </span>
-
                             <div>
                                 <strong class="statistic-number">
                                     <?php echo $profileStatistics['favorite_count']; ?>
@@ -136,10 +64,6 @@ if ($activeTab === 'reviews') {
 
                     <div class="col-6 col-xl-3">
                         <div class="profile-statistic">
-                            <span class="statistic-icon statistic-place" aria-hidden="true">
-                                ⌖
-                            </span>
-
                             <div>
                                 <strong class="statistic-number">
                                     <?php echo $profileStatistics['place_count']; ?>
@@ -151,10 +75,6 @@ if ($activeTab === 'reviews') {
 
                     <div class="col-6 col-xl-3">
                         <div class="profile-statistic">
-                            <span class="statistic-icon statistic-review" aria-hidden="true">
-                                ★
-                            </span>
-
                             <div>
                                 <strong class="statistic-number">
                                     <?php echo $profileStatistics['review_count']; ?>
@@ -166,10 +86,6 @@ if ($activeTab === 'reviews') {
 
                     <div class="col-6 col-xl-3">
                         <div class="profile-statistic">
-                            <span class="statistic-icon statistic-photo" aria-hidden="true">
-                                ▣
-                            </span>
-
                             <div>
                                 <strong class="statistic-number">
                                     <?php echo $profileStatistics['image_count']; ?>

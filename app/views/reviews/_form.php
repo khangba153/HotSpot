@@ -19,7 +19,7 @@ $selectedRating = (int) ($currentReview['rating'] ?? 0);
             <legend>Chọn số sao</legend>
             <div class="hs-rating-choice" role="radiogroup" aria-label="Chọn số sao">
                 <?php for ($star = 5; $star >= 1; $star--) { ?>
-                    <input id="review-rating-<?php echo $star; ?>" type="radio" name="rating" value="<?php echo $star; ?>" required<?php echo $selectedRating === $star ? ' checked' : ''; ?>>
+                    <input id="review-rating-<?php echo $star; ?>" type="radio" aria-label="<?php echo $star; ?> sao" name="rating" value="<?php echo $star; ?>" required<?php echo $selectedRating === $star ? ' checked' : ''; ?>>
                     <label for="review-rating-<?php echo $star; ?>" title="<?php echo $star; ?> sao">★</label>
                 <?php } ?>
             </div>

@@ -178,6 +178,10 @@ function handleSearchData(searchResponse) {
 
     const totalCount = Number(searchResponse.data.total_count) || 0;
     const totalPages = Number(searchResponse.data.total_pages) || 1;
+    const resultCount = document.querySelector('.hs-result-count');
+    if (resultCount) {
+        resultCount.textContent = totalCount.toLocaleString('vi-VN') + ' địa điểm';
+    }
     const hasActiveFilters = keyword !== '' || categoryId !== '' || provinceCode !== '' || tagSlug !== '';
 
     if (hasActiveFilters && totalCount === 0) {
@@ -313,6 +317,7 @@ function handleClearSearch(event) {
     homeSearchState.categorySelect.value = '';
     homeSearchState.provinceSelect.value = '';
     homeSearchState.tagSelect.value = '';
+    document.dispatchEvent(new Event('hs:refresh-selects'));
 
     window.clearTimeout(homeSearchState.timer);
     searchPlaces();

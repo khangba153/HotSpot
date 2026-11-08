@@ -15,20 +15,26 @@ $createPlacePageUrl = createRouteUrl('places/create');
 
 $favoritePageUrl = createRouteUrl('favorites');
 
-$homeLinkClass = 'hs-main-nav__link hs-main-nav__link--active';
-$favoriteLinkClass = 'hs-main-nav__link hs-main-nav__link--heart';
-
+$currentRoute = 'home';
+if (isset($_GET['route']) && is_string($_GET['route'])) {
+    $currentRoute = trim($_GET['route'], '/');
+    if ($currentRoute === '') {
+        $currentRoute = 'home';
+    }
+}
+$homeLinkClass = 'hs-main-nav__link';
+$createLinkClass = 'hs-main-nav__link';
+$favoriteLinkClass = 'hs-main-nav__link';
+if ($currentRoute === 'home' || $currentRoute === 'places/show') {
+    $homeLinkClass .= ' hs-main-nav__link--active';
+} elseif (in_array($currentRoute, ['places/create', 'places/edit', 'places/mine'], true)) {
+    $createLinkClass .= ' hs-main-nav__link--active';
+} elseif ($currentRoute === 'favorites') {
+    $favoriteLinkClass .= ' hs-main-nav__link--active';
+}
 if (isset($_SESSION['user_id']) === false) {
     $favoritePageUrl = $loginPageUrl;
     $createPlacePageUrl = $loginPageUrl;
-}
-
-if (
-    isset($viewData['isFavoritesPage'])
-    && $viewData['isFavoritesPage'] === true
-) {
-    $homeLinkClass = 'hs-main-nav__link';
-    $favoriteLinkClass = $favoriteLinkClass . ' hs-main-nav__link--active';
 }
 
 $userIsLoggedIn = isset($_SESSION['user_id']);
@@ -62,14 +68,16 @@ if ($isLoginPage) {
     <meta name="theme-color" content="#fffaf7">
     <title><?php echo escapeHtml($pageTitle); ?> | Hot Spot</title>
     <link rel="stylesheet" href="assets/vendor/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/app.css?v=5">
-    <link rel="stylesheet" href="assets/css/profile.css?v=3">
-    <link rel="stylesheet" href="assets/css/auth.css?v=5">
-    <link rel="stylesheet" href="assets/css/places.css?v=20261107-style">
+    <link rel="stylesheet" href="assets/css/app.css?v=20261108-card-labels">
+    <link rel="stylesheet" href="assets/css/profile.css?v=20261108">
+    <link rel="stylesheet" href="assets/css/auth.css?v=20261108">
+    <link rel="stylesheet" href="assets/css/places.css?v=20261108-account">
     <link rel="stylesheet" href="assets/css/reviews.css?v=1">
-    <link rel="stylesheet" href="assets/css/admin.css?v=2">
-    <link rel="stylesheet" href="assets/css/favorites.css?v=4">
-    <link rel="stylesheet" href="assets/css/ai.css?v=5">
+    <link rel="stylesheet" href="assets/css/admin.css?v=20261108-card-labels">
+    <link rel="stylesheet" href="assets/css/favorites.css?v=20261108-account">
+    <link rel="stylesheet" href="assets/css/ai.css?v=20261108-filters2">
+    <link rel="stylesheet" href="assets/css/interface.css?v=20261108">
+    <?php if ($isAdminPage) { ?><script src="assets/js/admin-pagination.js?v=20261108" defer></script><?php } ?>
 </head>
 
 <body class="hs-body d-flex flex-column min-vh-100<?php echo $isAdminPage ? ' admin-layout' : ''; ?>">
@@ -89,37 +97,32 @@ if ($isLoginPage) {
             </a>
 
             <?php if ($isAdminPage) { ?>
-                <div class="admin-top-title">TRANG QUẢN TRỊ</div>
+                <?php require dirname(__DIR__) . '/admin/_navigation.php'; ?>
             <?php } else { ?>
             <nav class="hs-main-nav" aria-label="Điều hướng chính">
                 <a
-                    class="<?php echo escapeHtml($homeLinkClass); ?>"
+                    class="<?php echo escapeHtml($homeLinkClass); ?>"<?php if (str_contains($homeLinkClass, '--active')) { ?> aria-current="page"<?php } ?>
                     href="<?php echo escapeHtml($homePageUrl); ?>">
                     Khám phá
                 </a>
                 <a
-                    class="hs-main-nav__link"
+                    class="<?php echo escapeHtml($createLinkClass); ?>"<?php if (str_contains($createLinkClass, '--active')) { ?> aria-current="page"<?php } ?>
                     href="<?php echo escapeHtml($createPlacePageUrl); ?>">
                     Đăng địa điểm
                 </a>
                 <a
-                    class="<?php echo escapeHtml($favoriteLinkClass); ?>"
+                    class="<?php echo escapeHtml($favoriteLinkClass); ?>"<?php if (str_contains($favoriteLinkClass, '--active')) { ?> aria-current="page"<?php } ?>
                     href="<?php echo escapeHtml($favoritePageUrl); ?>">
-                    <span aria-hidden="true">♡</span> Yêu thích
+                    Yêu thích
                 </a>
                 <?php if ($userIsAdmin) { ?>
-                    <a class="hs-main-nav__link hs-main-nav__link--admin" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>"><span aria-hidden="true">⚙</span> Quản trị</a>
+                    <a class="hs-main-nav__link hs-main-nav__link--admin" href="<?php echo escapeHtml(createRouteUrl('admin/places')); ?>">Quản trị</a>
                 <?php } ?>
             </nav>
             <?php } ?>
 
             <div class="hs-header-actions">
-                <a class="hs-header-icon" href="#home-search" aria-label="Tìm kiếm">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="10.8" cy="10.8" r="6.8"></circle>
-                        <path d="m16 16 4.4 4.4"></path>
-                    </svg>
-                </a>
+                <?php if (!$isAdminPage) { ?><a class="hs-header-search" href="<?php echo escapeHtml($homePageUrl); ?>#home-search" aria-label="Tìm kiếm">Tìm kiếm</a><?php } ?>
                 <?php if ($userIsLoggedIn) { ?>
                     <a
                         class="hs-profile-link"
@@ -150,51 +153,13 @@ if ($isLoginPage) {
     </main>
 
     <?php if (!$isAdminPage) { ?><footer class="hs-site-footer">
-        <div class="hs-footer-hills" aria-hidden="true">
-            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path d="M0 88 72 50l68 38 76-60 81 60 90-34 85 34 86-53 69 53 82-23 66 23 93-54 74 54 81-31 61 31 91-51 81 51 74-27 66 27v32H0Z"></path>
-            </svg>
-        </div>
-        <div class="hs-container hs-footer__grid">
-            <div class="hs-footer-brand">
-                <a class="hs-brand hs-brand--footer" href="<?php echo escapeHtml($homePageUrl); ?>">
-                    <span class="hs-brand__mark" aria-hidden="true">
-                        <svg viewBox="0 0 28 34">
-                            <path d="M14 1.5C6.9 1.5 1.2 7.2 1.2 14.3c0 9.4 12.8 18.2 12.8 18.2s12.8-8.8 12.8-18.2C26.8 7.2 21.1 1.5 14 1.5Z"></path>
-                            <circle cx="14" cy="14" r="4.5"></circle>
-                        </svg>
-                    </span>
-                    <span class="hs-brand__copy"><strong>Hot Spot</strong><small>Khám phá Việt Nam theo cách của bạn</small></span>
-                </a>
-                <p>Cộng đồng chia sẻ và khám phá những địa điểm thú vị tại Việt Nam.</p>
-            </div>
-
-            <div class="hs-footer-column">
-                <strong>Khám phá</strong>
-                <span>Địa điểm</span>
-                <span>Danh mục</span>
-                <span>Tỉnh thành</span>
-                <span>Bài viết du lịch</span>
-            </div>
-            <div class="hs-footer-column">
-                <strong>Hỗ trợ</strong>
-                <span>Hướng dẫn sử dụng</span>
-                <span>Liên hệ</span>
-                <span>Báo cáo vi phạm</span>
-                <span>Câu hỏi thường gặp</span>
-            </div>
-            <div class="hs-footer-column">
-                <strong>Về Hot Spot</strong>
-                <span>Giới thiệu</span>
-                <span>Điều khoản sử dụng</span>
-                <span>Chính sách bảo mật</span>
-                <span>Tuyển dụng</span>
-            </div>
-            <div class="hs-footer-newsletter">
-                <strong>Nhận tin tức mới nhất</strong>
-                <p>Cập nhật địa điểm hay, kinh nghiệm du lịch và ưu đãi hấp dẫn.</p>
-                <div class="hs-newsletter-shell"><span>Nhập email của bạn...</span><b>Đăng ký</b></div>
-            </div>
+        <div class="hs-container hs-footer-simple">
+            <div><strong>Hot Spot</strong><p>Khám phá và chia sẻ những địa điểm bạn yêu thích.</p></div>
+            <nav aria-label="Điều hướng chân trang">
+                <a href="<?php echo escapeHtml($homePageUrl); ?>">Khám phá</a>
+                <a href="<?php echo escapeHtml($createPlacePageUrl); ?>">Đăng địa điểm</a>
+                <a href="<?php echo escapeHtml($favoritePageUrl); ?>">Yêu thích</a>
+            </nav>
         </div>
         <div class="hs-container hs-footer__bottom">
             <span>© 2026 Hot Spot. Bản demo đồ án Phát triển Web.</span>
@@ -202,6 +167,7 @@ if ($isLoginPage) {
         </div>
     </footer><?php } ?>
     <script src="assets/vendor/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/select-control.js?v=20261108" defer></script>
 </body>
 
 </html>

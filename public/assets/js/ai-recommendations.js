@@ -78,6 +78,19 @@ function createRecommendationCard(place) {
         details.push(String(place.province_name));
     }
     body.appendChild(createRecommendationElement('p', 'hs-ai-summary__note', details.join(' · ')));
+    const statistics = [];
+    const reviewCount = Number(place.review_count);
+    const averageRating = Number(place.average_rating);
+    if (reviewCount > 0 && Number.isFinite(averageRating)) {
+        statistics.push(averageRating.toFixed(1) + '/5 (' + reviewCount + ' đánh giá)');
+    } else {
+        statistics.push('Chưa có đánh giá');
+    }
+    const favoriteCount = Number(place.favorite_count);
+    if (Number.isInteger(favoriteCount) && favoriteCount >= 0) {
+        statistics.push(favoriteCount + ' lượt lưu');
+    }
+    body.appendChild(createRecommendationElement('p', 'hs-ai-place-card__statistics', statistics.join(' · ')));
     body.appendChild(createRecommendationElement('p', 'hs-ai-place-card__address', String(place.address || '')));
     const viewLink = createRecommendationElement('a', 'hs-ai-summary__button', 'Xem địa điểm');
     viewLink.href = detailUrl.href;
@@ -94,14 +107,10 @@ function getRecommendationFilterLabels(filters, catalog) {
     }
     const selections = [
         ['categories', 'category_id', 'name'],
-        ['provinces', 'province_code', 'province_name'],
-        ['tags', 'tag_slug', 'name']
+        ['provinces', 'province_code', 'province_name']
     ];
     for (const selection of selections) {
-        let catalogField = selection[1];
-        if (catalogField === 'tag_slug') {
-            catalogField = 'slug';
-        }
+        const catalogField = selection[1];
         for (const item of catalog[selection[0]] || []) {
             if (filters[selection[1]] !== null && String(item[catalogField]) === String(filters[selection[1]])) {
                 labels.push(String(item[selection[2]]));
@@ -109,6 +118,41 @@ function getRecommendationFilterLabels(filters, catalog) {
             }
         }
     }
+    for (const slug of filters.tag_slugs || []) {
+        for (const tag of catalog.tags || []) {
+            if (tag.slug === slug) {
+                labels.push(tag.name);
+                break;
+            }
+        }
+    }
+    const sortingLabels = {
+        rating_desc: 'Điểm đánh giá cao nhất',
+        reviews_desc: 'Nhiều đánh giá nhất',
+        favorites_desc: 'Nhiều lượt lưu nhất',
+        newest: 'Mới đăng nhất',
+        oldest: 'Đăng lâu nhất',
+        updated_desc: 'Vừa cập nhật'
+    };
+    if (sortingLabels[filters.sort]) {
+        labels.push('Sắp xếp: ' + sortingLabels[filters.sort]);
+    }
+    if (filters.min_rating !== null) {
+        labels.push('Từ ' + filters.min_rating + '/5 sao');
+    }
+    if (filters.min_reviews !== null) {
+        labels.push('Ít nhất ' + filters.min_reviews + ' đánh giá');
+    }
+    if (filters.min_favorites !== null) {
+        labels.push('Ít nhất ' + filters.min_favorites + ' lượt lưu');
+    }
+    if (filters.created_within_days !== null) {
+        labels.push('Đăng trong ' + filters.created_within_days + ' ngày qua');
+    }
+    if (filters.has_coordinates) {
+        labels.push('Có tọa độ bản đồ');
+    }
+    labels.push('Tối đa ' + filters.limit + ' kết quả');
     return labels;
 }
 
@@ -117,7 +161,7 @@ function renderRecommendationResults(state, data) {
         throw new Error('Chưa nhận được kết quả gợi ý hợp lệ.');
     }
     const fragment = document.createDocumentFragment();
-    for (const place of data.places.slice(0, 6)) {
+    for (const place of data.places.slice(0, 12)) {
         fragment.appendChild(createRecommendationCard(place));
     }
     state.cards.replaceChildren(fragment);

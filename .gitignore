@@ -30,3 +30,13 @@ __pycache__/
 /vendor/
 /node_modules/
 /storage/cache/ai/
+/public/uploads/categories/*
+!/public/uploads/categories/.gitkeep
+
+# Documentation and database seed files stay local
+/docs/
+/database/
+/seed/
+*.sql
+/public/assets/images/categories/generation-prompts.json
+/public/assets/images/categories/labels/generation-prompts.json
