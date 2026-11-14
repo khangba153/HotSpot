@@ -1,87 +1,84 @@
 # Hot Spot
 
-Đồ án website chia sẻ địa điểm dùng PHP thuần OOP/MVC. Source đã có Router, PDO, Session, CSRF và các module của nhóm. Phần tài khoản gồm đăng ký, đăng nhập bằng mật khẩu hoặc Google, hồ sơ, yêu thích, ghi nhớ đăng nhập và đặt lại mật khẩu qua email.
+Hot Spot là đồ án môn Phát triển ứng dụng Web của Nhóm 6. Website cho phép người dùng khám phá địa điểm, chia sẻ bài viết kèm ảnh và đánh giá. Bài mới xuất hiện trong tìm kiếm công khai sau khi quản trị viên duyệt.
 
-## Công nghệ và quy ước
+[Xem website Hot Spot](https://hotspot.alwaysdata.net/index.php?route=home)
 
-- Controller xử lý request, Model truy vấn dữ liệu, View hiển thị giao diện.
-- Bootstrap có sẵn trong `public/assets/vendor/`, cấu hình database mẫu và `.gitignore`. Không commit config cá nhân, mật khẩu, dump database hoặc dữ liệu upload.
+## Chức năng
 
-Công nghệ: PHP 8.4, Composer, PDO `pdo_mysql`, MariaDB đi kèm XAMPP, Bootstrap, JavaScript/AJAX; các module bản đồ dùng Leaflet/OpenStreetMap và Nominatim theo task của nhóm. Giữ nghiệp vụ và 12 routine đã thống nhất.
+| Vai trò | Thao tác |
+| --- | --- |
+| Khách | Tìm địa điểm theo từ khóa, danh mục, tỉnh/thành và nhãn. Xem ảnh, vị trí và đánh giá công khai. |
+| Thành viên | Đăng ký, đăng nhập bằng mật khẩu hoặc Google, ghi nhớ đăng nhập và đặt lại mật khẩu qua email. Quản lý hồ sơ, lưu địa điểm yêu thích, viết đánh giá và gửi bài kèm ảnh để duyệt. |
+| Quản trị viên | Quản lý danh mục, duyệt hoặc từ chối bài, ẩn và khôi phục địa điểm hoặc đánh giá. Có thể gửi bài của mình qua cùng luồng chờ duyệt. |
 
-## Chuẩn bị môi trường
+Thành viên đã đăng nhập có thể dùng Claude để tóm tắt đánh giá công khai, tạo bản nháp từ nội dung đang nhập hoặc gợi ý địa điểm. Với gợi ý, Claude diễn giải câu hỏi thành bộ lọc. PHP kiểm tra bộ lọc trước khi truy vấn các địa điểm đã duyệt trong MariaDB. Ví dụ có thể thử “Tìm 3 quán cà phê được đánh giá cao ở Đà Nẵng”.
 
-1. Cài PHP 8.4 và Composer. Bật các extension trong `composer.json`; kiểm tra `php -v` để tránh dùng nhầm PHP 8.0 của XAMPP.
-2. Chạy `composer install`, sau đó `composer check-platform-reqs` trong thư mục dự án. `vendor/` được tạo tại máy, không commit vào Git.
-3. Bật MySQL/MariaDB; copy `app/config/database.example.php` thành `app/config/database.php` và điền cấu hình riêng.
-4. Copy `app/config/app.example.php` thành `app/config/app.php`. Điền Google Client ID và thông tin Gmail gửi thư khi sử dụng các chức năng tương ứng. Gmail SMTP dùng Mật khẩu ứng dụng, không dùng mật khẩu Gmail thông thường.
-5. Đặt `app_url` là địa chỉ cố định của website: local `http://127.0.0.1:8000`, hosting `https://hotspot.alwaysdata.net`. Google Client phải cho phép đúng origin đang chạy.
-6. Trỏ web root vào `public/`. Để chạy local bằng PHP 8.4:
+## Công nghệ và cấu trúc
 
-```powershell
-php -d upload_max_filesize=5M -d post_max_size=20M -S 127.0.0.1:8000 -t public
-```
+Website dùng PHP hướng đối tượng theo MVC, MariaDB qua PDO, Bootstrap và JavaScript. Các luồng như tìm kiếm, phân trang và yêu thích dùng AJAX với phản hồi JSON. Bản đồ dùng Leaflet và OpenStreetMap. Các tích hợp phía ứng dụng gồm Google Identity Services, Gmail SMTP qua PHPMailer, Nominatim và Claude Messages API.
 
-Mở `http://127.0.0.1:8000/index.php?route=login`. Giữ Terminal chạy server khi thử website. PHP cần chứng chỉ CA hợp lệ để kết nối HTTPS đến Google và Gmail; cấu hình đường dẫn CA trong `php.ini` riêng của máy.
+| Đường dẫn | Vai trò |
+| --- | --- |
+| [public/](public/) | Web root, điểm vào `index.php`, tài nguyên tĩnh và ảnh tải lên. |
+| [app/routes.php](app/routes.php) | Đăng ký phương thức HTTP và controller cho từng route. |
+| [app/core/](app/core/) | Router, Controller, View, kết nối PDO và các lớp gửi email, gọi Claude. |
+| [app/controllers/](app/controllers/) | Kiểm tra yêu cầu và quyền, điều phối xử lý và trả HTML hoặc JSON. |
+| [app/models/](app/models/) và [app/views/](app/views/) | Truy vấn hoặc gọi routine từ model và hiển thị giao diện từ view. |
+| [app/services/](app/services/) | Xử lý bộ lọc gợi ý AI, tìm tọa độ và ảnh danh mục. |
+| [app/config/](app/config/) | Mẫu cấu hình database và dịch vụ cho từng môi trường. |
+| [storage/](storage/) | Cache và dữ liệu chạy ở phía máy chủ. |
 
-## Database và cấu hình riêng
+## Chạy trên máy
 
-SQL/schema/seed/routine được lưu riêng ngoài repository. Nhận bản cập nhật đã được nhóm trưởng chốt trước khi chạy source mới; không import đè seed hoặc tự sửa database dùng chung.
+**Môi trường** gồm PHP 8.4, Composer và MariaDB. Bật các extension `curl`, `fileinfo`, `mbstring`, `openssl` và `pdo_mysql`. Nếu dùng XAMPP cho MariaDB, chạy `php -v` để kiểm tra bản PHP đang được Terminal sử dụng.
 
-Các bổ sung Auth cần có ngoài schema nền 13 bảng:
+1. Cài thư viện và tạo cấu hình từ mẫu. Các lệnh dưới đây dùng PowerShell trên Windows.
 
-- `users.google_subject`: mã Google có thể NULL, có unique index.
-- `user_remember_tokens`: bản băm token, tài khoản và thời hạn ghi nhớ đăng nhập.
-- `user_password_reset_tokens`: bản băm token, tài khoản, thời hạn, thời điểm tạo và thời điểm đã sử dụng.
+   ```powershell
+   git clone https://github.com/khangba153/HotSpot.git
+   cd HotSpot
+   php -v
+   composer install
+   composer check-platform-reqs
+   Copy-Item app/config/database.example.php app/config/database.php
+   Copy-Item app/config/app.example.php app/config/app.php
+   ```
 
-Thời hạn token được lưu theo UTC. Không cần thêm routine cho các truy vấn token; code dùng PDO với tham số. Cập nhật source qua Git không tự cập nhật cấu trúc database.
+2. Nhận `HotSpot_FULL_TEAM_20261110.sql` từ nhóm trưởng. Tạo một database MariaDB rỗng rồi import file qua phpMyAdmin. Bản bàn giao có **15 bảng và 12 stored procedure**. File chứa lệnh xóa và tạo lại bảng, vì vậy hãy chọn đúng database mới trước khi import. SQL lưu đường dẫn ảnh. Nếu dữ liệu tham chiếu ảnh trong `public/uploads/`, chép các tệp ảnh tương ứng vào đúng thư mục.
+3. Điền thông tin kết nối trong `app/config/database.php`. Đặt `app_url` trong `app/config/app.php` khớp địa chỉ website đang chạy. Xem [cấu hình tích hợp](#cấu-hình-tích-hợp) nếu cần thử Google, email hoặc AI.
+4. Bật MariaDB và chạy server từ thư mục dự án.
 
-Không commit `app/config/app.php`, `app/config/database.php`, mật khẩu ứng dụng Gmail hoặc Client Secret. Google sign-in hiện dùng ID token, không cần Client Secret. Khi deploy, cài dependency bằng Composer trên hosting hoặc chuẩn bị `vendor/` tương ứng, chọn PHP 8.4 và cấu hình riêng cho hosting.
+   ```powershell
+   .\run-local.ps1
+   ```
 
-Kiểm thử luồng chính của Google, ghi nhớ đăng nhập và khôi phục mật khẩu đã được Khang báo đạt trên local. Điều này không xác nhận các tính năng mới đã được deploy lên hosting hoặc tất cả module của nhóm đã hoàn thành.
+   Script chạy PHP tại [127.0.0.1:8000](http://127.0.0.1:8000/index.php?route=home) với web root `public/`, giới hạn 5 MB mỗi ảnh và 20 MB mỗi request. Nếu chạy PHP CLI trực tiếp, truyền các tham số tương ứng vì PHP CLI không đọc `.user.ini`.
 
-## Tọa độ tùy chọn (TV3-08)
+   ```powershell
+   php -d upload_max_filesize=5M -d post_max_size=20M -S 127.0.0.1:8000 -t public
+   ```
 
-Form tạo/sửa dùng lại luồng T06, Leaflet 1.9.4 và Detail T07. Dữ liệu chọn danh mục/tỉnh/nhãn dùng model TV2 (C02). Phường/xã gọi `GET api/locations/wards?province_code=...` theo C03, giữ mã dạng chuỗi và xóa lựa chọn cũ khi đổi tỉnh. Endpoint này thuộc TV2; khi chưa có hoặc mạng lỗi, phường/xã vẫn được bỏ trống. Favorite/Review trên Detail dùng các partial và endpoint do KH/TV4 cung cấp (C09/C05).
+## Cấu hình tích hợp
 
-`GET index.php?route=api/places/geocode&address=...&province_code=...` thuộc TV3, cho MEMBER hoặc ADMIN đăng nhập và có header `X-CSRF-Token` từ form. Kết quả JSON có `success`, `message`, `data.results` (tối đa 3 mục `label`, `latitude`, `longitude`). Endpoint tái sử dụng `Province::findAllProvinces()`, ghép địa chỉ với tên tỉnh, gọi Nominatim từ PHP; không ghi database. Form chỉ điền tọa độ sau khi người dùng chọn kết quả hoặc đặt/kéo ghim. Không tìm theo từng phím gõ hay tự tìm lúc tải trang/lưu bài. Lưu qua `places/store`, `places/update`, `places/resubmit` với kiểm tra tọa độ của T06; để trống cả hai lưu NULL, không dùng cặp giả 0/0.
+| Tính năng | Cấu hình và cách hoạt động |
+| --- | --- |
+| Đăng nhập Google | Điền `google_client_id` và khai báo đúng JavaScript origin đang chạy, ví dụ `http://127.0.0.1:8000`. PHP xác minh ID token và tạo session Hot Spot. Luồng hiện tại chỉ cần Client ID. |
+| Đặt lại mật khẩu | Điền mục `mail` và `app_url`. Gmail SMTP dùng mật khẩu ứng dụng. Liên kết đặt lại có hiệu lực 15 phút. |
+| Claude | Điền `claude.api_key` phía server. Mặc định giới hạn đầu ra 250 token và timeout 20 giây. Cache có hạn một giờ. Các lượt gọi mới dùng chung khoảng cách 10 giây trong cùng session. |
+| Tìm tọa độ | Nominatim được gọi từ PHP khi người dùng yêu cầu tìm địa chỉ. Người dùng chọn kết quả, đặt ghim hoặc nhập thủ công. Tọa độ có thể để trống. |
 
-Tuân thủ [chính sách Nominatim](https://operations.osmfoundation.org/policies/nominatim/): chỉ tìm do người dùng yêu cầu, User-Agent nhận diện HotSpot, khóa và giới hạn chung dưới 1 request/giây cho ứng dụng trên một máy chủ. Cache kết quả 24 giờ, kết quả rỗng 1 giờ, tối đa 200 mục trong `storage/cache/geocoding/` (runtime được Git bỏ qua, ngoài web root). Thư mục này cần quyền ghi cho PHP. Không gửi thông tin cá nhân hoặc bí mật. Attribution OpenStreetMap hiện trên form và bản đồ. Không sử dụng endpoint này làm dịch vụ geocoding công khai/tổng quát, autocomplete hay tìm hàng loạt.
+Cài chứng chỉ CA hợp lệ cho PHP khi môi trường gặp lỗi xác minh TLS. Git bỏ qua các file cấu hình thật, SQL bàn giao, `vendor/`, ảnh tải lên và cache. Giữ thông tin xác thực trong cấu hình của từng môi trường.
 
-Có thể đổi nhà cung cấp tương thích Nominatim bằng biến môi trường máy chủ `HOTSPOT_GEOCODE_ENDPOINT` (URL HTTPS `/search`, không kèm query). Mặc định `https://nominatim.openstreetmap.org/search`; không nhận URL từ người dùng. Kết nối giữ kiểm tra chứng chỉ TLS, connect timeout 2 giây, tổng timeout 5 giây. Rate limit trả 429; mất kết nối/timeout trả 503, upstream sai dữ liệu trả 502. Các lỗi chỉ hiện trong phần vị trí, không khóa nút lưu. Người dùng có thể nhập tọa độ hoặc xóa cả hai để lưu bài khi offline.
+Khi dùng máy chủ Nominatim công khai, ứng dụng dùng User-Agent nhận diện, cache và giới hạn tần suất dùng chung theo [chính sách Nominatim](https://operations.osmfoundation.org/policies/nominatim/). Chỉ gọi khi người dùng yêu cầu, tối đa một yêu cầu mỗi giây cho ứng dụng, tránh autocomplete và tìm hàng loạt. Kết quả có dữ liệu được cache 24 giờ, kết quả rỗng một giờ. Có thể đặt `HOTSPOT_GEOCODE_ENDPOINT` thành URL HTTPS `/search` của máy chủ tương thích Nominatim. Giữ dòng ghi công OpenStreetMap khi hiển thị bản đồ.
 
-## Git
+## Triển khai và cập nhật
 
-PR bàn giao phải được review và merge trước khi nhóm lấy phiên bản từ `main`. Khi đã merge:
+- Trên Alwaysdata, dùng PHP 8.4, đặt web root vào `public/`, cài dependency bằng Composer và cấp quyền ghi cho thư mục ảnh tải lên và cache.
+- Chuẩn bị cấu hình database, `app_url` và dịch vụ cho hosting. Có thể kiểm tra giới hạn tải lên trong [public/.user.ini](public/.user.ini) và đối chiếu với cấu hình PHP thực tế.
+- Cập nhật mã qua Git và áp dụng SQL tương ứng khi phiên bản có đổi cấu trúc hoặc routine. Sao lưu database đang chạy trước khi cập nhật.
+- Kiểm tra lại trang Khám phá, đăng nhập, yêu thích và luồng gửi bài → duyệt → xem công khai. Kiểm tra Google, email, bản đồ và Claude với cấu hình của môi trường đích.
 
-```powershell
-git switch main
-git pull --ff-only origin main
-git switch -c feature/ten-chuc-nang
-# Viết code, kiểm tra phần thay đổi rồi commit.
-git add <file-da-kiem-tra>
-git commit -m "feat(auth): implement user registration"
-git push -u origin feature/ten-chuc-nang
-```
+## Đóng góp
 
-Tạo PR, chờ review; không push trực tiếp vào `main`, không reset/ghi đè thay đổi chưa đồng bộ. Chỉ dùng lệnh trên khi không có thay đổi local chưa xử lý. Không tự thay đổi cấu trúc database dùng chung; cần backup và xác nhận nhóm trưởng.
-
-## Giao diện và quyền đăng địa điểm — 08/11/2026
-
-Admin có thể đăng/sửa bài của chính mình qua cùng form và luồng PENDING như MEMBER. Quyền duyệt vẫn đi qua route Admin, không tự duyệt khi đăng. Không cần thêm bảng hoặc routine.
-
-`run-local.ps1` chạy PHP 8.4 ở port 8000 với giới hạn 5 MB/ảnh, 20 MB/request. Dừng server cũ trước khi chạy. PHP CLI không đọc `.user.ini`, vì vậy cần dùng script hoặc lệnh có các tham số `-d` ở trên. Khi deploy, kiểm tra giới hạn PHP thực tế trên hosting; `public/.user.ini` khai báo cùng giới hạn cho môi trường hỗ trợ nó. Request vượt tổng POST được báo 413 thay cho thông báo lỗi CSRF.
-
-Dropdown mới giữ select gốc để submit/validate phía server, hỗ trợ tìm trong danh sách, bàn phím và cập nhật wards qua AJAX. CSS dùng chung ở `interface.css`; CSS Home/Auth/Profile/Admin vẫn nằm trong file của từng module. Không có nút sắp xếp giả, đăng ký bản tin giả hay trái tim trang trí trên card Home. Yêu thích vẫn thao tác thật trên Detail và trang Favorites.
-
-Giới hạn gọi AI mới là 10 giây giữa các yêu cầu cần gọi Claude, dùng chung cho ba chức năng. Yêu cầu đã có cache được trả ngay; TTL cache và timeout kết nối API không đổi.
-
-## Tiêu chí gợi ý địa điểm AI mở rộng
-
-AI chỉ chuyển câu hỏi thành dữ liệu bộ lọc. `AiPlaceRecommendation` kiểm đủ schema, kiểu dữ liệu và catalog; `AiPlaceSearch` dùng PDO tham số và danh sách ORDER BY cố định để đọc địa điểm APPROVED. Tìm kiếm Home của Thuần và 12 routine hiện tại không bị đổi.
-
-Hỗ trợ: từ khóa trong tên/mô tả/địa chỉ; một danh mục, một tỉnh; tối đa 5 nhãn kết hợp AND; điểm trung bình tối thiểu 1–5; số đánh giá/lượt lưu tối thiểu; thứ tự điểm cao, nhiều đánh giá, nhiều lượt lưu, mới/cũ theo ngày đăng hoặc vừa cập nhật; bài đăng trong N ngày; có tọa độ; top 1–12 (mặc định 6). Điểm và số đánh giá chỉ tính review VISIBLE trên Hot Spot. Cách hỏi về thứ tự không tự đặt thêm mức sao hay số lượt tối thiểu.
-
-Chưa xác minh giá tiền, giờ mở cửa, khoảng cách gần tôi, đặt bàn, dữ liệu riêng của tôi hay điều kiện OR giữa nhiều tỉnh/nhãn. Những phần này được báo trong `unsupported`. Nhãn Giá hợp lý không phải bằng chứng địa điểm đáp ứng một ngân sách tiền cụ thể.
-
-Schema bộ lọc v2: keyword, category_id, province_code, tag_slugs, min_rating, min_reviews, min_favorites, sort, created_within_days, has_coordinates, limit, unsupported. Cache đổi sang prefix v2 để không đọc bộ lọc cũ; cache có mã catalog không còn hợp lệ được bỏ qua. Giữ chờ AI 10 giây, cache 1 giờ và đầu ra Claude tối đa 250 token như cấu hình hiện tại.
+Tạo nhánh từ `main`, commit các tệp liên quan rồi mở pull request để nhóm review. Các bản SQL và tài liệu nội bộ được chia sẻ riêng trong nhóm.
